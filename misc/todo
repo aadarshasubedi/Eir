@@ -1,0 +1,22 @@
+TODO
+
+
+
+DONE
+- use TestOpengl skeleton project move to C language
+- display two textured quads
+- create function to add sprite in sprite batch in main.c
+- move code that can be moved in dedicated file
+- splite code in core function and api function in main.c for all graphics tasks
+- move all graphics core and api functions in dedicated files
+- add timer for elapsed time
+- set batch as dynamic
+- move sprite 1 position in batch following elapsed time
+- see if update data buffer is needed (we need it !)
+- remove position change following time
+- add joypad init
+- get joypad axis move
+- move sprite position following elapsed time and joypad axis offset
+- get sound for test
+- call to sound load function before loop
+- play sound when moving

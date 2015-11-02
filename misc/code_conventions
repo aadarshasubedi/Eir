@@ -1,0 +1,17 @@
+- lower case writing for function / variable
+- upper case writing for constant macro / variable, ex : EIR_KER_INIT_ARRAY
+- based prefix : eir_ (usually all public stuff)
+- core renderer prefix : eir_gfx_
+- api renderer prefix : eir_gfx_api_
+- kernel prefix : eir_ker_
+- core system prefix : eir_sys_
+- target system prefix : eir_sys_os_
+- maths prefix : eir_maths_
+- core sound prefix : eir_snd_
+- api sound prefix : eir_snd_api_
+- core input prefix : eir_inp_
+- api input prefix : eir_inp_api_
+- core window prefix : eir_win_
+- api window prefix : eir_win_api_
+- begin with a simple main.c file, code only that is needed, use function a lot
+- typedef struct begin finish by _t, ex: eir_gfx_env_t
