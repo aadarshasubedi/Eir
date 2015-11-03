@@ -26,15 +26,16 @@ static void eir_start(eir_gfx_env_t * gfx_env)
    eir_win_api_init();
    eir_win_api_create_window(gfx_env);
    eir_gfx_api_init();
-   eir_gfx_api_build_sprite_batch(&gfx_env->sprite_batch); // TODO: remove when batch system up
+   eir_gfx_api_build_sprite_batch(&gfx_env->sprite_batches.data[0]); // TODO: remove when batch system up
 }
 
 static void eir_stop(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env)
 {
    eir_snd_api_release();
    eir_sys_close_joystick(sys_env->joystick.handle);
-   eir_gfx_api_release_batch(&gfx_env->sprite_batch); // TODO: remove when batch system up
+   eir_gfx_api_release_batch(&gfx_env->sprite_batches.data[0]); // TODO: remove when batch system up
    eir_win_api_destroy_window(gfx_env);
+   EIR_KER_RELEASE_ARRAY(gfx_env->sprite_batches);
 }
 
 void eir_run()
@@ -49,8 +50,10 @@ void eir_run()
    eir_mth_vec2_t size;
    eir_mth_vec2_t uv_offset;
    eir_mth_vec2_t uv_size;
+   eir_gfx_sprite_batch_t * sprite_batch = 0;
 
-   gfx_env.sprite_batch.curr_sprites_count = 0;
+   eir_gfx_set_sprite_batch_capacity(&gfx_env, 2);
+   sprite_batch = eir_gfx_create_empty_sprite_batch(&gfx_env, 2);
 
    position.x = 0.0f;
    position.y = 0.0f;
@@ -60,7 +63,7 @@ void eir_run()
    uv_offset.y = 0.0f;
    uv_size.x = 64.0f;
    uv_size.y = 64.0f;
-   eir_gfx_add_sprite_to_batch(&position, &size, &uv_offset, &uv_size, &gfx_env.sprite_batch);
+   eir_gfx_add_sprite_to_batch(&position, &size, &uv_offset, &uv_size, sprite_batch);
 
    position.x = 2.0f;
    position.y = 2.0f;
@@ -70,7 +73,7 @@ void eir_run()
    uv_offset.y = 64.0f;
    uv_size.x = 64.0f;
    uv_size.y = 64.0f;
-   eir_gfx_add_sprite_to_batch(&position, &size, &uv_offset, &uv_size, &gfx_env.sprite_batch);
+   eir_gfx_add_sprite_to_batch(&position, &size, &uv_offset, &uv_size, sprite_batch);
 
    eir_start(&gfx_env);
    if (eir_sys_get_joystick_count() > 0)
@@ -89,14 +92,14 @@ void eir_run()
       }
       eir_gfx_api_set_clear_color();
       eir_gfx_api_clear_buffer();
-      gfx_env.sprite_batch.sprites[0].position.x +=
+      sprite_batch->sprites.data[0].position.x +=
 	 sys_env.joystick.x_axis_value * sys_env.timer.elapsed_time;
       if (sys_env.joystick.x_axis_value != 0)
       {
+	 eir_gfx_api_set_buffer_data(sprite_batch); // TODO: add modified attribute in batch struct
 	 eir_snd_api_play_sound(snd_env.sound_test);
       }
-      eir_gfx_api_set_buffer_data(&gfx_env.sprite_batch);
-      eir_gfx_api_draw_sprite_batch(&gfx_env.sprite_batch); // TODO: use the draw all func when created
+      eir_gfx_api_draw_sprite_batch(sprite_batch); // TODO: use the draw all func when created
       eir_win_api_swap_buffer(&gfx_env);
    }
    eir_snd_api_release_sound(snd_env.sound_test);

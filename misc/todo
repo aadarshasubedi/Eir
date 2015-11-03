@@ -1,5 +1,11 @@
 TODO
-
+- add keyboard move for test purpose
+- add built attribute in batch struct
+- call to build batch in loop if built attribute is false
+- add modified attribute in batch struct
+- call to set buffer data in loop only if modified attribute is true
+- regression test on moving sprite with keyboard and/or joystick
+- add array for sound in snd env
 
 DONE
 - use TestOpengl skeleton project move to C language
@@ -20,3 +26,5 @@ DONE
 - call to sound load function before loop
 - play sound when moving
 - add sprite size parameter
+- add array macro
+- replace batch [] in gfx env with new array

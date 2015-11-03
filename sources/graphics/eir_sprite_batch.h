@@ -2,9 +2,9 @@
 
 #include "eir_gfx_types.h"
 #include "eir_sprite.h"
+#include "../kernel/eir_array_macro.h"
 
-// TODO: to remove use dynamic array for sprites
-#define MAX_SPRITES_PER_BATCH 10
+EIR_KER_DEFINE_ARRAY_STRUCT(eir_gfx_sprite_t, eir_gfx_sprite_array_t);
 
 typedef struct
 {
@@ -15,6 +15,5 @@ typedef struct
    eir_gfx_api_shader_handle_t geometry_shader;
    eir_gfx_api_shader_handle_t fragment_shader;
    eir_gfx_api_program_handle_t program;
-   eir_gfx_sprite_t sprites[MAX_SPRITES_PER_BATCH]; // TODO: use dynamic array for sprites
-   size_t curr_sprites_count;
+   eir_gfx_sprite_array_t sprites;
 } eir_gfx_sprite_batch_t;

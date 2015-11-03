@@ -49,8 +49,8 @@ void eir_gfx_api_set_buffer_data(eir_gfx_sprite_batch_t * batch)
 {
    glBufferData(
       GL_ARRAY_BUFFER,
-      batch->curr_sprites_count * sizeof (eir_gfx_sprite_t),
-      batch->sprites,
+      batch->sprites.used * sizeof (eir_gfx_sprite_t),
+      batch->sprites.data,
       GL_DYNAMIC_DRAW
       );
 }
@@ -141,7 +141,7 @@ void eir_gfx_api_draw_sprite_batch(eir_gfx_sprite_batch_t * batch)
 {
    glBindVertexArray(batch->vao);
    glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
-   glDrawArrays(GL_POINTS, 0, batch->curr_sprites_count);
+   glDrawArrays(GL_POINTS, 0, batch->sprites.used);
 }
 
 void eir_gfx_api_set_clear_color()
@@ -210,4 +210,5 @@ void eir_gfx_api_release_batch(eir_gfx_sprite_batch_t * batch)
    glDeleteBuffers(1, &batch->vbo);
    glDeleteVertexArrays(1, &batch->vao);
    glDeleteTextures(1, batch->texture);
+   EIR_KER_RELEASE_ARRAY(batch->sprites);
 }
