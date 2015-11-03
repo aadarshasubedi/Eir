@@ -2,6 +2,7 @@
 
 void eir_gfx_add_sprite_to_batch(
    eir_mth_vec2_t * position,
+   eir_mth_vec2_t * size,
    eir_mth_vec2_t * uv_offset,
    eir_mth_vec2_t * uv_size,
    eir_gfx_sprite_batch_t * batch
@@ -20,6 +21,8 @@ void eir_gfx_add_sprite_to_batch(
 
    batch->sprites[index].position.x = position->x;
    batch->sprites[index].position.y = position->y;
+   batch->sprites[index].size.x = size->x;
+   batch->sprites[index].size.y = size->y;
    batch->sprites[index].uv_offset.x = uv_offset->x;
    batch->sprites[index].uv_offset.y = uv_offset->y;
    batch->sprites[index].uv_size.x = uv_size->x;

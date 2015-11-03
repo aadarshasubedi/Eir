@@ -1,5 +1,5 @@
 TODO
-- add sprite size parameter
+
 
 DONE
 - use TestOpengl skeleton project move to C language
@@ -19,3 +19,4 @@ DONE
 - get sound for test
 - call to sound load function before loop
 - play sound when moving
+- add sprite size parameter

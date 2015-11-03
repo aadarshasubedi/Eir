@@ -46,6 +46,7 @@ void eir_run()
    eir_sys_env_t sys_env;
    eir_snd_env_t snd_env;
    eir_mth_vec2_t position;
+   eir_mth_vec2_t size;
    eir_mth_vec2_t uv_offset;
    eir_mth_vec2_t uv_size;
 
@@ -53,19 +54,23 @@ void eir_run()
 
    position.x = 0.0f;
    position.y = 0.0f;
+   size.x = 1.0f;
+   size.y = 1.0f;
    uv_offset.x = 0.0f;
    uv_offset.y = 0.0f;
    uv_size.x = 64.0f;
    uv_size.y = 64.0f;
-   eir_gfx_add_sprite_to_batch(&position, &uv_offset, &uv_size, &gfx_env.sprite_batch);
+   eir_gfx_add_sprite_to_batch(&position, &size, &uv_offset, &uv_size, &gfx_env.sprite_batch);
 
    position.x = 2.0f;
    position.y = 2.0f;
+   size.x = 2.0f;
+   size.y = 2.0f;
    uv_offset.x = 0.0f;
    uv_offset.y = 64.0f;
    uv_size.x = 64.0f;
    uv_size.y = 64.0f;
-   eir_gfx_add_sprite_to_batch(&position, &uv_offset, &uv_size, &gfx_env.sprite_batch);
+   eir_gfx_add_sprite_to_batch(&position, &size, &uv_offset, &uv_size, &gfx_env.sprite_batch);
 
    eir_start(&gfx_env);
    if (eir_sys_get_joystick_count() > 0)

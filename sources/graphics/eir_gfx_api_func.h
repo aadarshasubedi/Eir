@@ -12,6 +12,7 @@ void eir_gfx_api_set_clear_color();
 void eir_gfx_api_clear_buffer();
 void eir_gfx_api_bind_sprite_attributes(
    eir_gfx_api_att_handle_t pos_attr,
+   eir_gfx_api_att_handle_t size_attr,
    eir_gfx_api_att_handle_t uv_offset_attr,
    eir_gfx_api_att_handle_t uv_size_attr
    );

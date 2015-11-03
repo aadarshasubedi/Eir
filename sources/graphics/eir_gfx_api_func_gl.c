@@ -99,6 +99,7 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_sprite_batch_t * batch)
    eir_gfx_api_set_buffer_data(batch);
    eir_gfx_api_bind_sprite_attributes(
       glGetAttribLocation(batch->program, "position"),
+      glGetAttribLocation(batch->program, "size"),
       glGetAttribLocation(batch->program, "uv_offset"),
       glGetAttribLocation(batch->program, "uv_size")
       );
@@ -155,6 +156,7 @@ void eir_gfx_api_clear_buffer()
 
 void eir_gfx_api_bind_sprite_attributes(
    eir_gfx_api_att_handle_t pos_attr,
+   eir_gfx_api_att_handle_t size_attr,
    eir_gfx_api_att_handle_t uv_offset_attr,
    eir_gfx_api_att_handle_t uv_size_attr
    )
@@ -168,6 +170,16 @@ void eir_gfx_api_bind_sprite_attributes(
       (void *)offsetof(eir_gfx_sprite_t, position)
       );
    glEnableVertexAttribArray(pos_attr);
+
+   glVertexAttribPointer(
+      size_attr,
+      2,
+      GL_FLOAT,
+      GL_FALSE,
+      sizeof (eir_gfx_sprite_t),
+      (void *)offsetof(eir_gfx_sprite_t, size)
+      );
+   glEnableVertexAttribArray(size_attr);
 
    glVertexAttribPointer(
       uv_offset_attr,
