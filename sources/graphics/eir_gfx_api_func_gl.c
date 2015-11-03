@@ -99,8 +99,8 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_sprite_batch_t * batch)
    eir_gfx_api_set_buffer_data(batch);
    eir_gfx_api_bind_sprite_attributes(
       glGetAttribLocation(batch->program, "position"),
-      glGetAttribLocation(batch->program, "cell"),
-      glGetAttribLocation(batch->program, "size")
+      glGetAttribLocation(batch->program, "uv_offset"),
+      glGetAttribLocation(batch->program, "uv_size")
       );
 
    /* load and use atlas texture */
