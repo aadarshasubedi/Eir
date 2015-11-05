@@ -4,10 +4,12 @@ in vec2 position;
 in vec2 size;
 in vec2 uv_offset;
 in vec2 uv_size;
+in vec4 color;
 
 out vec2 size_;
 out vec2 uv_offset_;
 out vec2 uv_size_;
+out vec4 color_;
 
 void main()
 {
@@ -15,5 +17,5 @@ void main()
     size_ = size;
     uv_offset_ = uv_offset;
     uv_size_ = uv_size;
+    color_ = color;
 }
-

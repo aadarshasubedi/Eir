@@ -101,7 +101,8 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_sprite_batch_t * batch)
       glGetAttribLocation(batch->program, "position"),
       glGetAttribLocation(batch->program, "size"),
       glGetAttribLocation(batch->program, "uv_offset"),
-      glGetAttribLocation(batch->program, "uv_size")
+      glGetAttribLocation(batch->program, "uv_size"),
+      glGetAttribLocation(batch->program, "color")
       );
 
    /* load and use atlas texture */
@@ -135,6 +136,8 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_sprite_batch_t * batch)
    }
 
    glBindVertexArray(0);
+
+   batch->built = true;
 }
 
 void eir_gfx_api_draw_sprite_batch(eir_gfx_sprite_batch_t * batch)
@@ -158,7 +161,8 @@ void eir_gfx_api_bind_sprite_attributes(
    eir_gfx_api_att_handle_t pos_attr,
    eir_gfx_api_att_handle_t size_attr,
    eir_gfx_api_att_handle_t uv_offset_attr,
-   eir_gfx_api_att_handle_t uv_size_attr
+   eir_gfx_api_att_handle_t uv_size_attr,
+   eir_gfx_api_att_handle_t color_attr
    )
 {
    glVertexAttribPointer(
@@ -200,6 +204,16 @@ void eir_gfx_api_bind_sprite_attributes(
       (void *)offsetof(eir_gfx_sprite_t, uv_size)
       );
    glEnableVertexAttribArray(uv_size_attr);
+
+   glVertexAttribPointer(
+      color_attr,
+      4,
+      GL_FLOAT,
+      GL_FALSE,
+      sizeof (eir_gfx_sprite_t),
+      (void *)offsetof(eir_gfx_sprite_t, color)
+      );
+   glEnableVertexAttribArray(color_attr);
 }
 
 void eir_gfx_api_release_batch(eir_gfx_sprite_batch_t * batch)

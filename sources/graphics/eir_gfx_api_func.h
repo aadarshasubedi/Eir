@@ -14,6 +14,7 @@ void eir_gfx_api_bind_sprite_attributes(
    eir_gfx_api_att_handle_t pos_attr,
    eir_gfx_api_att_handle_t size_attr,
    eir_gfx_api_att_handle_t uv_offset_attr,
-   eir_gfx_api_att_handle_t uv_size_attr
+   eir_gfx_api_att_handle_t uv_size_attr,
+   eir_gfx_api_att_handle_t color_attr
    );
 void eir_gfx_api_release_batch(eir_gfx_sprite_batch_t * batch);
