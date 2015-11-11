@@ -1,7 +1,6 @@
 TODO
-- add eir_handle_t typedef (int) for all object creation interface with user
-- review object creation interface (sprite, sprite batch, sound)
 - text display (see old code)
+- display frame duration
 - debug display
   - line
   - quad stroke
@@ -10,6 +9,9 @@ TODO
   - circle fill
   - complex shape (composed by line)
   - curves
+- camera
+- improve input
+- AI follow
 
 DONE
 + use TestOpengl skeleton project move to C language
@@ -40,3 +42,8 @@ DONE
 + add array for sound in snd env
 + add color parameter for sprite.
 + use it in shaders.
++ add eir_handle_t typedef (int) for all object creation interface with user
+  + sprite
+  + sprite batch
+  + sound
++ review object creation interface (sprite, sprite batch, sound)

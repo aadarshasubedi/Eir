@@ -9,24 +9,23 @@ void eir_snd_set_sound_capacity(eir_snd_env_t * snd_env, int max_capacity)
    }
 }
 
-int eir_snd_load_sound_file(eir_snd_env_t * snd_env, const char * filename)
+eir_handle_t eir_snd_load_sound_file(eir_snd_env_t * snd_env, const char * filename)
 {
-   int index = -1;
+   eir_handle_t sound_handle = -1;
    eir_snd_sound_handle_t * sound = 0;
 
    if (snd_env)
    {
-      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(snd_env->sounds, index);
-      EIR_KER_GET_ARRAY_ITEM(snd_env->sounds, index, sound);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(snd_env->sounds, sound, sound_handle);
    }
    if (sound)
    {
       *sound = eir_snd_api_load_sound_file(filename);
    }
-   return index;
+   return sound_handle;
 }
 
-void eir_snd_play_sound(eir_snd_env_t * snd_env, int sound_index)
+void eir_snd_play_sound(eir_snd_env_t * snd_env, eir_handle_t sound_handle)
 {
    if (!snd_env)
    {
@@ -35,7 +34,7 @@ void eir_snd_play_sound(eir_snd_env_t * snd_env, int sound_index)
 
    eir_snd_sound_handle_t * sound = 0;
 
-   EIR_KER_GET_ARRAY_ITEM(snd_env->sounds, sound_index, sound);
+   EIR_KER_GET_ARRAY_ITEM(snd_env->sounds, sound_handle, sound);
    if (sound)
    {
       eir_snd_api_play_sound(*sound);

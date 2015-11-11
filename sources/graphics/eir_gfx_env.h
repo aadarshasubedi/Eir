@@ -11,4 +11,9 @@ typedef struct
    eir_gfx_window_handle_t window;
    eir_gfx_context_handle_t context;
    eir_gfx_sprite_batch_array_t sprite_batches;
+   eir_gfx_sprite_batch_array_t text_batches;
+   eir_gfx_api_shader_handle_t sprite_vert_shader;
+   eir_gfx_api_shader_handle_t sprite_geom_shader;
+   eir_gfx_api_shader_handle_t sprite_frag_shader;
+   eir_gfx_api_program_handle_t sprite_program;
 } eir_gfx_env_t;

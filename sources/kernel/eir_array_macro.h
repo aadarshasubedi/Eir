@@ -71,6 +71,24 @@
    }
 
 /**
+ * Reserve the next array empty slot.
+ */
+#define EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(array, item_ptr, out_index) \
+   if (array.used < array.capacity)					\
+   {									\
+      item_ptr = &array.data[array.used];				\
+      out_index = array.used;						\
+      ++array.used;							\
+      EIR_KER_LOG_MESSAGE("add array element: %d/%d", array.used, array.capacity); \
+   }									\
+   else									\
+   {									\
+      item_ptr = 0;							\
+      out_index = -1;							\
+      EIR_KER_LOG_WARNING("max capacity already reached: %d/%d", array.used, array.capacity); \
+   }
+
+/**
  * Free last reserved slot (memory is not free, we just allow user to overwrite item)
  */
 #define EIR_KER_FREE_ARRAY_LAST_RESERVED_SLOT(array)			\
