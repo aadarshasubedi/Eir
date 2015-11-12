@@ -16,4 +16,8 @@ typedef struct
    eir_gfx_api_shader_handle_t sprite_geom_shader;
    eir_gfx_api_shader_handle_t sprite_frag_shader;
    eir_gfx_api_program_handle_t sprite_program;
+   eir_gfx_api_shader_handle_t text_vert_shader;
+   eir_gfx_api_shader_handle_t text_geom_shader;
+   eir_gfx_api_shader_handle_t text_frag_shader;
+   eir_gfx_api_program_handle_t text_program;
 } eir_gfx_env_t;

@@ -13,5 +13,8 @@ eir_sys_joystick_handle_t eir_sys_get_joystick(int joystick_index)
 
 void eir_sys_close_joystick(eir_sys_joystick_handle_t handle)
 {
-   SDL_JoystickClose(handle);
+   if (handle && 0 < SDL_NumJoysticks())
+   {
+      SDL_JoystickClose(handle);
+   }
 }

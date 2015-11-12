@@ -65,7 +65,7 @@ void eir_gfx_api_set_buffer_data(eir_gfx_sprite_batch_t * batch)
       );
 }
 
-void eir_gfx_api_load_default_shaders(eir_gfx_env_t * gfx_env)
+void eir_gfx_api_load_sprite_shaders(eir_gfx_env_t * gfx_env)
 {
    if (!gfx_env)
    {
@@ -74,7 +74,7 @@ void eir_gfx_api_load_default_shaders(eir_gfx_env_t * gfx_env)
 
    /* create shaders */
    
-   EIR_KER_LOG_MESSAGE("create shaders");
+   EIR_KER_LOG_MESSAGE("create sprite shaders");
 
    gfx_env->sprite_vert_shader = glCreateShader(GL_VERTEX_SHADER);
    eir_gfx_api_compile_shader(gfx_env->sprite_vert_shader, VERTEX_SHADER_PATH);
@@ -96,6 +96,43 @@ void eir_gfx_api_load_default_shaders(eir_gfx_env_t * gfx_env)
    glDetachShader(gfx_env->sprite_program, gfx_env->sprite_vert_shader);
    glDetachShader(gfx_env->sprite_program, gfx_env->sprite_geom_shader);
    glDetachShader(gfx_env->sprite_program, gfx_env->sprite_frag_shader);
+
+   glUseProgram(0);
+}
+
+void eir_gfx_api_load_text_shaders(eir_gfx_env_t * gfx_env)
+{
+   if (!gfx_env)
+   {
+      return;
+   }
+
+   /* create shaders */
+   
+   EIR_KER_LOG_MESSAGE("create text shaders");
+
+   gfx_env->text_vert_shader = glCreateShader(GL_VERTEX_SHADER);
+   eir_gfx_api_compile_shader(gfx_env->text_vert_shader, VERTEX_SHADER_PATH);
+   gfx_env->text_geom_shader = glCreateShader(GL_GEOMETRY_SHADER);
+   eir_gfx_api_compile_shader(gfx_env->text_geom_shader, GEOMETRY_SHADER_PATH);
+   gfx_env->text_frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
+   eir_gfx_api_compile_shader(gfx_env->text_frag_shader, FRAGMENT_SHADER_PATH);
+   
+   /* link program */
+
+   EIR_KER_LOG_MESSAGE("link program");
+
+   gfx_env->text_program = glCreateProgram();
+   glAttachShader(gfx_env->text_program, gfx_env->text_vert_shader);
+   glAttachShader(gfx_env->text_program, gfx_env->text_geom_shader);
+   glAttachShader(gfx_env->text_program, gfx_env->text_frag_shader);
+   glBindFragDataLocation(gfx_env->text_program, 0, "outColor");
+   glLinkProgram(gfx_env->text_program);
+   glDetachShader(gfx_env->text_program, gfx_env->text_vert_shader);
+   glDetachShader(gfx_env->text_program, gfx_env->text_geom_shader);
+   glDetachShader(gfx_env->text_program, gfx_env->text_frag_shader);
+
+   glUseProgram(0);
 }
 
 void eir_gfx_api_build_sprite_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_t * batch)
@@ -144,6 +181,7 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batc
 	 image->pixels
 	 );
       glUniform1i(glGetUniformLocation(gfx_env->sprite_program, "tex0"), 0);
+      // TODO use attrib pointer for atlas size
       glUniform2f(glGetUniformLocation(gfx_env->sprite_program, "atlasSize"), image->width, image->height);
       eir_gfx_api_destroy_image(image);
    }
@@ -169,7 +207,7 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batc
 
 void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_t * batch)
 {
-   glUseProgram(gfx_env->sprite_program);
+   glUseProgram(gfx_env->text_program);
 
    /* create vao */
 
@@ -212,25 +250,25 @@ void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_
 	 GL_UNSIGNED_BYTE,
 	 image->pixels
 	 );
-      glUniform1i(glGetUniformLocation(gfx_env->sprite_program, "tex0"), 0);
-      glUniform2f(glGetUniformLocation(gfx_env->sprite_program, "atlasSize"), image->width, image->height);
+      glUniform1i(glGetUniformLocation(gfx_env->text_program, "tex0"), 0);
+      glUniform2f(glGetUniformLocation(gfx_env->text_program, "atlasSize"), image->width, image->height);
       eir_gfx_api_destroy_image(image);
    }
    else
    {
       EIR_KER_LOG_ERROR("cannot create texture from image file %d", DEFAULT_FONT_IMAGE_PATH);
    }
-   
+
    /* bind attributes */
 
    eir_gfx_api_bind_sprite_attributes(
-      glGetAttribLocation(gfx_env->sprite_program, "position"),
-      glGetAttribLocation(gfx_env->sprite_program, "size"),
-      glGetAttribLocation(gfx_env->sprite_program, "uv_offset"),
-      glGetAttribLocation(gfx_env->sprite_program, "uv_size"),
-      glGetAttribLocation(gfx_env->sprite_program, "color")
+      glGetAttribLocation(gfx_env->text_program, "position"),
+      glGetAttribLocation(gfx_env->text_program, "size"),
+      glGetAttribLocation(gfx_env->text_program, "uv_offset"),
+      glGetAttribLocation(gfx_env->text_program, "uv_size"),
+      glGetAttribLocation(gfx_env->text_program, "color")
       );
-
+   
    /* clear all */
 
    glBindVertexArray(0);
@@ -324,7 +362,7 @@ void eir_gfx_api_release_batch(eir_gfx_sprite_batch_t * batch)
    EIR_KER_RELEASE_ARRAY(batch->sprites);
 }
 
-void eir_gfx_api_unload_default_shaders(eir_gfx_env_t * gfx_env)
+void eir_gfx_api_unload_sprite_shaders(eir_gfx_env_t * gfx_env)
 {
    if(!gfx_env)
    {
@@ -334,4 +372,16 @@ void eir_gfx_api_unload_default_shaders(eir_gfx_env_t * gfx_env)
    glDeleteShader(gfx_env->sprite_frag_shader);
    glDeleteShader(gfx_env->sprite_geom_shader);
    glDeleteShader(gfx_env->sprite_vert_shader);
+}
+
+void eir_gfx_api_unload_text_shaders(eir_gfx_env_t * gfx_env)
+{
+   if(!gfx_env)
+   {
+      return;
+   }
+   glDeleteProgram(gfx_env->text_program);
+   glDeleteShader(gfx_env->text_frag_shader);
+   glDeleteShader(gfx_env->text_geom_shader);
+   glDeleteShader(gfx_env->text_vert_shader);
 }

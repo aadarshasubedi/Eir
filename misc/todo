@@ -1,5 +1,4 @@
 TODO
-- text display (see old code)
 - display frame duration
 - debug display
   - line
@@ -47,3 +46,4 @@ DONE
   + sprite batch
   + sound
 + review object creation interface (sprite, sprite batch, sound)
++ text display (see old code)

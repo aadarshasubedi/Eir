@@ -126,8 +126,8 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	    eir_gfx_api_set_buffer_data(batch);
 	    glBindVertexArray(0);
 	 }
-	 glUseProgram(gfx_env->sprite_program); // TODO: put in the api func file !
 	 glBindTexture(GL_TEXTURE_2D, batch->texture[0]); // TODO: put in api func file !
+	 glUseProgram(gfx_env->text_program); // TODO: put in the api func file !
 	 eir_gfx_api_draw_sprite_batch(batch);
 	 glUseProgram(0); // TODO: put in api func file !
       }
@@ -207,16 +207,18 @@ eir_handle_t eir_gfx_add_text(
    float x_offset;
    float y_offset;
 
-   size.x = 1.0f < font_size ? font_size : (MAX_TEXTURE_WIDTH / MAX_TEXTURE_COL) / 4.0f;
-   size.y = 1.0f < font_size ? font_size : (MAX_TEXTURE_HEIGHT / MAX_TEXTURE_ROW) / 4.0f;
+   size.x = 0.9f < font_size ? font_size : (MAX_TEXTURE_WIDTH / MAX_TEXTURE_COL) / 4.0f;
+   size.y = 0.9f < font_size ? font_size : (MAX_TEXTURE_HEIGHT / MAX_TEXTURE_ROW) / 4.0f;
    for (int index = 0; index < text_len; ++index)
    {
-      position->x += size.x * index;
+      float x = position->x + size.x * index;
+      float y = position->y;
+
       uv_size.x = MAX_TEXTURE_WIDTH / MAX_TEXTURE_COL;
       uv_size.y = MAX_TEXTURE_HEIGHT / MAX_TEXTURE_ROW;
       c = text[index];
-      x_offset = 1; //(int)c % (int)MAX_TEXTURE_COL;
-      y_offset = 5; //(int)c / (int)MAX_TEXTURE_ROW;  
+      x_offset = (int)c % (int)MAX_TEXTURE_COL;
+      y_offset = MAX_TEXTURE_ROW - ((int)c / (int)MAX_TEXTURE_ROW) - 1;  
       uv_offset.x = x_offset * (MAX_TEXTURE_WIDTH / MAX_TEXTURE_COL);
       uv_offset.y = y_offset * (MAX_TEXTURE_HEIGHT / MAX_TEXTURE_ROW);
 
@@ -225,8 +227,8 @@ eir_handle_t eir_gfx_add_text(
       EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(batch->sprites, sprite);
       if (sprite)
       {
-	 sprite->position.x = position->x;
-	 sprite->position.y = position->y;
+	 sprite->position.x = x;
+	 sprite->position.y = y;
 	 sprite->size.x = size.x;
 	 sprite->size.y = size.y;
 	 sprite->uv_offset.x = uv_offset.x;
