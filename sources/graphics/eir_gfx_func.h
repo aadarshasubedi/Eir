@@ -26,3 +26,4 @@ eir_handle_t eir_gfx_add_text(
    float font_size,
    eir_gfx_color_t * color
    );
+void eir_gfx_update_text(eir_gfx_env_t * gfx_env, eir_handle_t text_handle, const char * text);

@@ -240,8 +240,94 @@ eir_handle_t eir_gfx_add_text(
 	 sprite->color.b = color->b;
 	 sprite->color.a = color->a;
 	 eir_gfx_debug_log_sprite(sprite);
-	 batch->modified = true;
       }
    }
    return batch_handle;
+}
+
+void eir_gfx_update_text(eir_gfx_env_t * gfx_env, eir_handle_t text_handle, const char * text)
+{
+   if (!gfx_env || EIR_INVALID_HANDLE == text_handle || !text)
+   {
+      return;
+   }
+
+   eir_gfx_sprite_batch_t * batch = 0;
+   EIR_KER_GET_ARRAY_ITEM(gfx_env->text_batches, text_handle, batch);
+
+   if (!batch)
+   {
+      return;
+   }
+   
+   eir_mth_vec2_t position;
+   eir_mth_vec2_t uv_offset;
+   eir_mth_vec2_t uv_size;
+   eir_mth_vec2_t size;
+   eir_gfx_color_t color;
+
+   // TODO get attributes values from first text sprite element
+
+   position.x = batch->sprites.data[0].position.x;
+   position.y = batch->sprites.data[0].position.y;
+   size.x = batch->sprites.data[0].size.x;
+   size.y = batch->sprites.data[0].size.x;
+   uv_offset.x = batch->sprites.data[0].uv_offset.x;
+   uv_offset.y = batch->sprites.data[0].uv_offset.x;
+   uv_size.x = batch->sprites.data[0].uv_size.x;
+   uv_size.y = batch->sprites.data[0].uv_size.y;
+
+   color.r = batch->sprites.data[0].color.r;
+   color.g = batch->sprites.data[0].color.g;
+   color.b = batch->sprites.data[0].color.b;
+   color.a = batch->sprites.data[0].color.a;
+
+   EIR_KER_RELEASE_ARRAY(batch->sprites);
+
+   int text_len = strlen(text);
+
+   EIR_KER_INIT_ARRAY(eir_gfx_sprite_t, batch->sprites, text_len);
+   batch->modified = true;
+
+   const float MAX_TEXTURE_WIDTH = 320;
+   const float MAX_TEXTURE_HEIGHT = 320;
+   const float MAX_TEXTURE_COL = 16;
+   const float MAX_TEXTURE_ROW = 16;
+   char c;
+   float x_offset;
+   float y_offset;
+
+   for (int index = 0; index < text_len; ++index)
+   {
+      float x = position.x + size.x * index;
+      float y = position.y;
+
+      uv_size.x = MAX_TEXTURE_WIDTH / MAX_TEXTURE_COL;
+      uv_size.y = MAX_TEXTURE_HEIGHT / MAX_TEXTURE_ROW;
+      c = text[index];
+      x_offset = (int)c % (int)MAX_TEXTURE_COL;
+      y_offset = MAX_TEXTURE_ROW - ((int)c / (int)MAX_TEXTURE_ROW) - 1;  
+      uv_offset.x = x_offset * (MAX_TEXTURE_WIDTH / MAX_TEXTURE_COL);
+      uv_offset.y = y_offset * (MAX_TEXTURE_HEIGHT / MAX_TEXTURE_ROW);
+
+      eir_gfx_sprite_t * sprite = 0;
+
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(batch->sprites, sprite);
+      if (sprite)
+      {
+	 sprite->position.x = x;
+	 sprite->position.y = y;
+	 sprite->size.x = size.x;
+	 sprite->size.y = size.y;
+	 sprite->uv_offset.x = uv_offset.x;
+	 sprite->uv_offset.y = uv_offset.y;
+	 sprite->uv_size.x = uv_size.x;
+	 sprite->uv_size.y = uv_size.y;
+	 sprite->color.r = color.r;
+	 sprite->color.g = color.g;
+	 sprite->color.b = color.b;
+	 sprite->color.a = color.a;
+	 eir_gfx_debug_log_sprite(sprite);
+      }
+   }
 }

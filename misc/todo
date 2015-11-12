@@ -1,5 +1,4 @@
 TODO
-- display frame duration
 - debug display
   - line
   - quad stroke
@@ -47,3 +46,7 @@ DONE
   + sound
 + review object creation interface (sprite, sprite batch, sound)
 + text display (see old code)
++ display frame duration
+  + create update text method
+  + calculate frame duration
+  + display frame duration

@@ -63,6 +63,7 @@ void eir_run()
    eir_handle_t batch_handle;
    eir_handle_t sprite_handle;
    eir_handle_t sound_handle;
+   eir_handle_t text_handle;
 
    eir_gfx_set_batch_capacity(&gfx_env, 2);
    eir_snd_set_sound_capacity(&snd_env, 2);
@@ -97,13 +98,13 @@ void eir_run()
    color.a = 1.0f;
    eir_gfx_add_sprite_to_batch(&gfx_env, &position, &size, &uv_offset, &uv_size, &color, batch_handle);
 
-   position.x = -5.0f;
-   position.y = 0.0f;
+   position.x = -18.0f;
+   position.y = 9.0f;
    color.r = 0.0f;
    color.g = 0.0f;
    color.b = 1.0f;
    color.a = 1.0f;
-   eir_gfx_add_text(&gfx_env, "DEBUG TEST TEXT", &position, 1.0f, &color);
+   text_handle = eir_gfx_add_text(&gfx_env, "DEBUG TEST TEXT", &position, 1.0f, &color);
 
    eir_start(&gfx_env, &sys_env);
    if (eir_sys_get_joystick_count() > 0)
@@ -118,6 +119,11 @@ void eir_run()
    for (;;)
    {
       eir_sys_update_timer(&sys_env.timer);
+
+      char c[32];
+      sprintf(c, "frame rate: %1.3f", sys_env.timer.elapsed_time);
+      eir_gfx_update_text(&gfx_env, text_handle, c);
+
       if (!eir_win_api_poll_all_events(&sys_env.joystick))
       {
 	 break;
