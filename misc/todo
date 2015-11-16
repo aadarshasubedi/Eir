@@ -1,12 +1,16 @@
 TODO
-- debug display
-  - line
-  - quad stroke
-  - quad fill
-  - circle stroke
-  - circle fill
-  - complex shape (composed by line)
-  - curves
+- display line
+- log pointers not free at the end of the program
+  - create static list of allocation
+  - add allocated pointer in the allocation
+  - delete free pointer
+  - display list at the end of the program
+  -> see if we must create a macro to have function/file/line etc.
+- display quad stroke
+- display quad fill
+- display circle stroke
+- display circle fill
+- display complex shape (composed by line)
 - camera
 - improve input
 - AI follow
