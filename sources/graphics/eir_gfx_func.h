@@ -26,6 +26,7 @@ eir_handle_t eir_gfx_add_text(
    eir_gfx_color_t * color
    );
 void eir_gfx_update_text(eir_gfx_env_t * gfx_env, eir_handle_t text_handle, const char * text);
+void eir_gfx_set_line_capacity(eir_gfx_env_t * gfx_env, int max_capacity);
 eir_handle_t eir_gfx_add_line(
    eir_gfx_env_t * gfx_env,
    eir_mth_vec2_t * a,

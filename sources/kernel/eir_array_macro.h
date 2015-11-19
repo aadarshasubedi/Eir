@@ -33,7 +33,6 @@
  * Init an array.
  */
 #define EIR_KER_INIT_ARRAY(item_type, array, max_capacity)		\
-   EIR_KER_LOG_MESSAGE("set array capacity of %d element", max_capacity); \
    array.data = eir_sys_allocate(sizeof(item_type), max_capacity);	\
    array.capacity = max_capacity;					\
    array.used = 0;
@@ -46,7 +45,6 @@
    {									\
       out_index = array.used;						\
       ++array.used;							\
-      EIR_KER_LOG_MESSAGE("add array element: %d/%d", array.used, array.capacity); \
    }									\
    else									\
    {									\
@@ -62,7 +60,6 @@
    {									\
       item_ptr = &array.data[array.used];				\
       ++array.used;							\
-      EIR_KER_LOG_MESSAGE("add array element: %d/%d", array.used, array.capacity); \
    }									\
    else									\
    {									\
@@ -79,7 +76,6 @@
       item_ptr = &array.data[array.used];				\
       out_index = array.used;						\
       ++array.used;							\
-      EIR_KER_LOG_MESSAGE("add array element: %d/%d", array.used, array.capacity); \
    }									\
    else									\
    {									\
@@ -95,7 +91,6 @@
    if (0 < array.used)							\
    {									\
       --array.used;							\
-      EIR_KER_LOG_MESSAGE("remove array last element: %d/%d", array.used, array.capacity); \
    }
 
 /**

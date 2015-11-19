@@ -4,13 +4,22 @@
 #include "eir_image_api_func.h"
 #include "eir_gfx_defines.h"
 
-static void eir_gfx_debug_log_batch(eir_gfx_sprite_batch_t * batch)
+static void eir_gfx_debug_log_sprite_batch(eir_gfx_sprite_batch_t * batch)
 {
    EIR_KER_LOG_MESSAGE("%s", "---------------------------");
-   EIR_KER_LOG_MESSAGE("%s", "batch info:");
+   EIR_KER_LOG_MESSAGE("%s", "sprite batch info:");
    EIR_KER_LOG_MESSAGE("vbo: %d", batch->vbo);
    EIR_KER_LOG_MESSAGE("vao: %d", batch->vao);
    EIR_KER_LOG_MESSAGE("texture: %d", batch->texture[0]);
+   EIR_KER_LOG_MESSAGE("%s", "---------------------------");
+}
+
+static void eir_gfx_debug_log_line_batch(eir_gfx_line_batch_t * batch)
+{
+   EIR_KER_LOG_MESSAGE("%s", "---------------------------");
+   EIR_KER_LOG_MESSAGE("%s", "line batch info:");
+   EIR_KER_LOG_MESSAGE("vbo: %d", batch->vbo);
+   EIR_KER_LOG_MESSAGE("point count: %d", batch->points.used);
    EIR_KER_LOG_MESSAGE("%s", "---------------------------");
 }
 
@@ -77,11 +86,11 @@ void eir_gfx_api_load_sprite_shaders(eir_gfx_env_t * gfx_env)
    EIR_KER_LOG_MESSAGE("create sprite shaders");
 
    gfx_env->sprite_vert_shader = glCreateShader(GL_VERTEX_SHADER);
-   eir_gfx_api_compile_shader(gfx_env->sprite_vert_shader, VERTEX_SHADER_PATH);
+   eir_gfx_api_compile_shader(gfx_env->sprite_vert_shader, SPRITE_VERTEX_SHADER_PATH);
    gfx_env->sprite_geom_shader = glCreateShader(GL_GEOMETRY_SHADER);
-   eir_gfx_api_compile_shader(gfx_env->sprite_geom_shader, GEOMETRY_SHADER_PATH);
+   eir_gfx_api_compile_shader(gfx_env->sprite_geom_shader, SPRITE_GEOMETRY_SHADER_PATH);
    gfx_env->sprite_frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-   eir_gfx_api_compile_shader(gfx_env->sprite_frag_shader, FRAGMENT_SHADER_PATH);
+   eir_gfx_api_compile_shader(gfx_env->sprite_frag_shader, SPRITE_FRAGMENT_SHADER_PATH);
    
    /* link program */
 
@@ -112,11 +121,11 @@ void eir_gfx_api_load_text_shaders(eir_gfx_env_t * gfx_env)
    EIR_KER_LOG_MESSAGE("create text shaders");
 
    gfx_env->text_vert_shader = glCreateShader(GL_VERTEX_SHADER);
-   eir_gfx_api_compile_shader(gfx_env->text_vert_shader, VERTEX_SHADER_PATH);
+   eir_gfx_api_compile_shader(gfx_env->text_vert_shader, SPRITE_VERTEX_SHADER_PATH);
    gfx_env->text_geom_shader = glCreateShader(GL_GEOMETRY_SHADER);
-   eir_gfx_api_compile_shader(gfx_env->text_geom_shader, GEOMETRY_SHADER_PATH);
+   eir_gfx_api_compile_shader(gfx_env->text_geom_shader, SPRITE_GEOMETRY_SHADER_PATH);
    gfx_env->text_frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-   eir_gfx_api_compile_shader(gfx_env->text_frag_shader, FRAGMENT_SHADER_PATH);
+   eir_gfx_api_compile_shader(gfx_env->text_frag_shader, SPRITE_FRAGMENT_SHADER_PATH);
    
    /* link program */
 
@@ -131,6 +140,37 @@ void eir_gfx_api_load_text_shaders(eir_gfx_env_t * gfx_env)
    glDetachShader(gfx_env->text_program, gfx_env->text_vert_shader);
    glDetachShader(gfx_env->text_program, gfx_env->text_geom_shader);
    glDetachShader(gfx_env->text_program, gfx_env->text_frag_shader);
+
+   glUseProgram(0);
+}
+
+void eir_gfx_api_load_default_shaders(eir_gfx_env_t * gfx_env)
+{
+   if (!gfx_env)
+   {
+      return;
+   }
+
+   /* create shaders */
+   
+   EIR_KER_LOG_MESSAGE("create default shaders");
+
+   gfx_env->default_vert_shader = glCreateShader(GL_VERTEX_SHADER);
+   eir_gfx_api_compile_shader(gfx_env->default_vert_shader, DEFAULT_VERTEX_SHADER_PATH);
+   gfx_env->default_frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
+   eir_gfx_api_compile_shader(gfx_env->default_frag_shader, DEFAULT_FRAGMENT_SHADER_PATH);
+   
+   /* link program */
+
+   EIR_KER_LOG_MESSAGE("link program");
+
+   gfx_env->default_program = glCreateProgram();
+   glAttachShader(gfx_env->default_program, gfx_env->default_vert_shader);
+   glAttachShader(gfx_env->default_program, gfx_env->default_frag_shader);
+   //glBindFragDataLocation(gfx_env->text_program, 0, "outColor");
+   glLinkProgram(gfx_env->default_program);
+   glDetachShader(gfx_env->default_program, gfx_env->default_vert_shader);
+   glDetachShader(gfx_env->default_program, gfx_env->default_frag_shader);
 
    glUseProgram(0);
 }
@@ -202,7 +242,7 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batc
    glUseProgram(0);
    batch->built = true;
    batch->modified = false;
-   eir_gfx_debug_log_batch(batch);
+   eir_gfx_debug_log_sprite_batch(batch);
 }
 
 void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_t * batch)
@@ -275,7 +315,72 @@ void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_
    glUseProgram(0);
    batch->built = true;
    batch->modified = false;
-   eir_gfx_debug_log_batch(batch);
+   eir_gfx_debug_log_sprite_batch(batch);
+}
+
+void eir_gfx_api_build_line_batch(eir_gfx_env_t * gfx_env, eir_gfx_line_batch_t * batch)
+{
+   if (!batch)
+   {
+      return;
+   }
+
+   glUseProgram(gfx_env->default_program);
+
+   /* create vao */
+
+   EIR_KER_LOG_MESSAGE("create vao");
+
+   glGenVertexArrays(1, &batch->vao);
+   glBindVertexArray(batch->vao);
+
+   /* make ibo and bind ibo attributes for sprites */
+
+   EIR_KER_LOG_MESSAGE("create ibo and bind attributes");
+
+   glGenBuffers(1, &batch->vbo);
+   glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
+   glBufferData(
+      GL_ARRAY_BUFFER,
+      sizeof (eir_gfx_point_t) * batch->points.used,
+      batch->points.data,
+      GL_STATIC_DRAW
+      );
+
+   eir_gfx_api_att_handle_t pos_attr = glGetAttribLocation(
+      gfx_env->default_program,
+      "default_position"
+      );
+   eir_gfx_api_att_handle_t color_attr = glGetAttribLocation(
+      gfx_env->default_program,
+      "default_color"
+      );
+
+   glVertexAttribPointer(
+      pos_attr,
+      3,
+      GL_FLOAT,
+      GL_FALSE,
+      sizeof (eir_gfx_point_t),
+      (void *)offsetof(eir_gfx_point_t, position)
+      );
+   glEnableVertexAttribArray(pos_attr);
+
+   glVertexAttribPointer(
+      color_attr,
+      4,
+      GL_FLOAT,
+      GL_FALSE,
+      sizeof (eir_gfx_point_t),
+      (void *)offsetof(eir_gfx_point_t, color)
+      );
+   glEnableVertexAttribArray(color_attr);
+
+   glBindVertexArray(0);
+   glUseProgram(0);
+   batch->built = true;
+   batch->modified = false;
+   eir_gfx_debug_log_line_batch(batch);
 }
 
 void eir_gfx_api_draw_sprite_batch(eir_gfx_sprite_batch_t * batch)
@@ -283,6 +388,13 @@ void eir_gfx_api_draw_sprite_batch(eir_gfx_sprite_batch_t * batch)
    glBindVertexArray(batch->vao);
    glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
    glDrawArrays(GL_POINTS, 0, batch->sprites.used);
+}
+
+void eir_gfx_api_draw_line_batch(eir_gfx_line_batch_t * batch)
+{
+   glBindVertexArray(batch->vao);
+   glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
+   glDrawArrays(GL_LINES, 0, batch->points.used);
 }
 
 void eir_gfx_api_set_clear_color()
@@ -354,12 +466,18 @@ void eir_gfx_api_bind_sprite_attributes(
    glEnableVertexAttribArray(color_attr);
 }
 
-void eir_gfx_api_release_batch(eir_gfx_sprite_batch_t * batch)
+void eir_gfx_api_release_sprite_batch(eir_gfx_sprite_batch_t * batch)
 {
    glDeleteBuffers(1, &batch->vbo);
    glDeleteVertexArrays(1, &batch->vao);
    glDeleteTextures(1, batch->texture);
    EIR_KER_RELEASE_ARRAY(batch->sprites);
+}
+
+void eir_gfx_api_release_line_batch(eir_gfx_line_batch_t * batch)
+{
+   glDeleteBuffers(1, &batch->vbo);
+   EIR_KER_RELEASE_ARRAY(batch->points);
 }
 
 void eir_gfx_api_unload_sprite_shaders(eir_gfx_env_t * gfx_env)
@@ -384,4 +502,15 @@ void eir_gfx_api_unload_text_shaders(eir_gfx_env_t * gfx_env)
    glDeleteShader(gfx_env->text_frag_shader);
    glDeleteShader(gfx_env->text_geom_shader);
    glDeleteShader(gfx_env->text_vert_shader);
+}
+
+void eir_gfx_api_unload_default_shaders(eir_gfx_env_t * gfx_env)
+{
+   if(!gfx_env)
+   {
+      return;
+   }
+   glDeleteProgram(gfx_env->default_program);
+   glDeleteShader(gfx_env->default_frag_shader);
+   glDeleteShader(gfx_env->default_vert_shader);
 }

@@ -12,3 +12,4 @@ typedef struct
    float y;
    float z;
 } eir_mth_vec3_t;
+o

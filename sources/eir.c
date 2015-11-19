@@ -31,10 +31,12 @@ static void eir_start(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env)
    eir_sys_init(sys_env);
    eir_gfx_api_load_sprite_shaders(gfx_env);
    eir_gfx_api_load_text_shaders(gfx_env);
+   eir_gfx_api_load_default_shaders(gfx_env);
 }
 
 static void eir_stop(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env, eir_snd_env_t * snd_env)
 {
+   eir_gfx_api_unload_default_shaders(gfx_env);
    eir_gfx_api_unload_text_shaders(gfx_env);
    eir_gfx_api_unload_sprite_shaders(gfx_env);
    eir_snd_release_all_sounds(snd_env);
@@ -68,6 +70,8 @@ void eir_run()
    eir_gfx_set_batch_capacity(&gfx_env, 2);
    eir_snd_set_sound_capacity(&snd_env, 2);
    eir_gfx_set_text_capacity(&gfx_env, 2);
+   eir_gfx_set_line_capacity(&gfx_env, 10);
+
    batch_handle = eir_gfx_create_empty_batch(&gfx_env, 2);
 
    position.x = -10.0f;
@@ -105,6 +109,25 @@ void eir_run()
    color.b = 1.0f;
    color.a = 1.0f;
    text_handle = eir_gfx_add_text(&gfx_env, "DEBUG TEST TEXT", &position, 1.0f, &color);
+
+   eir_mth_vec2_t line_a;
+   eir_mth_vec2_t line_b;
+   eir_gfx_color_t line_a_color;
+   eir_gfx_color_t line_b_color;
+
+   line_a.x = 1.0f;
+   line_a.y = 0.0f;
+   line_a.x = -1.0f;
+   line_a.y = 1.0f;
+   line_a_color.r = 1.0f;
+   line_a_color.g = 0.0f;
+   line_a_color.b = 0.0f;
+   line_a_color.a = 1.0f;
+   line_a_color.r = 0.0f;
+   line_a_color.g = 0.0f;
+   line_a_color.b = 1.0f;
+   line_a_color.a = 0.5f;
+   eir_gfx_add_line(&gfx_env, &line_a, &line_b, &line_a_color, &line_b_color);
 
    eir_start(&gfx_env, &sys_env);
    if (eir_sys_get_joystick_count() > 0)

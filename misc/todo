@@ -1,16 +1,14 @@
 TODO
-- display line
 - log pointers not free at the end of the program
   - create static list of allocation
   - add allocated pointer in the allocation
   - delete free pointer
   - display list at the end of the program
   -> see if we must create a macro to have function/file/line etc.
-- display quad stroke
 - display quad fill
 - display circle stroke
 - display circle fill
-- display complex shape (composed by line)
+- keyboard and mouse input
 - camera
 - improve input
 - AI follow
@@ -54,3 +52,4 @@ DONE
   + create update text method
   + calculate frame duration
   + display frame duration
++ display line

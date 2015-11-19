@@ -33,7 +33,7 @@ eir_handle_t eir_gfx_create_empty_batch(eir_gfx_env_t * gfx_env, int max_capacit
    {
       EIR_KER_INIT_ARRAY(eir_gfx_sprite_t, batch->sprites, max_capacity);
       batch->built = false;
-      batch->modified = true;
+      batch->modified = false;
    }
    return batch_handle;
 }
@@ -132,6 +132,16 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	 glUseProgram(0); // TODO: put in api func file !
       }
    }
+   if (0 < gfx_env->line_batch.points.used)
+   {
+      if (!gfx_env->line_batch.built)
+      {
+	 eir_gfx_api_build_line_batch(gfx_env, &gfx_env->line_batch);
+      }
+      glUseProgram(gfx_env->default_program); // TODO: put in the api func file !
+      eir_gfx_api_draw_line_batch(&gfx_env->line_batch);
+      glUseProgram(0); // TODO: put in api func file !
+   }
 }
 
 void eir_gfx_release_all_batches(eir_gfx_env_t * gfx_env)
@@ -148,7 +158,7 @@ void eir_gfx_release_all_batches(eir_gfx_env_t * gfx_env)
       EIR_KER_GET_ARRAY_ITEM(gfx_env->sprite_batches, index, batch);
       if (batch)
       {
-	 eir_gfx_api_release_batch(batch);
+	 eir_gfx_api_release_sprite_batch(batch);
       }
    }
    for (int index = 0; index < gfx_env->text_batches.used; ++index)
@@ -156,9 +166,10 @@ void eir_gfx_release_all_batches(eir_gfx_env_t * gfx_env)
       EIR_KER_GET_ARRAY_ITEM(gfx_env->text_batches, index, batch);
       if (batch)
       {
-	 eir_gfx_api_release_batch(batch);
+	 eir_gfx_api_release_sprite_batch(batch);
       }
    }
+   eir_gfx_api_release_line_batch(&gfx_env->line_batch);
 }
 
 void eir_gfx_set_text_capacity(eir_gfx_env_t * gfx_env, int max_capacity)
@@ -239,7 +250,6 @@ eir_handle_t eir_gfx_add_text(
 	 sprite->color.g = color->g;
 	 sprite->color.b = color->b;
 	 sprite->color.a = color->a;
-	 eir_gfx_debug_log_sprite(sprite);
       }
    }
    return batch_handle;
@@ -327,7 +337,54 @@ void eir_gfx_update_text(eir_gfx_env_t * gfx_env, eir_handle_t text_handle, cons
 	 sprite->color.g = color.g;
 	 sprite->color.b = color.b;
 	 sprite->color.a = color.a;
-	 eir_gfx_debug_log_sprite(sprite);
       }
    }
+}
+
+void eir_gfx_set_line_capacity(eir_gfx_env_t * gfx_env, int max_capacity)
+{
+   if (gfx_env)
+   {
+      gfx_env->line_batch.built = false;
+      gfx_env->line_batch.modified = false;
+      EIR_KER_INIT_ARRAY(eir_gfx_point_t, gfx_env->line_batch.points, max_capacity);
+   }
+}
+
+eir_handle_t eir_gfx_add_line(
+   eir_gfx_env_t * gfx_env,
+   eir_mth_vec2_t * a,
+   eir_mth_vec2_t * b,
+   eir_gfx_color_t * a_color,
+   eir_gfx_color_t * b_color
+   )
+{
+   eir_gfx_point_t * a_point = 0;
+   eir_gfx_point_t * b_point = 0;
+   eir_handle_t a_handle = EIR_INVALID_HANDLE;
+   eir_handle_t b_handle = EIR_INVALID_HANDLE;
+
+   if (gfx_env && a && b && a_color && b_color)
+   {
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.points, a_point, a_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.points, b_point, b_handle);
+   }
+   if (a_point && b_point)
+   {
+      a_point->position.x = a->x;
+      a_point->position.y = a->y;
+      a_point->position.z = 0.0f;
+      a_point->color.r = a_color->r;
+      a_point->color.g = a_color->g;
+      a_point->color.b = a_color->b;
+      a_point->color.a = a_color->a;
+      b_point->position.x = b->x;
+      b_point->position.y = b->y;
+      b_point->position.z = 0.0f;
+      b_point->color.r = b_color->r;
+      b_point->color.g = b_color->g;
+      b_point->color.b = b_color->b;
+      b_point->color.a = b_color->a;
+   }
+   return a_handle;
 }
