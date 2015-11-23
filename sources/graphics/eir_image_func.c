@@ -9,7 +9,10 @@ bool eir_gfx_invert_image(int pitch, int height, void * pixels)
       return false;
    }
 
-   void * row_tmp = eir_sys_allocate(1, pitch);
+   void * row_tmp = 0;
+   
+   EIR_SYS_ALLOC(row_tmp, 1, pitch);
+
    int height_div_2 = (int)(height * 0.5f);
 
    for (int index = 0; index < height_div_2; ++index)
@@ -30,6 +33,6 @@ bool eir_gfx_invert_image(int pitch, int height, void * pixels)
 	 pitch
 	 );
    }
-   eir_sys_free(row_tmp);
+   EIR_SYS_FREE(row_tmp);
    return true;
 }

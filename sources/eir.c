@@ -45,6 +45,7 @@ static void eir_stop(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env, eir_snd_e
    eir_gfx_release_all_batches(gfx_env);
    eir_win_api_destroy_window(gfx_env);
    EIR_KER_RELEASE_ARRAY(gfx_env->sprite_batches);
+   EIR_KER_RELEASE_ARRAY(gfx_env->text_batches);
    EIR_KER_RELEASE_ARRAY(snd_env->sounds);
 }
 
@@ -173,5 +174,5 @@ void eir_run()
    }
    EIR_KER_LOG_MESSAGE("stop eir");
    eir_stop(&gfx_env, &sys_env, &snd_env);
-   // TODO: display global static array of allocation to see memleaks (only if -D EIR_DEBUG is enabled)
+   EIR_SYS_LOG_ALLOCATED_ELEM;
 }

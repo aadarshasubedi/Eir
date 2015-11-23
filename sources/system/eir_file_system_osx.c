@@ -26,7 +26,7 @@ bool eir_sys_read_file(const char * filename, bool binary, char ** buffer)
 
 	 if (-1 != file_size && 0 == fseek(file, 0, SEEK_SET))
 	 {
-	    buffer_tmp = (char *)eir_sys_allocate(sizeof(char), file_size + 1);
+	    EIR_SYS_ALLOC(buffer_tmp, sizeof(char), file_size + 1);
 	    *buffer = buffer_tmp;
 	    file_size = fread(*buffer, sizeof(char), file_size, file);
 

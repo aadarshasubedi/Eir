@@ -62,6 +62,7 @@ void eir_gfx_api_compile_shader(eir_gfx_api_shader_handle_t shader, const char *
       glGetShaderInfoLog(shader, 512, NULL, log);
       EIR_KER_LOG_ERROR("%s shader compilation failed: %s", filename, log);
    }
+   EIR_SYS_FREE(file_buffer);
 }
 
 void eir_gfx_api_set_buffer_data(eir_gfx_sprite_batch_t * batch)

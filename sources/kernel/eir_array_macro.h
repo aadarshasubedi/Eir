@@ -33,7 +33,7 @@
  * Init an array.
  */
 #define EIR_KER_INIT_ARRAY(item_type, array, max_capacity)		\
-   array.data = eir_sys_allocate(sizeof(item_type), max_capacity);	\
+   EIR_SYS_ALLOC(array.data, sizeof(item_type), max_capacity);		\
    array.capacity = max_capacity;					\
    array.used = 0;
 
@@ -103,7 +103,7 @@
  * Release array data allocated memory and reinit the struct.
  */
 #define EIR_KER_RELEASE_ARRAY(array)		\
-   eir_sys_free(array.data);			\
+   EIR_SYS_FREE(array.data);			\
    array.capacity = 0;				\
    array.used = 0;				\
    array.data = 0;
