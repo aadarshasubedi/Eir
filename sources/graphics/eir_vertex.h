@@ -7,4 +7,4 @@ typedef struct
 {
    eir_mth_vec3_t position;
    eir_gfx_color_t color;
-} eir_gfx_point_t;
+} eir_gfx_vertex_t;

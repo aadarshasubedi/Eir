@@ -69,11 +69,12 @@ void eir_run()
    eir_handle_t text_handle;
 
    eir_gfx_set_batch_capacity(&gfx_env, 2);
-   eir_snd_set_sound_capacity(&snd_env, 2);
    eir_gfx_set_text_capacity(&gfx_env, 2);
    eir_gfx_set_line_capacity(&gfx_env, 10);
+   eir_gfx_set_quad_capacity(&gfx_env, 10);
+   eir_snd_set_sound_capacity(&snd_env, 2);
 
-   batch_handle = eir_gfx_create_empty_batch(&gfx_env, 2);
+   batch_handle = eir_gfx_create_sprite_batch(&gfx_env, 2);
 
    position.x = -10.0f;
    position.y = 0.0f;
@@ -87,7 +88,7 @@ void eir_run()
    color.g = 0.0f;
    color.b = 0.0f;
    color.a = 1.0f;
-   eir_gfx_add_sprite_to_batch(&gfx_env, &position, &size, &uv_offset, &uv_size, &color, batch_handle);
+   eir_gfx_add_sprite(&gfx_env, &position, &size, &uv_offset, &uv_size, &color, batch_handle);
 
    position.x = 2.0f;
    position.y = 2.0f;
@@ -101,7 +102,7 @@ void eir_run()
    color.g = 1.0f;
    color.b = 1.0f;
    color.a = 1.0f;
-   eir_gfx_add_sprite_to_batch(&gfx_env, &position, &size, &uv_offset, &uv_size, &color, batch_handle);
+   eir_gfx_add_sprite(&gfx_env, &position, &size, &uv_offset, &uv_size, &color, batch_handle);
 
    position.x = -18.0f;
    position.y = 9.0f;
@@ -116,19 +117,57 @@ void eir_run()
    eir_gfx_color_t line_a_color;
    eir_gfx_color_t line_b_color;
 
-   line_a.x = 1.0f;
+   line_a.x = 0.9f;
    line_a.y = 0.0f;
-   line_a.x = -1.0f;
-   line_a.y = 1.0f;
+   line_b.x = -0.9f;
+   line_a.y = 0.9f;
    line_a_color.r = 1.0f;
    line_a_color.g = 0.0f;
    line_a_color.b = 0.0f;
    line_a_color.a = 1.0f;
-   line_a_color.r = 0.0f;
-   line_a_color.g = 0.0f;
-   line_a_color.b = 1.0f;
-   line_a_color.a = 0.5f;
+   line_b_color.r = 0.0f;
+   line_b_color.g = 0.0f;
+   line_b_color.b = 1.0f;
+   line_b_color.a = 0.5f;
    eir_gfx_add_line(&gfx_env, &line_a, &line_b, &line_a_color, &line_b_color);
+
+   line_a.x = 0.2f;
+   line_a.y = 0.2f;
+   line_b.x = -0.5f;
+   line_b.y = 0.2f;
+   line_a_color.r = 0.5f;
+   line_a_color.g = 0.5f;
+   line_a_color.b = 0.0f;
+   line_a_color.a = 1.0f;
+   line_b_color.r = 0.0f;
+   line_b_color.g = 0.5f;
+   line_b_color.b = 1.0f;
+   line_b_color.a = 1.0f;
+   eir_gfx_add_line(&gfx_env, &line_a, &line_b, &line_a_color, &line_b_color);
+
+   line_a.x = 0.5f;
+   line_a.y = -0.5f;
+   line_b.x = 0.5f;
+   line_b.y = 0.5f;
+   line_a_color.r = 1.0f;
+   line_a_color.g = 0.5f;
+   line_a_color.b = 1.0f;
+   line_a_color.a = 1.0f;
+   line_b_color.r = 0.0f;
+   line_b_color.g = 1.0f;
+   line_b_color.b = 1.0f;
+   line_b_color.a = 1.0f;
+   eir_gfx_add_line(&gfx_env, &line_a, &line_b, &line_a_color, &line_b_color);
+
+   position.x = -0.2f;
+   position.y = -0.5f;
+   size.x = 0.5f;
+   size.y = 0.5f;
+   color.r = 0.8f;
+   color.g = 0.8f;
+   color.b = 0.8f;
+   color.a = 1.0f;
+   eir_gfx_add_quad(&gfx_env, &position, &size, &color);
 
    eir_start(&gfx_env, &sys_env);
    if (eir_sys_get_joystick_count() > 0)
