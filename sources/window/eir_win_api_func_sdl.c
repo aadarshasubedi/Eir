@@ -73,7 +73,20 @@ bool eir_win_api_poll_all_events(eir_sys_joystick_t * joystick)
 	    }
 	    else if (event.jaxis.axis == 1) // Y
 	    {
-	       // Nothing for the moment
+	       if (event.jaxis.value > EIR_SYS_JOYSTICK_DEAD_ZONE)
+	       {
+		  joystick->y_axis_value =
+		     (float)event.jaxis.value / (float)EIR_SYS_JOYSTICK_MAX_ABS_VALUE;
+	       }
+	       else if (event.jaxis.value < -EIR_SYS_JOYSTICK_DEAD_ZONE)
+	       {
+		  joystick->y_axis_value =
+		     (float)event.jaxis.value / (float)EIR_SYS_JOYSTICK_MIN_ABS_VALUE;
+	       }
+	       else
+	       {
+		  joystick->x_axis_value = 0.0f;
+	       }
 	    }
 	 }
       }

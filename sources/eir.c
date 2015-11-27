@@ -21,6 +21,8 @@
 #include "window/eir_win_api_func.h"
 #include "sound/eir_snd_api_func.h"
 #include "sound/eir_snd_env.h"
+#include "game/eir_gme_env.h"
+#include "physics/eir_motion_func.h"
 
 static void eir_start(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env)
 {
@@ -49,6 +51,33 @@ static void eir_stop(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env, eir_snd_e
    EIR_KER_RELEASE_ARRAY(snd_env->sounds);
 }
 
+static void eir_proccess_player_move(
+   eir_gme_player_state_t * player_state,
+   eir_sys_env_t * sys_env,
+   double elapsed_time
+   )
+{
+   if (!player_state || !sys_env)
+   {
+      return;
+   }
+
+   player_state->motion_param.velocity.x = sys_env.joystick.x_axis_value;
+   player_state->motion_param.velocity.y = sys_env.joystick.y_axis_value;
+
+   // TODO: check keyboard too if player 1 use keyboard instead of pad
+   
+   eir_mth_vec2_t new_position;
+
+   eir_phy_proceed_euler_integration(
+      &player_state->position,
+      &player_state->motion_param,
+      elapsed_time,
+      &new_position);
+   player_state->position.x = new_position.x;
+   player_state->position.y = new_position.y;
+}
+
 void eir_run()
 {
    eir_sys_allocate = eir_sys_default_allocate;
@@ -57,6 +86,8 @@ void eir_run()
    eir_gfx_env_t gfx_env;
    eir_sys_env_t sys_env;
    eir_snd_env_t snd_env;
+   eir_gme_env_t gme_env;
+
    eir_mth_vec2_t position;
    eir_mth_vec2_t size;
    eir_mth_vec2_t uv_offset;
@@ -76,8 +107,19 @@ void eir_run()
 
    batch_handle = eir_gfx_create_sprite_batch(&gfx_env, 2);
 
-   position.x = -10.0f;
-   position.y = 0.0f;
+   // TODO: create init func for this in gme part
+   gme_env.player_1_state.position.x = 0.0f;
+   gme_env.player_1_state.position.y = 0.0f;
+   gme_env.player_1_state.motion_param.velocity.x = 0.0f;
+   gme_env.player_1_state.motion_param.velocity.y = 0.0f;
+   gme_env.player_1_state.motion_param.max_velocity.x = 5.0f;
+   gme_env.player_1_state.motion_param.max_velocity.y = 5.0f;
+   gme_env.player_1_state.motion_param.acceleration.x = 0.0f;
+   gme_env.player_1_state.motion_param.acceleration.y = 0.0f;
+   // --------------------------------------------
+
+   position.x = gme_env.player_1_state.position.x;
+   position.y = gme_env.player_1_state.position.y;
    size.x = 1.0f;
    size.y = 1.0f;
    uv_offset.x = 0.0f;
@@ -173,6 +215,7 @@ void eir_run()
    if (eir_sys_get_joystick_count() > 0)
    {
       sys_env.joystick.handle = eir_sys_get_joystick(0);
+      gme_env.player_1_state.pad_index = 0;
    }
    eir_snd_api_init();
 
@@ -194,14 +237,18 @@ void eir_run()
       eir_gfx_api_set_clear_color();
       eir_gfx_api_clear_buffer();
       
-      // TODO: to remove after test
-      gfx_env.sprite_batches.data[0].sprites.data[0].position.x += sys_env.joystick.x_axis_value * sys_env.timer.elapsed_time;
+      eir_proccess_player_move(&gme_env.player_1_state, &sys_Env, sys_Env.timer.elapsed_time);
+      gfx_env.sprite_batches.data[0].sprites.data[0].position.x = gme_env.player_1_state.position.x;
+      gfx_env.sprite_batches.data[0].sprites.data[0].position.y = gme_env.player_1_state.position.y;
+
       gfx_env.sprite_batches.data[0].sprites.data[0].color.a += sys_env.timer.elapsed_time;
       if (gfx_env.sprite_batches.data[0].sprites.data[0].color.a > 1.0f)
       {
 	 gfx_env.sprite_batches.data[0].sprites.data[0].color.a = 0.0f;
       }
       gfx_env.sprite_batches.data[0].modified = true;
+
+      // TODO: remove when event sound system up
       if (sys_env.joystick.x_axis_value != 0)
       {
 	 eir_snd_play_sound(&snd_env, sound_handle);

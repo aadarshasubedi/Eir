@@ -1,3 +1,4 @@
+#include "physics/eir_motion_func.c"
 #include "kernel/eir_log_stdout.c"
 #include "system/eir_timer_func_osx.c"
 #include "system/eir_memory_osx.c"
