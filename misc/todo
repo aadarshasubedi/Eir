@@ -9,7 +9,6 @@ TODO
     - it is the system who knows which system is linked to player from the index
     - pass the returned function to the process move static function in eir.c instead of passing
       eir_sys_env_t pointer.
-- check validity move
 - (MACRO) camera
 - (MACRO) AI follow
 
@@ -61,3 +60,4 @@ DONE
   + see if we must create a macro to have function/file/line etc.
 + display quad fill
 + add euler integration for acceleration/velocity moves
++ check validity move

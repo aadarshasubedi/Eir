@@ -63,18 +63,21 @@ static void eir_proceed_player_move(
       return;
    }
 
-   player_state->motion_param.velocity.x = sys_env.joystick.x_axis_value;
-   player_state->motion_param.velocity.y = sys_env.joystick.y_axis_value;
+   player_state->motion_param.velocity.x = sys_env->joystick.x_axis_value;
+   player_state->motion_param.velocity.y = sys_env->joystick.y_axis_value;
 
    // TODO: check keyboard too if player 1 use keyboard instead of pad
    
    eir_mth_vec2_t new_position;
+   eir_mth_vec2_t new_velocity;
 
    eir_phy_proceed_euler_integration(
       &player_state->position,
       &player_state->motion_param,
       elapsed_time,
-      &new_position);
+      &new_position,
+      &new_velocity
+      );
    player_state->position.x = new_position.x;
    player_state->position.y = new_position.y;
 }
@@ -238,7 +241,7 @@ void eir_run()
       eir_gfx_api_set_clear_color();
       eir_gfx_api_clear_buffer();
       
-      eir_proceed_player_move(&gme_env.player_1_state, &sys_Env, sys_Env.timer.elapsed_time);
+      eir_proceed_player_move(&gme_env.player_1_state, &sys_env, sys_env.timer.elapsed_time);
       gfx_env.sprite_batches.data[0].sprites.data[0].position.x = gme_env.player_1_state.position.x;
       gfx_env.sprite_batches.data[0].sprites.data[0].position.y = gme_env.player_1_state.position.y;
 
