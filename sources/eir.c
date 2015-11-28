@@ -51,7 +51,8 @@ static void eir_stop(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env, eir_snd_e
    EIR_KER_RELEASE_ARRAY(snd_env->sounds);
 }
 
-static void eir_proccess_player_move(
+// TODO pass float value instead of sys_env
+static void eir_proceed_player_move(
    eir_gme_player_state_t * player_state,
    eir_sys_env_t * sys_env,
    double elapsed_time
@@ -237,7 +238,7 @@ void eir_run()
       eir_gfx_api_set_clear_color();
       eir_gfx_api_clear_buffer();
       
-      eir_proccess_player_move(&gme_env.player_1_state, &sys_Env, sys_Env.timer.elapsed_time);
+      eir_proceed_player_move(&gme_env.player_1_state, &sys_Env, sys_Env.timer.elapsed_time);
       gfx_env.sprite_batches.data[0].sprites.data[0].position.x = gme_env.player_1_state.position.x;
       gfx_env.sprite_batches.data[0].sprites.data[0].position.y = gme_env.player_1_state.position.y;
 
