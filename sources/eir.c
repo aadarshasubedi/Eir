@@ -314,15 +314,12 @@ void eir_run(eir_env_t * env)
       eir_gfx_api_clear_buffer();
       
       eir_proceed_player_move(&gme_env->player_1_state, sys_env, sys_env->timer.elapsed_time);
+
+      // TODO: remove when plauer state system fully implemented
       gfx_env->sprite_batches.data[0].sprites.data[0].position.x = gme_env->player_1_state.position.x;
       gfx_env->sprite_batches.data[0].sprites.data[0].position.y = gme_env->player_1_state.position.y;
-
-      gfx_env->sprite_batches.data[0].sprites.data[0].color.a += sys_env->timer.elapsed_time * 0.5f;
-      if (gfx_env->sprite_batches.data[0].sprites.data[0].color.a > 1.0f)
-      {
-	 gfx_env->sprite_batches.data[0].sprites.data[0].color.a = 0.0f;
-      }
       gfx_env->sprite_batches.data[0].modified = true;
+      // -------------------------
 
       // TODO: remove when event sound system up
       if (sys_env->joystick.x_axis_value != 0)
