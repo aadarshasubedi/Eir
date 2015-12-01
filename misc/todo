@@ -1,5 +1,10 @@
 TODO
 - stock keyboard input in struct
+- check for user allocation and free function
+  - if not set => used default one
+  - if set => nothing to do
+  - check before first env struct creation
+- check for user event callback before using default one
 - add system which set the correct input system for each player
   - if pad automatically set to player 1
   - if no pad, automatically set keyboard to player 1

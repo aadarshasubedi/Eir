@@ -1,8 +1,8 @@
 #include "eir_win_api_func.h"
 #include "../graphics/eir_gfx_types.h" // TODO: use own include for api include when created
-#include "../system/eir_sys_defines.h"
+#include "eir_sys_defines.h"
 
-bool eir_win_api_init()
+bool eir_sys_win_api_init()
 {
    bool result = true;
 
@@ -22,7 +22,7 @@ bool eir_win_api_init()
 }
 
 // TOOD: use window own env when created
-void eir_win_api_create_window(eir_gfx_env_t * gfx_env)
+void eir_sys_win_api_create_window(eir_gfx_env_t * gfx_env)
 {
    EIR_KER_LOG_MESSAGE("create window");
    gfx_env->window = SDL_CreateWindow("eir", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
@@ -30,13 +30,13 @@ void eir_win_api_create_window(eir_gfx_env_t * gfx_env)
 }
 
 // TOOD: use window own env when created
-void eir_win_api_swap_buffer(eir_gfx_env_t * gfx_env)
+void eir_sys_win_api_swap_buffer(eir_gfx_env_t * gfx_env)
 {
    SDL_GL_SwapWindow(gfx_env->window);
 }
 
 // TODO: pass user function to process events
-bool eir_win_api_poll_all_events(eir_sys_joystick_t * joystick)
+bool eir_sys_win_api_poll_all_events(eir_sys_joystick_t * joystick)
 {
    SDL_Event event;
 
@@ -98,7 +98,7 @@ bool eir_win_api_poll_all_events(eir_sys_joystick_t * joystick)
    return true;
 }
 
-void eir_win_api_destroy_window(eir_gfx_env_t * gfx_env)
+void eir_sys_win_api_destroy_window(eir_gfx_env_t * gfx_env)
 {
    SDL_GL_DeleteContext(gfx_env->context);
    SDL_Quit();
