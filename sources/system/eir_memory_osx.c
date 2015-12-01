@@ -8,8 +8,8 @@ eir_sys_allocated_elem_t * eir_sys_allocated_elem_curr = 0;
 eir_sys_allocated_elem_t * eir_sys_allocated_elem_root = 0;
 #endif
 
-void * (*eir_sys_allocate)(size_t item_size, size_t item_count);
-void (*eir_sys_free)(void * ptr);
+eir_allocate_t eir_sys_allocate = 0;
+eir_free_t eir_sys_free = 0;
 
 void * eir_sys_default_allocate(size_t item_size, size_t item_count)
 {
