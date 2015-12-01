@@ -1,7 +1,15 @@
 TODO
+- add event callback as parameter of the poll all events function and remove all other
+  - call callback with the created event
+- add default callback in game section part
+- move all window stuff from gfx to sys env
+  - type (see in eir_gfx_types.h and eir_gfx_defines.h)
+  - variable (see in eir_gfx_env.h)
+  - modify eir_win_api_func.h and eir_win_api_func_sdl.c
+  - modify in eir.c call to eir_win_api_func
 - stock keyboard input in struct
 - add system which set the correct input system for each player
-  - if pad automatically set to player 1
+  - if pad exists automatically set to player 1
   - if no pad, automatically set keyboard to player 1
   - add function which return input value independent of input type (keyboard or pad)
     - pass the input index
@@ -9,6 +17,7 @@ TODO
     - it is the system who knows which system is linked to player from the index
     - pass the returned function to the process move static function in eir.c instead of passing
       eir_sys_env_t pointer.
+  - see if we must remove eir_sys_joystick_t structure
 - (MACRO) camera
 - (MACRO) AI follow
 

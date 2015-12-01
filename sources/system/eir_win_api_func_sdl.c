@@ -35,66 +35,120 @@ void eir_sys_win_api_swap_buffer(eir_gfx_env_t * gfx_env)
    SDL_GL_SwapWindow(gfx_env->window);
 }
 
-// TODO: pass user function to process events
-bool eir_sys_win_api_poll_all_events(eir_sys_joystick_t * joystick)
+bool eir_sys_win_api_poll_all_events(eir_event_callback_t event_callback, eir_env_t * env)
 {
-   SDL_Event event;
+   SDL_Event sdl_event;
 
-   while (SDL_PollEvent(&event))
-      switch (event.type)
+   while (SDL_PollEvent(&sdl_event))
+      switch (sdl_event.type)
       {
       case SDL_QUIT:
 	 return false;
       case SDL_KEYUP:
-	 // TODO: let user choose when to quit Eir
-	 if (event.key.keysym.sym == SDLK_ESCAPE)
-	    return false;
-	 break;
+      {
+	 eir_event_t event;
+
+	 event.type = eir_event_type_keyboard;
+	 event.keyboard_event.type = eir_keyboard_event_type_key_up;
+	 if (sdl_event.key.keysym.sym == SDLK_ESCAPE)
+	 {
+	    event.keyboard_event.key = eir_keyboard_key_esc;
+	 }
+	 if (sdl_event.key.keysym.sym == SDLK_LEFT)
+	 {
+	    event.keyboard_event.key = eir_keyboard_key_left;
+	 }
+	 if (sdl_event.key.keysym.sym == SDLK_RIGHT)
+	 {
+	    event.keyboard_event.key = eir_keyboard_key_right;
+	 }
+	 if (sdl_event.key.keysym.sym == SDLK_UP)
+	 {
+	    event.keyboard_event.key = eir_keyboard_key_up;
+	 }
+	 if (sdl_event.key.keysym.sym == SDLK_DOWN)
+	 {
+	    event.keyboard_event.key = eir_keyboard_key_down;
+	 }
+	 return event_callback(&event, env);
+      }
+      case SDL_KEYDOWN:
+      {
+	 eir_event_t event;
+
+	 event.type = eir_event_type_keyboard;
+	 event.keyboard_event.type = eir_keyboard_event_type_key_down;
+	 if (sdl_event.key.keysym.sym == SDLK_ESCAPE)
+	 {
+	    event.keyboard_event.key = eir_keyboard_key_esc;
+	 }
+	 if (sdl_event.key.keysym.sym == SDLK_LEFT)
+	 {
+	    event.keyboard_event.key = eir_keyboard_key_left;
+	 }
+	 if (sdl_event.key.keysym.sym == SDLK_RIGHT)
+	 {
+	    event.keyboard_event.key = eir_keyboard_key_right;
+	 }
+	 if (sdl_event.key.keysym.sym == SDLK_UP)
+	 {
+	    event.keyboard_event.key = eir_keyboard_key_up;
+	 }
+	 if (sdl_event.key.keysym.sym == SDLK_DOWN)
+	 {
+	    event.keyboard_event.key = eir_keyboard_key_down;
+	 }
+	 return event_callback(&event, env);
+      }
       case SDL_JOYAXISMOTION:
       {
-	 if (event.jaxis.which == 0 && joystick)
+	 if (event_callback)
 	 {
-	    if (event.jaxis.axis == 0)
+	    eir_event_t event;
+
+	    event.type = eir_event_type_pad;
+	    event.pad_event.pad_index = sdl_event.jaxis.which;
+	    if (sdl_event.jaxis.axis == 0)
 	    {
-	       if (event.jaxis.value > EIR_SYS_JOYSTICK_DEAD_ZONE)
+	       if (sdl_event.jaxis.value > EIR_SYS_JOYSTICK_DEAD_ZONE)
 	       {
-		  joystick->x_axis_value =
-		     (float)event.jaxis.value / (float)EIR_SYS_JOYSTICK_MAX_ABS_VALUE;
+		  event.pad_event.x_axis_value =
+		     (float)sdl_event.jaxis.value / (float)EIR_SYS_JOYSTICK_MAX_ABS_VALUE;
 	       }
-	       else if (event.jaxis.value < -EIR_SYS_JOYSTICK_DEAD_ZONE)
+	       else if (sdl_event.jaxis.value < -EIR_SYS_JOYSTICK_DEAD_ZONE)
 	       {
-		  joystick->x_axis_value =
-		     (float)event.jaxis.value / (float)EIR_SYS_JOYSTICK_MIN_ABS_VALUE;
+		  event.pad_event.x_axis_value =
+		     (float)sdl_event.jaxis.value / (float)EIR_SYS_JOYSTICK_MIN_ABS_VALUE;
 	       }
 	       else
 	       {
-		  joystick->x_axis_value = 0.0f;
+		  event.pad_event.x_axis_value = 0.0f;
 	       }
 	    }
-	    else if (event.jaxis.axis == 1) // Y
+	    else if (sdl_event.jaxis.axis == 1) // Y
 	    {
-	       if (event.jaxis.value > EIR_SYS_JOYSTICK_DEAD_ZONE)
+	       if (sdl_event.jaxis.value > EIR_SYS_JOYSTICK_DEAD_ZONE)
 	       {
-		  joystick->y_axis_value =
-		     -(float)event.jaxis.value / (float)EIR_SYS_JOYSTICK_MAX_ABS_VALUE;
+		  event.pad_event.y_axis_value =
+		     -(float)sdl_event.jaxis.value / (float)EIR_SYS_JOYSTICK_MAX_ABS_VALUE;
 	       }
-	       else if (event.jaxis.value < -EIR_SYS_JOYSTICK_DEAD_ZONE)
+	       else if (sdl_event.jaxis.value < -EIR_SYS_JOYSTICK_DEAD_ZONE)
 	       {
-		  joystick->y_axis_value =
-		     -(float)event.jaxis.value / (float)EIR_SYS_JOYSTICK_MIN_ABS_VALUE;
+		  event.pad_event.y_axis_value =
+		     -(float)sdl_event.jaxis.value / (float)EIR_SYS_JOYSTICK_MIN_ABS_VALUE;
 	       }
 	       else
 	       {
-		  joystick->y_axis_value = 0.0f;
+		  event.pad_event.y_axis_value = 0.0f;
 	       }
 	    }
+	    return event_callback(&event, env);
 	 }
+	 break;
       }
-      break;
       default:
 	 break;
       }
-   // TODO: call process event callback when available
    return true;
 }
 

@@ -60,26 +60,6 @@ static void eir_stop(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env, eir_snd_e
    EIR_KER_RELEASE_ARRAY(snd_env->sounds);
 }
 
-static void eir_proceed_player_move(
-   eir_gme_player_state_t * player_state,
-   eir_sys_env_t * sys_env,
-   double elapsed_time
-   )
-{
-   if (!player_state || !sys_env)
-   {
-      return;
-   }
-
-   eir_mth_vec2_t velocity;
-
-   velocity.x = sys_env->joystick.x_axis_value;
-   velocity.y = sys_env->joystick.y_axis_value;
-   // TODO: check keyboard too if player 1 use keyboard instead of pad
-   
-   eir_gme_proceed_player_move(player_state, &velocity, elapsed_time);
-}
-
 static void eir_check_allocate_and_free_func()
 {
    if (!eir_sys_allocate)
@@ -89,6 +69,30 @@ static void eir_check_allocate_and_free_func()
    if (!eir_sys_free)
    {
       eir_sys_free = eir_sys_default_free;
+   }
+}
+
+static void eir_init_player_state(eir_gme_player_state_t * player_state)
+{
+   if (!player_state)
+   {
+      return;
+   }
+   player_state->position.x = 0.0f;
+   player_state->position.y = 0.0f;
+   player_state->motion_param.velocity.x = 0.0f;
+   player_state->motion_param.velocity.y = 0.0f;
+   player_state->motion_param.max_velocity.x = 5.0f;
+   player_state->motion_param.max_velocity.y = 5.0f;
+   player_state->motion_param.acceleration.x = 0.0f;
+   player_state->motion_param.acceleration.y = 0.0f;
+}
+
+static void eir_check_event_callback(eir_all_env_t * all_env)
+{
+   if (all_env && !all_env->event_callback)
+   {
+      all_env->event_callback = default_event_callback;
    }
 }
 
@@ -129,22 +133,6 @@ void eir_set_event_callback(eir_env_t * env, eir_event_callback_t event_callback
    ((eir_all_env_t *)(env->private))->event_callback = event_callback;
 }
 
-static void eir_init_player_state(eir_gme_player_state_t * player_state)
-{
-   if (!player_state)
-   {
-      return;
-   }
-   player_state->position.x = 0.0f;
-   player_state->position.y = 0.0f;
-   player_state->motion_param.velocity.x = 0.0f;
-   player_state->motion_param.velocity.y = 0.0f;
-   player_state->motion_param.max_velocity.x = 5.0f;
-   player_state->motion_param.max_velocity.y = 5.0f;
-   player_state->motion_param.acceleration.x = 0.0f;
-   player_state->motion_param.acceleration.y = 0.0f;
-}
-
 void eir_run(eir_env_t * env)
 {
    if (!env)
@@ -162,6 +150,8 @@ void eir_run(eir_env_t * env)
    {
       return;
    }
+
+   eir_check_event_callback(all_env);
 
    eir_gfx_env_t * gfx_env = &all_env->gfx_env;
    eir_sys_env_t * sys_env = &all_env->sys_env;
@@ -288,16 +278,22 @@ void eir_run(eir_env_t * env)
    eir_gfx_add_quad(gfx_env, &position, &size, &color);
 
    eir_start(gfx_env, sys_env);
+
+   // TODO: put anywhere else
    if (eir_sys_get_joystick_count() > 0)
    {
       sys_env->joystick.handle = eir_sys_get_joystick(0);
       gme_env->player_1_state.pad_index = 0;
    }
+   // -------------------------
+
    eir_snd_api_init();
 
+   // TODO: to remove 
    sound_handle = eir_snd_load_sound_file(snd_env, "../resources/sounds/medium.wav");
-   eir_sys_start_timer(&sys_env->timer);
+   // -------------------------
 
+   eir_sys_start_timer(&sys_env->timer);
    for (;;)
    {
       eir_sys_update_timer(&sys_env->timer);
@@ -306,15 +302,13 @@ void eir_run(eir_env_t * env)
       sprintf(c, "frame rate: %1.3f", sys_env->timer.elapsed_time);
       eir_gfx_update_text(gfx_env, text_handle, c);
 
-      if (!eir_sys_win_api_poll_all_events(&sys_env->joystick))
+      if (!eir_sys_win_api_poll_all_events(all_env->event_callback, env))
       {
 	 break;
       }
       eir_gfx_api_set_clear_color();
       eir_gfx_api_clear_buffer();
       
-      eir_proceed_player_move(&gme_env->player_1_state, sys_env, sys_env->timer.elapsed_time);
-
       // TODO: remove when plauer state system fully implemented
       gfx_env->sprite_batches.data[0].sprites.data[0].position.x = gme_env->player_1_state.position.x;
       gfx_env->sprite_batches.data[0].sprites.data[0].position.y = gme_env->player_1_state.position.y;
@@ -322,10 +316,10 @@ void eir_run(eir_env_t * env)
       // -------------------------
 
       // TODO: remove when event sound system up
-      if (sys_env->joystick.x_axis_value != 0)
-      {
-	 eir_snd_play_sound(snd_env, sound_handle);
-      }
+      //if (sys_env->joystick.x_axis_value != 0)
+      //{
+      // eir_snd_play_sound(snd_env, sound_handle);
+      //}
       // -------------------------
 
       eir_gfx_render_all_batches(gfx_env);

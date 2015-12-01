@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stdbool.h>
+#include <stddef.h>
+
 /**
  * This is how we deal with engine created object in user code section
  */
@@ -71,8 +74,6 @@ typedef struct
    };
 } eir_event_t;
 
-typedef void (*eir_event_callback_t)(const eir_event_t * event);
-
 /**
  * Eir environment
  */
@@ -81,6 +82,12 @@ typedef struct
 {
    void * private;
 } eir_env_t;
+
+/**
+ * allow custom event callback
+ */
+
+typedef bool (*eir_event_callback_t)(const eir_event_t * event, eir_env_t * env);
 
 /**
  * allocation function definition for overriding
@@ -96,6 +103,6 @@ typedef void (*eir_free_t)(void * ptr);
 void eir_set_allocate_func(eir_allocate_t allocate_func); // optional
 void eir_set_free_func(eir_free_t free_func); // optional
 eir_env_t * eir_create_env();
-void eir_set_event_callback(eir_env_t * env, eir_event_callback_t event_callback); // optional ?
+void eir_set_event_callback(eir_env_t * env, eir_event_callback_t event_callback); // optional
 void eir_run(eir_env_t * env);
 void eir_destroy_env(eir_env_t * env);

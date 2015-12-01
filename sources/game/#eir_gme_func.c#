@@ -48,6 +48,8 @@ static void eir_proceed_player_move(
    eir_gme_proceed_player_move(player_state, &velocity, elapsed_time);
 }
 
+eir_proceed_player_move(&gme_env->player_1_state, sys_env, sys_env->timer.elapsed_time);
+
  */
 
 bool default_event_callback(const eir_event_t * event, eir_env_t * env)
