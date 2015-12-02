@@ -35,7 +35,7 @@ void eir_sys_win_api_swap_buffer(eir_gfx_env_t * gfx_env)
    SDL_GL_SwapWindow(gfx_env->window);
 }
 
-bool eir_sys_win_api_poll_all_events(eir_event_callback_t event_callback, eir_env_t * env)
+bool eir_sys_win_api_poll_all_events(eir_sys_event_callback_t event_callback, eir_env_t * env)
 {
    SDL_Event sdl_event;
 

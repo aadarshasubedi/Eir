@@ -5,12 +5,17 @@
 #include <stddef.h>
 
 #include "eir.h"
+
 #include "maths/eir_vector.h"
+
 #include "system/eir_sys_env.h"
 #include "system/eir_timer_func.h"
 #include "system/eir_file_system.h"
 #include "system/eir_memory.h"
 #include "system/eir_joystick_func.h"
+#include "system/eir_win_api_func.h"
+#include "system/eir_event_callback.h"
+
 #include "graphics/eir_sprite.h"
 #include "graphics/eir_gfx_types.h"
 #include "graphics/eir_gfx_defines.h"
@@ -18,9 +23,10 @@
 #include "graphics/eir_gfx_env.h"
 #include "graphics/eir_gfx_api_func.h"
 #include "graphics/eir_gfx_func.h"
-#include "system/eir_win_api_func.h"
+
 #include "sound/eir_snd_api_func.h"
 #include "sound/eir_snd_env.h"
+
 #include "game/eir_gme_env.h"
 #include "game/eir_gme_func.h"
 
@@ -30,7 +36,7 @@ typedef struct
    eir_sys_env_t sys_env;
    eir_snd_env_t snd_env;
    eir_gme_env_t gme_env;
-   eir_event_callback_t event_callback;
+   eir_sys_event_callback_t event_callback;
 } eir_all_env_t;
 
 static void eir_start(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env)
@@ -92,7 +98,7 @@ static void eir_check_event_callback(eir_all_env_t * all_env)
 {
    if (all_env && !all_env->event_callback)
    {
-      all_env->event_callback = default_event_callback;
+      all_env->event_callback = eir_sys_default_event_callback;
    }
 }
 
@@ -110,7 +116,7 @@ eir_env_t * eir_create_env()
 {
    eir_check_allocate_and_free_func();
 
-   eir_env_t * env = eir_sys_allocate(sizeof(eir_event_t), 1);
+   eir_env_t * env = eir_sys_allocate(sizeof(eir_env_t), 1);
 
    if (env)
    {
@@ -118,19 +124,6 @@ eir_env_t * eir_create_env()
       ((eir_all_env_t *)(env->private))->event_callback = 0;
    }
    return env;
-}
-
-void eir_set_event_callback(eir_env_t * env, eir_event_callback_t event_callback)
-{
-   if (!env)
-   {
-      return;
-   }
-   if (!env->private)
-   {
-      return;
-   }
-   ((eir_all_env_t *)(env->private))->event_callback = event_callback;
 }
 
 void eir_run(eir_env_t * env)

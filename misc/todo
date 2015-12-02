@@ -1,25 +1,53 @@
 TODO
-- 
-
-- add event callback as parameter of the poll all events function and remove all other
-  - call callback with the created event
-- add default callback in game section part
-- move all window stuff from gfx to sys env
-  - type (see in eir_gfx_types.h and eir_gfx_defines.h)
-  - variable (see in eir_gfx_env.h)
-  - modify eir_win_api_func.h and eir_win_api_func_sdl.c
-  - modify in eir.c call to eir_win_api_func
-- stock keyboard input in struct
-- add system which set the correct input system for each player
-  - if pad exists automatically set to player 1
-  - if no pad, automatically set keyboard to player 1
-  - add function which return input value independent of input type (keyboard or pad)
-    - pass the input index
-    - return float input value
-    - it is the system who knows which system is linked to player from the index
-    - pass the returned function to the process move static function in eir.c instead of passing
-      eir_sys_env_t pointer.
-  - see if we must remove eir_sys_joystick_t structure
+- (MACRO) implement state machine for input ctrl
+  + move all struct from eir_input_ctrl.h to eir.h
+  + remove the _sys prefix from these structures
+  + remove eir_input_ctrl.h and change references to it with eir.h
+  + add validation function pointer declaration in eir.h
+  + add update function pointer declaration in eir.h
+  + create state struct in eir.h
+    + add function pointer to validate state entry
+    + add function pointer to update state
+    + add list on linked out states
+  - create state machine struct in eir.h
+    - add begining state pointer
+    - add ending state pointer
+    - add current state pointer
+    - add all state machines states
+  - add state machine array in eir_gm_env struct
+  - add current state machine pointer in eir_gm_env strut
+  - create function to create state machine in eir.h
+    - add parameter max state count
+    - return state machine handle
+  - create function to create state in eir.h
+    - return state machine handle
+  - create function to register state entry validation function for specified state in eir.h
+    - add state handle parameter
+    - add function pointer
+    - return result as bool
+  - create function to register update state function for specified state in eir.h
+    - add state handle parameter
+    - add function pointer
+    - return result as bool
+  - create function to register linked state in eir.h
+    - add in state handle
+    - add out state handle
+    - return result as bool
+  - create function to register state in state machine in eir.h
+    - add state machine handle parameter
+    - add state handle parameter
+    - add bool is_begin_state parameter
+    - add bool is_end_state parameter
+    - return result as bool
+  - create function to run start machine in eir.h
+    - add state machine handle parameter
+  - create function to update state machine in eir.h
+    - add state machine handle parameter
+  - create function to stop state machine in eir.h
+    - add state machine handle parameter
+  - create function to destroy state machine in eir.h
+    - add state machine handle parameter
+- (MACRO) display using real size => ortho projection and matrix
 - (MACRO) camera
 - (MACRO) AI follow
 

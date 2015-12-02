@@ -51,20 +51,3 @@ static void eir_proceed_player_move(
 eir_proceed_player_move(&gme_env->player_1_state, sys_env, sys_env->timer.elapsed_time);
 
  */
-
-bool default_event_callback(const eir_event_t * event, eir_env_t * env)
-{
-   bool result = true;
-
-   if (event && env)
-   {
-      if (eir_event_type_keyboard == event->type)
-      {
-	 if (eir_keyboard_key_esc == event->keyboard_event.key)
-	 {
-	    result = false;
-	 }
-      }
-   }
-   return result;
-}

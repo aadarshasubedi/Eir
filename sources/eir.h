@@ -11,7 +11,7 @@ typedef int eir_handle_t;
 #define EIR_INVALID_HANDLE -1
 
 /**
- * Event management
+ * For event management
  */
 
 typedef enum
@@ -75,19 +75,35 @@ typedef struct
 } eir_event_t;
 
 /**
- * Eir environment
+ * user control state machine management
+ */
+
+typedef bool (*eir_validate_state_t)();
+typedef void (*eir_update_state_t)();
+
+typedef struct eir_state_s
+{
+   eir_validate_state_t validate;
+   eir_update_state_t update;
+   struct eir_state_s * next_linked_state;
+} eir_state_t;
+
+typedef struct
+{
+   eir_state_t * begin_state;
+   eir_state_t * end_state;
+   eir_state_t * curr_state;
+   eir_state_t * all_states;
+} eir_state_machine_t;
+
+/**
+ * global env management
  */
 
 typedef struct
 {
    void * private;
 } eir_env_t;
-
-/**
- * allow custom event callback
- */
-
-typedef bool (*eir_event_callback_t)(const eir_event_t * event, eir_env_t * env);
 
 /**
  * allocation function definition for overriding
@@ -100,9 +116,8 @@ typedef void (*eir_free_t)(void * ptr);
  * Eir interfaces functions
  */
 
-void eir_set_allocate_func(eir_allocate_t allocate_func); // optional
-void eir_set_free_func(eir_free_t free_func); // optional
+void eir_set_allocate_func(eir_allocate_t allocate_func); // optional: must be called first
+void eir_set_free_func(eir_free_t free_func); // optional: must be called first
 eir_env_t * eir_create_env();
-void eir_set_event_callback(eir_env_t * env, eir_event_callback_t event_callback); // optional
 void eir_run(eir_env_t * env);
 void eir_destroy_env(eir_env_t * env);
