@@ -30,14 +30,7 @@
 #include "game/eir_gme_env.h"
 #include "game/eir_gme_func.h"
 
-typedef struct
-{
-   eir_gfx_env_t gfx_env;
-   eir_sys_env_t sys_env;
-   eir_snd_env_t snd_env;
-   eir_gme_env_t gme_env;
-   eir_sys_event_callback_t event_callback;
-} eir_all_env_t;
+#include "kernel/eir_env.h"
 
 static void eir_start(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env)
 {
@@ -94,11 +87,11 @@ static void eir_init_player_state(eir_gme_player_state_t * player_state)
    player_state->motion_param.acceleration.y = 0.0f;
 }
 
-static void eir_check_event_callback(eir_all_env_t * all_env)
+static void eir_check_event_callback(eir_ker_env_t * env)
 {
-   if (all_env && !all_env->event_callback)
+   if (env && !env->event_callback)
    {
-      all_env->event_callback = eir_sys_default_event_callback;
+      env->event_callback = eir_sys_default_event_callback;
    }
 }
 
@@ -120,8 +113,8 @@ eir_env_t * eir_create_env()
 
    if (env)
    {
-      env->private = eir_sys_allocate(sizeof(eir_all_env_t), 1);
-      ((eir_all_env_t *)(env->private))->event_callback = 0;
+      env->private = eir_sys_allocate(sizeof(eir_ker_env_t), 1);
+      ((eir_ker_env_t *)(env->private))->event_callback = 0;
    }
    return env;
 }
@@ -137,7 +130,7 @@ void eir_run(eir_env_t * env)
       return;
    }
 
-   eir_all_env_t * all_env = (eir_all_env_t *)(env->private);
+   eir_ker_env_t * all_env = (eir_ker_env_t *)(env->private);
 
    if (!all_env)
    {

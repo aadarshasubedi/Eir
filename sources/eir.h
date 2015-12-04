@@ -78,23 +78,8 @@ typedef struct
  * user control state machine management
  */
 
-typedef bool (*eir_validate_state_t)();
-typedef void (*eir_update_state_t)();
-
-typedef struct eir_state_s
-{
-   eir_validate_state_t validate;
-   eir_update_state_t update;
-   struct eir_state_s * next_linked_state;
-} eir_state_t;
-
-typedef struct
-{
-   eir_state_t * begin_state;
-   eir_state_t * end_state;
-   eir_state_t * curr_state;
-   eir_state_t * all_states;
-} eir_state_machine_t;
+typedef bool (*eir_fsm_validate_state_t)();
+typedef void (*eir_fsm_update_state_t)();
 
 /**
  * global env management
@@ -116,8 +101,48 @@ typedef void (*eir_free_t)(void * ptr);
  * Eir interfaces functions
  */
 
-void eir_set_allocate_func(eir_allocate_t allocate_func); // optional: must be called first
-void eir_set_free_func(eir_free_t free_func); // optional: must be called first
+// ALLOCATION MODIFICATION. MUST BE CALLED BEFORE ENV CREATION
+void eir_set_allocate_func(eir_allocate_t allocate_func);
+void eir_set_free_func(eir_free_t free_func);
+
+// ENV CREATION
 eir_env_t * eir_create_env();
+
+// FINITE STATE MACHINE CREATION
+eir_handle_t eir_fsm_create_state_machine(eir_env_t * env, size_t max_state_count);
+eir_handle_t eir_fsm_create_state(eir_env_t * env, eir_handle_t state_machine_handle);
+bool eir_fsm_set_state_validate_func(
+   eir_env_t * env,
+   eir_handle_t state_machine_handle,
+   eir_handle_t state_handle,
+   eir_fsm_validate_state_t validate_func
+   );
+bool eir_fsm_set_state_update_func(
+   eir_env_t * env,
+   eir_handle_t state_machine_handle,
+   eir_handle_t state_handle,
+   eir_fsm_update_state_t update_func
+   );
+bool eir_fsm_add_state_transition(
+   eir_env_t * env,
+   eir_handle_t state_machine_handle,
+   eir_handle_t in_state_handle,
+   eir_handle_t out_state_handle
+   );
+bool eir_fsm_set_begin_state(
+   eir_env_t * env,
+   eir_handle_t state_machine_handle,
+   eir_handle_t state_handle
+   );
+bool eir_fsm_set_end_state(
+   eir_env_t * env,
+   eir_handle_t state_machine_handle,
+   eir_handle_t state_handle
+   );
+bool eir_fsm_set_active_state_machine(eir_env_t * env, eir_handle_t state_machine_handle);
+
+// RUN GAME LOOP
 void eir_run(eir_env_t * env);
+
+// CALL AT THE END
 void eir_destroy_env(eir_env_t * env);

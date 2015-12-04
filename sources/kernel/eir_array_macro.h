@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../system/eir_memory.h"
+
 /**
  * =====================================================================
  * This is a macro serie to help user for array manipulation.
@@ -36,6 +38,16 @@
    EIR_SYS_ALLOC(array.data, sizeof(item_type), max_capacity);		\
    array.capacity = max_capacity;					\
    array.used = 0;
+
+/**
+ * Init an array and all its elements
+ */
+#define EIR_KER_INIT_ARRAY_AND_DATA(item_type, array, max_capacity, data_init_func) \
+   EIR_KER_INIT_ARRAY(item_type, array, max_capacity)			\
+   for (int data_index = 0; data_index < array.capacity; ++data_index)	\
+   {									\
+      data_init_func(&array.data[data_index]);				\
+   }
 
 /**
  * Reserve the next array empty slot.
@@ -107,3 +119,10 @@
    array.capacity = 0;				\
    array.used = 0;				\
    array.data = 0;
+
+#define EIR_KER_RELEASE_ARRAY_AND_DATA(array, data_release_func)	\
+   for (int data_index = 0; data_index < array.capacity; ++data_index)	\
+   {									\
+      data_release_func(&array.data[data_index]);			\
+   }									\
+   EIR_KER_RELEASE_ARRAY(array)
