@@ -1,9 +1,31 @@
 TODO
+- add entity system
+  - link sprite with entity
+  - link controler with entity
 - use state machine to :
   - move sprite when player use pad
   - move sprite when player use keyboard
-- (MACRO) display using real size => ortho projection and matrix
-- (MACRO) camera
+- (MACRO) display using real size => ortho projection and matrix + camera
+  - add matrix struct
+  - add matrix mult
+  - add matrix ortho projection
+  - add AABB struct in phyics part
+    - position
+    - size
+  - add camera window struct in camera part
+    - AABB target (pointer)
+    - window AABB
+  - add viewport struct in graphics part
+  - add camera struct in camera part
+    - projection matrix
+    - camera window
+    - position
+    - window last position
+    - view matrix
+    - mvp matrix
+    - viewport
+  - camera window follow player if player exit window
+  - camera follow window
 - (MACRO) AI follow
 
 DONE
