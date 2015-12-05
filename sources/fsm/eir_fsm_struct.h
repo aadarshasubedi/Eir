@@ -8,6 +8,7 @@
 typedef struct eir_fsm_state_s
 {
    eir_fsm_validate_state_t validate;
+   eir_fsm_validate_state_by_event_t validate_by_event;
    eir_fsm_update_state_t update;
    struct eir_fsm_state_s * out_states[EIR_FSM_MAX_STATE_OUT];
 } eir_fsm_state_t;

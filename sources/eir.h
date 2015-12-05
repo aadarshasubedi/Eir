@@ -79,6 +79,7 @@ typedef struct
  */
 
 typedef bool (*eir_fsm_validate_state_t)();
+typedef bool (*eir_fsm_validate_state_by_event_t)(const eir_event_t * event);
 typedef void (*eir_fsm_update_state_t)();
 
 /**
@@ -116,6 +117,12 @@ bool eir_fsm_set_state_validate_func(
    eir_handle_t state_machine_handle,
    eir_handle_t state_handle,
    eir_fsm_validate_state_t validate_func
+   );
+bool eir_fsm_set_state_validate_by_event_func(
+   eir_env_t * env,
+   eir_handle_t state_machine_handle,
+   eir_handle_t state_handle,
+   eir_fsm_validate_state_by_event_t validate_func
    );
 bool eir_fsm_set_state_update_func(
    eir_env_t * env,

@@ -47,7 +47,8 @@ TODO
     + add state machine handle parameter
   + create function to destroy state machine in eir_gme_state_machine.h
     + add state machine handle parameter
-  - injection event in state machine ???
+  + injection event in state machine ???
+- add commit message parameter for commit script as $1 
 - (MACRO) display using real size => ortho projection and matrix
 - (MACRO) camera
 - (MACRO) AI follow

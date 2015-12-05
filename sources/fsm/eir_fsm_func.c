@@ -25,6 +25,7 @@ static void eir_fsm_init_state(eir_fsm_state_t * state)
    if (state)
    {
       state->validate = 0;
+      state->validate_by_event = 0;
       state->update = 0;
       for (int state_index = 0; state_index < EIR_FSM_MAX_STATE_OUT; ++state_index)
       {
@@ -111,16 +112,22 @@ void eir_fsm_init_env(eir_fsm_env_t * env, size_t max_state_machine_count)
    }
 }
 
-void eir_fsm_run_state_machine(eir_fsm_state_machine_t * state_machine)
+void eir_fsm_run_state_machine(eir_fsm_env_t * env)
 {
-   if (state_machine)
+   if (env && env->curr_state_machine)
    {
-      state_machine->curr_state = state_machine->begin_state;
+      env->curr_state_machine->curr_state = env->curr_state_machine->begin_state;
    }
 }
 
-void eir_fsm_update_state_machine(eir_fsm_state_machine_t * state_machine)
+void eir_fsm_update_state_machine(eir_fsm_env_t * env)
 {
+   eir_fsm_state_machine_t * state_machine = 0;
+
+   if (env)
+   {
+      state_machine = env->curr_state_machine;
+   }
    if (
       state_machine &&
       state_machine->curr_state &&
@@ -142,6 +149,33 @@ void eir_fsm_update_state_machine(eir_fsm_state_machine_t * state_machine)
 	 state_machine->curr_state->update();
       }
    }
+}
+
+void eir_fsm_process_event(eir_fsm_env_t * env, const eir_event_t * event)
+{
+   eir_fsm_state_machine_t * state_machine = 0;
+
+   if (env)
+   {
+      state_machine = env->curr_state_machine;
+   }
+   if (
+      state_machine &&
+      state_machine->curr_state &&
+      state_machine->curr_state != state_machine->end_state
+      )
+   {
+      for (int state_index = 0; state_index < EIR_FSM_MAX_STATE_OUT; ++state_index)
+      {
+	 eir_fsm_state_t * state = state_machine->curr_state->out_states[state_index];
+
+	 if (state && state->validate_by_event && state->validate_by_event(event))
+	 {
+	    state_machine->curr_state = state;
+	    break;
+	 }
+      }
+    }
 }
 
 void eir_fsm_release_env(eir_fsm_env_t * env)
@@ -206,6 +240,22 @@ bool eir_fsm_set_state_validate_func(
    if (state)
    {
       state->validate = validate_func;
+   }
+   return state;
+}
+
+bool eir_fsm_set_state_validate_by_event_func(
+   eir_env_t * env,
+   eir_handle_t state_machine_handle,
+   eir_handle_t state_handle,
+   eir_fsm_validate_state_by_event_t validate_func
+   )
+{
+   eir_fsm_state_t * state = eir_fsm_get_state(env, state_machine_handle, state_handle);
+
+   if (state)
+   {
+      state->validate_by_event = validate_func;
    }
    return state;
 }
