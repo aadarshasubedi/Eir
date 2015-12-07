@@ -75,14 +75,6 @@ typedef struct
 } eir_event_t;
 
 /**
- * user control state machine management
- */
-
-typedef bool (*eir_fsm_validate_state_t)();
-typedef bool (*eir_fsm_validate_state_by_event_t)(const eir_event_t * event);
-typedef void (*eir_fsm_update_state_t)();
-
-/**
  * global env management
  */
 
@@ -110,6 +102,11 @@ void eir_set_free_func(eir_free_t free_func);
 eir_env_t * eir_create_env();
 
 // FINITE STATE MACHINE CREATION
+typedef bool (*eir_fsm_validate_state_t)();
+typedef bool (*eir_fsm_validate_state_by_event_t)(const eir_event_t * event);
+typedef void (*eir_fsm_update_state_t)();
+
+void eir_fsm_set_max_state_machine_count(eir_env_t * env, size_t max_state_machine_count);
 eir_handle_t eir_fsm_create_state_machine(eir_env_t * env, size_t max_state_count);
 eir_handle_t eir_fsm_create_state(eir_env_t * env, eir_handle_t state_machine_handle);
 bool eir_fsm_set_state_validate_func(

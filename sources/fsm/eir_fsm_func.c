@@ -92,13 +92,7 @@ static void eir_fsm_release_state_machine(eir_fsm_state_machine_t * state_machin
    }
 }
 
-/********************************************************
- *
- * EIR INTERNAL FUNCTIONS (eir_fsm_func.h)
- *
- *******************************************************/
-
-void eir_fsm_init_env(eir_fsm_env_t * env, size_t max_state_machine_count)
+static void eir_fsm_init_env(eir_fsm_env_t * env, size_t max_state_machine_count)
 {
    if (env)
    {
@@ -111,6 +105,12 @@ void eir_fsm_init_env(eir_fsm_env_t * env, size_t max_state_machine_count)
       env->curr_state_machine = 0;
    }
 }
+
+/********************************************************
+ *
+ * EIR INTERNAL FUNCTIONS (eir_fsm_func.h)
+ *
+ *******************************************************/
 
 void eir_fsm_run_state_machine(eir_fsm_env_t * env)
 {
@@ -151,13 +151,14 @@ void eir_fsm_update_state_machine(eir_fsm_env_t * env)
    }
 }
 
-void eir_fsm_process_event(eir_fsm_env_t * env, const eir_event_t * event)
+void eir_fsm_process_event(eir_env_t * env, const eir_event_t * event)
 {
+   eir_fsm_env_t * fsm_env = eir_fsm_get_env(env);
    eir_fsm_state_machine_t * state_machine = 0;
 
    if (env)
    {
-      state_machine = env->curr_state_machine;
+      state_machine = fsm_env->curr_state_machine;
    }
    if (
       state_machine &&
@@ -192,6 +193,16 @@ void eir_fsm_release_env(eir_fsm_env_t * env)
  * EIR EXTERNAL FUNCTIONS (eir.h)
  *
  *******************************************************/
+
+void eir_fsm_set_max_state_machine_count(eir_env_t * env, size_t max_state_machine_count)
+{
+   eir_fsm_env_t * fsm_env = eir_fsm_get_env(env);
+
+   if (fsm_env)
+   {
+      eir_fsm_init_env(fsm_env, max_state_machine_count);
+   }
+}
 
 eir_handle_t eir_fsm_create_state_machine(eir_env_t * env, size_t max_state_count)
 {

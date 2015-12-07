@@ -1,4 +1,5 @@
 #include "eir_event_callback.h"
+#include "../fsm/eir_fsm_func.h"
 
 bool eir_sys_default_event_callback(const eir_event_t * event, eir_env_t * env)
 {
@@ -12,6 +13,10 @@ bool eir_sys_default_event_callback(const eir_event_t * event, eir_env_t * env)
 	 {
 	    result = false;
 	 }
+      }
+      if (result)
+      {
+	 eir_fsm_process_event(env, event);
       }
    }
    return result;

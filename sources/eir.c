@@ -32,6 +32,8 @@
 
 #include "kernel/eir_env.h"
 
+#include "fsm/eir_fsm_func.h"
+
 static void eir_start(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env)
 {
    eir_sys_win_api_init();
@@ -143,6 +145,7 @@ void eir_run(eir_env_t * env)
    eir_sys_env_t * sys_env = &all_env->sys_env;
    eir_snd_env_t * snd_env = &all_env->snd_env;
    eir_gme_env_t * gme_env = &all_env->gme_env;
+   eir_fsm_env_t * fsm_env = &all_env->fsm_env;
 
    if (!gfx_env || !sys_env || !snd_env || !gme_env)
    {
@@ -280,6 +283,7 @@ void eir_run(eir_env_t * env)
    // -------------------------
 
    eir_sys_start_timer(&sys_env->timer);
+   eir_fsm_run_state_machine(fsm_env);
    for (;;)
    {
       eir_sys_update_timer(&sys_env->timer);
@@ -292,6 +296,9 @@ void eir_run(eir_env_t * env)
       {
 	 break;
       }
+
+      eir_fsm_update_state_machine(fsm_env);
+
       eir_gfx_api_set_clear_color();
       eir_gfx_api_clear_buffer();
       
@@ -312,6 +319,7 @@ void eir_run(eir_env_t * env)
       eir_sys_win_api_swap_buffer(gfx_env);
    }
    EIR_KER_LOG_MESSAGE("stop eir");
+   eir_fsm_release_env(fsm_env);
    eir_stop(gfx_env, sys_env, snd_env);
    EIR_SYS_LOG_ALLOCATED_ELEM;
 }

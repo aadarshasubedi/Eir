@@ -1,7 +1,4 @@
 TODO
-- add entity system
-  - link sprite with entity
-  - link controler with entity
 - use state machine to :
   - move sprite when player use pad
   - move sprite when player use keyboard
