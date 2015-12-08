@@ -145,6 +145,23 @@ bool eir_fsm_set_end_state(
    );
 bool eir_fsm_set_active_state_machine(eir_env_t * env, eir_handle_t state_machine_handle);
 
+// SPRITE MANAGEMENT
+eir_handle_t eir_gfx_create_texture(const char * img_filename, bool must_invert_img);
+eir_handle_t eir_gfx_create_sprite(
+   eir_env_t * env,
+   eir_handle_t texture_handle,
+   int texture_x_offset,
+   int texture_y_offset,
+   int texture_width_offset,
+   int texture_height_offset
+   );
+
+// ENTITY MANAGEMENT
+eir_handle_t eir_ecs_create_entity(eir_env_t * env);
+bool eir_ecs_set_entity_position(eir_env_t * env, int x, int y);
+bool eir_ecs_set_entity_size(eir_env_t * env, int width, int height);
+bool eir_ecs_set_entity_sprite(eir_env_t * env, eir_handle_t sprite_handle);
+
 // RUN GAME LOOP
 void eir_run(eir_env_t * env);
 

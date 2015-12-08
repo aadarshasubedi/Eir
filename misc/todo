@@ -1,7 +1,15 @@
 TODO
-- use state machine to :
-  - move sprite when player use pad
-  - move sprite when player use keyboard
+- create type sprite reference
+  - add texture handle member
+  - add texture offset pos and size
+- create type sprite reference array
+- add sprite reference array in eir_gfx_env_t struct
+- comment all sprite code creation in eir.c (keep text code for the moment)
+- implement eir_gfx_create_texture public func declared in eir.h
+- implement eir_gfx_create_sprite public func declared in eir.h
+- create private function to create sprite and batch from sprite reference array
+  - group sprites in batch by texture
+- (MACRO) implement entity component system
 - (MACRO) display using real size => ortho projection and matrix + camera
   - add matrix struct
   - add matrix mult
