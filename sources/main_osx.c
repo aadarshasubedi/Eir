@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "eir.h"
 
-bool validate_idle_state_by_event(const eir_event_t * event)
+static bool validate_idle_state_by_event(const eir_event_t * event)
 {
    bool result = false;
 
@@ -22,12 +22,12 @@ bool validate_idle_state_by_event(const eir_event_t * event)
    return result;
 }
 
-void update_idle_state()
+static void update_idle_state()
 {
    // TODO: stop entity
 }
 
-bool validate_move_state_by_event(const eir_event_t * event)
+static bool validate_move_state_by_event(const eir_event_t * event)
 {
    bool result = false;
 
@@ -48,12 +48,12 @@ bool validate_move_state_by_event(const eir_event_t * event)
    return result;
 }
 
-void update_move_state()
+static void update_move_state()
 {
    // TODO: move entity
 }
 
-void init_fsm(eir_env_t * env)
+static void init_fsm(eir_env_t * env)
 {
    if (!env)
    {
@@ -78,11 +78,25 @@ void init_fsm(eir_env_t * env)
    eir_fsm_set_active_state_machine(env, fsm);
 }
 
+static void init_gfx(eir_env_t * env)
+{
+   eir_gfx_set_max_image_count(env, 10);
+   eir_gfx_set_max_sprite_ref_count(env, 10);
+
+   eir_handle_t placeholder_img = eir_gfx_load_image(
+      env,
+      "../resources/images/placeholder_atlas.png",
+      true
+      );
+   
+}
+
 int main()
 {
    eir_env_t * env = 0;
    env = eir_create_env();
    init_fsm(env);
+   init_gfx(env);
    eir_run(env);
    eir_destroy_env(env);
    return 0;

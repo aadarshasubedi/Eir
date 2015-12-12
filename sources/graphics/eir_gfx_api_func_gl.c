@@ -10,8 +10,8 @@ static void eir_gfx_debug_log_sprite_batch(eir_gfx_sprite_batch_t * batch)
    EIR_KER_LOG_MESSAGE("%s", "sprite batch info:");
    EIR_KER_LOG_MESSAGE("vbo: %d", batch->vbo);
    EIR_KER_LOG_MESSAGE("vao: %d", batch->vao);
-   EIR_KER_LOG_MESSAGE("texture: %d", batch->texture[0]);
-   EIR_KER_LOG_MESSAGE("sprite count: %d", batch->sprites.used);
+   EIR_KER_LOG_MESSAGE("texture: %d", batch->texture_id[0]);
+   EIR_KER_LOG_MESSAGE("sprites count: %d", batch->sprites.used);
    EIR_KER_LOG_MESSAGE("%s", "---------------------------");
 }
 
@@ -22,7 +22,7 @@ static void eir_gfx_debug_log_vertex_batch(eir_gfx_vertex_batch_t * batch)
    EIR_KER_LOG_MESSAGE("vbo: %d", batch->vbo);
    EIR_KER_LOG_MESSAGE("vao: %d", batch->vao);
    EIR_KER_LOG_MESSAGE("primitive type: %d", batch->primitive_type);
-   EIR_KER_LOG_MESSAGE("vertex count: %d", batch->vertices.used);
+   EIR_KER_LOG_MESSAGE("vertices count: %d", batch->vertices.used);
    EIR_KER_LOG_MESSAGE("%s", "---------------------------");
 }
 
@@ -32,6 +32,33 @@ void eir_gfx_api_init()
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    glDisable(GL_DEPTH_TEST);
+}
+
+eir_gfx_api_texture_handle_t eir_gfx_api_create_texture(eir_gfx_image_t * image)
+{
+   eir_gfx_api_texture_handle_t texture = EIR_GFX_INVALID_TEXTURE_HANDLE;
+
+   if (image)
+   {
+      EIR_KER_LOG_MESSAGE("create texture image: w=%d, h=%d", image->width, image->height);
+      glGenTextures(1, &texture);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, texture);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexImage2D(
+	 GL_TEXTURE_2D,
+	 0,
+	 GL_RGBA,
+	 image->width,
+	 image->height,
+	 0,
+	 GL_BGRA,
+	 GL_UNSIGNED_BYTE,
+	 image->pixels
+	 );
+   }
+   return texture;
 }
 
 void eir_gfx_api_load_sprite_shaders(eir_gfx_env_t * gfx_env)
@@ -158,60 +185,57 @@ void eir_gfx_api_set_buffer_data(eir_gfx_sprite_batch_t * batch)
 
 void eir_gfx_api_build_sprite_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_t * batch)
 {
-   glUseProgram(gfx_env->sprite_program);
-
-   EIR_KER_LOG_MESSAGE("create vao");
-   glGenVertexArrays(1, &batch->vao);
-   glBindVertexArray(batch->vao);
-
-   EIR_KER_LOG_MESSAGE("create ibo and bind attributes");
-   glGenBuffers(1, &batch->vbo);
-   glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
-   eir_gfx_api_set_buffer_data(batch);
-
-   EIR_KER_LOG_MESSAGE("load and use atlas texture");
-   glGenTextures(1,batch->texture);
-   glActiveTexture(GL_TEXTURE0);
-   glBindTexture(GL_TEXTURE_2D, batch->texture[0]);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-   eir_gfx_image_t * image = eir_gfx_api_create_image(PLACE_HOLDER_IMAGE_PATH, true);
-
-   if (image)
+   if (gfx_env && batch && batch->texture && batch->texture->image)
    {
-      EIR_KER_LOG_MESSAGE("create texture image: w=%d, h=%d", image->width, image->height);
-      glTexImage2D(
-	 GL_TEXTURE_2D,
-	 0,
-	 GL_RGBA,
-	 image->width,
-	 image->height,
-	 0,
-	 GL_BGRA,
-	 GL_UNSIGNED_BYTE,
-	 image->pixels
+      glUseProgram(gfx_env->sprite_program);
+
+      EIR_KER_LOG_MESSAGE("create vao");
+   
+      glGenVertexArrays(1, &batch->vao);
+      glBindVertexArray(batch->vao);
+
+      EIR_KER_LOG_MESSAGE("create ibo and bind attributes");
+   
+      glGenBuffers(1, &batch->vbo);
+      glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
+      eir_gfx_api_set_buffer_data(batch);
+
+      EIR_KER_LOG_MESSAGE("load and use atlas texture");
+
+   //eir_gfx_image_t * image = eir_gfx_api_create_image(PLACE_HOLDER_IMAGE_PATH, true);
+
+   //if (image)
+   //{
+   //   batch->texture[0] = eir_gfx_api_create_texture(image);
+      glUniform1i(
+	 glGetUniformLocation(gfx_env->sprite_program, "tex0"),
+	 0
 	 );
-      glUniform1i(glGetUniformLocation(gfx_env->sprite_program, "tex0"), 0);
-      glUniform2f(glGetUniformLocation(gfx_env->sprite_program, "atlasSize"), image->width, image->height);
-      eir_gfx_api_destroy_image(image);
+      glUniform2f(
+	 glGetUniformLocation(gfx_env->sprite_program, "atlasSize"),
+	 batch->texture->image->width,
+	 batch->texture->image->height
+	 );
+   //eir_gfx_api_destroy_image(image);
+      //}
+      //else
+      //{
+      //EIR_KER_LOG_ERROR("cannot create texture from image file %d", PLACE_HOLDER_IMAGE_PATH);
+      //}
+      eir_gfx_api_bind_sprite_attributes(
+	 glGetAttribLocation(gfx_env->sprite_program, "position"),
+	 glGetAttribLocation(gfx_env->sprite_program, "size"),
+	 glGetAttribLocation(gfx_env->sprite_program, "uv_offset"),
+	 glGetAttribLocation(gfx_env->sprite_program, "uv_size"),
+	 glGetAttribLocation(gfx_env->sprite_program, "color")
+	 );
+      glBindVertexArray(0);
+      glUseProgram(0);
+      batch->built = true;
+      batch->modified = false;
+      batch->program = gfx_env->sprite_program;
+      eir_gfx_debug_log_sprite_batch(batch);
    }
-   else
-   {
-      EIR_KER_LOG_ERROR("cannot create texture from image file %d", PLACE_HOLDER_IMAGE_PATH);
-   }
-   eir_gfx_api_bind_sprite_attributes(
-      glGetAttribLocation(gfx_env->sprite_program, "position"),
-      glGetAttribLocation(gfx_env->sprite_program, "size"),
-      glGetAttribLocation(gfx_env->sprite_program, "uv_offset"),
-      glGetAttribLocation(gfx_env->sprite_program, "uv_size"),
-      glGetAttribLocation(gfx_env->sprite_program, "color")
-      );
-   glBindVertexArray(0);
-   glUseProgram(0);
-   batch->built = true;
-   batch->modified = false;
-   eir_gfx_debug_log_sprite_batch(batch);
 }
 
 void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_t * batch)
@@ -228,28 +252,12 @@ void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_
    eir_gfx_api_set_buffer_data(batch);
 
    EIR_KER_LOG_MESSAGE("load and use atlas texture");
-   glGenTextures(1,batch->texture);
-   glActiveTexture(GL_TEXTURE0);
-   glBindTexture(GL_TEXTURE_2D, batch->texture[0]);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
    eir_gfx_image_t * image = eir_gfx_api_create_image(DEFAULT_FONT_IMAGE_PATH, true);
 
    if (image)
    {
-      EIR_KER_LOG_MESSAGE("create texture image: w=%d, h=%d", image->width, image->height);
-      glTexImage2D(
-	 GL_TEXTURE_2D,
-	 0,
-	 GL_RGBA,
-	 image->width,
-	 image->height,
-	 0,
-	 GL_BGRA,
-	 GL_UNSIGNED_BYTE,
-	 image->pixels
-	 );
+      batch->texture_id[0] = eir_gfx_api_create_texture(image);
       glUniform1i(glGetUniformLocation(gfx_env->text_program, "tex0"), 0);
       glUniform2f(glGetUniformLocation(gfx_env->text_program, "atlasSize"), image->width, image->height);
       eir_gfx_api_destroy_image(image);
@@ -269,6 +277,7 @@ void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_
    glUseProgram(0);
    batch->built = true;
    batch->modified = false;
+   batch->program = gfx_env->text_program;
    eir_gfx_debug_log_sprite_batch(batch);
 }
 
@@ -328,6 +337,7 @@ void eir_gfx_api_build_vertex_batch(eir_gfx_env_t * gfx_env, eir_gfx_vertex_batc
    glUseProgram(0);
    batch->built = true;
    batch->modified = false;
+   batch->program = gfx_env->default_program;
    eir_gfx_debug_log_vertex_batch(batch);
 }
 
@@ -422,7 +432,7 @@ void eir_gfx_api_release_sprite_batch(eir_gfx_sprite_batch_t * batch)
 {
    glDeleteBuffers(1, &batch->vbo);
    glDeleteVertexArrays(1, &batch->vao);
-   glDeleteTextures(1, batch->texture);
+   glDeleteTextures(1, batch->texture_id);
    EIR_KER_RELEASE_ARRAY(batch->sprites);
 }
 

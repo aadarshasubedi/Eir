@@ -17,6 +17,10 @@ typedef unsigned int eir_gfx_api_program_handle_t;
 typedef unsigned int eir_gfx_api_att_handle_t;
 typedef unsigned int eir_gfx_api_uni_handle_t;
 typedef unsigned int eir_gfx_api_shader_handle_t;
+#define EIR_GFX_INVALID_TEXTURE_HANDLE 0
+#define EIR_GFX_INVALID_VAO_HANDLE 0
+#define EIR_GFX_INVALID_VBO_HANDLE 0
+#define EIR_GFX_INVALID_PROGRAM_HANDLE 0
 #endif
 
 #ifdef EIR_USE_SDL

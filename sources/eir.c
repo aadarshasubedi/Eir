@@ -55,10 +55,14 @@ static void eir_stop(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env, eir_snd_e
    eir_snd_api_release();
    eir_sys_close_joystick(sys_env->joystick.handle);
    eir_gfx_release_all_batches(gfx_env);
+   eir_gfx_release_all_images(gfx_env);
+   eir_gfx_release_all_sprites_ref(gfx_env);
    eir_sys_win_api_destroy_window(gfx_env);
    EIR_KER_RELEASE_ARRAY(gfx_env->sprite_batches);
    EIR_KER_RELEASE_ARRAY(gfx_env->text_batches);
    EIR_KER_RELEASE_ARRAY(snd_env->sounds);
+   EIR_KER_RELEASE_ARRAY(gfx_env->images);
+   EIR_KER_RELEASE_ARRAY(gfx_env->sprites_ref);
 }
 
 static void eir_check_allocate_and_free_func()
@@ -173,6 +177,7 @@ void eir_run(eir_env_t * env)
 
    eir_init_player_state(&gme_env->player_1_state);
 
+/**/
    position.x = gme_env->player_1_state.position.x;
    position.y = gme_env->player_1_state.position.y;
    size.x = 1.0f;
@@ -200,6 +205,7 @@ void eir_run(eir_env_t * env)
    color.b = 1.0f;
    color.a = 1.0f;
    eir_gfx_add_sprite(gfx_env, &position, &size, &uv_offset, &uv_size, &color, batch_handle);
+/**/
 
    position.x = -18.0f;
    position.y = 9.0f;
@@ -303,9 +309,9 @@ void eir_run(eir_env_t * env)
       eir_gfx_api_clear_buffer();
       
       // TODO: remove when plauer state system fully implemented
-      gfx_env->sprite_batches.data[0].sprites.data[0].position.x = gme_env->player_1_state.position.x;
-      gfx_env->sprite_batches.data[0].sprites.data[0].position.y = gme_env->player_1_state.position.y;
-      gfx_env->sprite_batches.data[0].modified = true;
+      //gfx_env->sprite_batches.data[0].sprites.data[0].position.x = gme_env->player_1_state.position.x;
+      //gfx_env->sprite_batches.data[0].sprites.data[0].position.y = gme_env->player_1_state.position.y;
+      //gfx_env->sprite_batches.data[0].modified = true;
       // -------------------------
 
       // TODO: remove when event sound system up

@@ -145,22 +145,28 @@ bool eir_fsm_set_end_state(
    );
 bool eir_fsm_set_active_state_machine(eir_env_t * env, eir_handle_t state_machine_handle);
 
+// IMAGE MANAGEMENT
+void eir_gfx_set_max_image_count(eir_env_t * env, size_t max_count);
+eir_handle_t eir_gfx_load_image(eir_env_t * env, const char * img_filename, bool must_invert_img);
+void eir_gfx_set_max_texture_count(eir_env_t * env, size_t max_count);
+eir_handle_t eir_gfx_create_texture(eir_env_t * env, eir_handle_t img_handle);
+
 // SPRITE MANAGEMENT
-eir_handle_t eir_gfx_create_texture(const char * img_filename, bool must_invert_img);
-eir_handle_t eir_gfx_create_sprite(
+void eir_gfx_set_max_sprite_ref_count(eir_env_t * env, size_t max_count);
+eir_handle_t eir_gfx_create_sprite_ref(
    eir_env_t * env,
-   eir_handle_t texture_handle,
-   int texture_x_offset,
-   int texture_y_offset,
-   int texture_width_offset,
-   int texture_height_offset
+   eir_handle_t img_handle,
+   int img_x_offset,
+   int img_y_offset,
+   int img_width_offset,
+   int img_height_offset
    );
 
 // ENTITY MANAGEMENT
 eir_handle_t eir_ecs_create_entity(eir_env_t * env);
 bool eir_ecs_set_entity_position(eir_env_t * env, int x, int y);
 bool eir_ecs_set_entity_size(eir_env_t * env, int width, int height);
-bool eir_ecs_set_entity_sprite(eir_env_t * env, eir_handle_t sprite_handle);
+bool eir_ecs_set_entity_sprite(eir_env_t * env, eir_handle_t sprite_ref_handle);
 
 // RUN GAME LOOP
 void eir_run(eir_env_t * env);
