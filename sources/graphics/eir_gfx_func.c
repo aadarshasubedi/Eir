@@ -58,7 +58,7 @@ static void eir_gfx_init_sprite_ref(eir_gfx_sprite_ref_t * sprite_ref)
       sprite_ref->uv_offset.y = 0.0f;
       sprite_ref->uv_size.x = 0.0f;
       sprite_ref->uv_size.y = 0.0f;
-      sprite_ref->image = 0;
+      sprite_ref->texture = 0;
    }
 }
 
@@ -79,9 +79,38 @@ static void eir_gfx_init_texture(eir_gfx_texture_t * texture)
 static void eir_gfx_release_texture(eir_gfx_texture_t * texture)
 {
    eir_gfx_init_texture(texture);
+   // TODO: call to destroy texture API function
 }
 
-void eir_gfx_set_batch_capacity(eir_gfx_env_t * gfx_env, int max_capacity)
+void eir_gfx_init_env(eir_gfx_env_t * gfx_env)
+{
+   if (gfx_env)
+   {
+      EIR_KER_INIT_ARRAY(gfx_env->sprite_batches);
+      EIR_KER_INIT_ARRAY(gfx_env->text_batches);
+      EIR_KER_INIT_ARRAY(gfx_env->images);
+      EIR_KER_INIT_ARRAY(gfx_env->sprites_ref);
+      EIR_KER_INIT_ARRAY(gfx_env->textures);
+      EIR_KER_INIT_ARRAY(gfx_env->line_batch.vertices);
+      EIR_KER_INIT_ARRAY(gfx_env->quad_batch.vertices);
+   }
+}
+
+void eir_gfx_release_env(eir_gfx_env_t * gfx_env)
+{
+   if (gfx_env)
+   {
+      EIR_KER_FREE_ARRAY_BIS(gfx_env->sprite_batches, eir_gfx_release_sprite_batch);
+      EIR_KER_FREE_ARRAY_BIS(gfx_env->text_batches, eir_gfx_release_sprite_batch);
+      EIR_KER_FREE_ARRAY_BIS(gfx_env->sprite_ref, eir_gfx_release_sprite_ref);
+      EIR_KER_FREE_ARRAY_BIS(gfx_env->images, eir_gfx_release_image);
+      EIR_KER_FREE_ARRAY_BIS(gfx_env->textures, eir_gfx_release_texture);
+      EIR_KER_FREE_ARRAY_BIS(gfx_env->line_batch.vertices, eir_gfx_release_vertex);
+      EIR_KER_FREE_ARRAY_BIS(gfx_env->quad_batch.vertices, eir_gfx_release_vertex);
+   }
+}
+
+void eir_gfx_set_sprite_batch_capacity(eir_gfx_env_t * gfx_env, int max_capacity)
 {
    if (gfx_env)
    {
@@ -722,7 +751,7 @@ void eir_gfx_set_max_sprite_ref_count(eir_env_t * env, size_t max_count)
 
 eir_handle_t eir_gfx_create_sprite_ref(
    eir_env_t * env,
-   eir_handle_t img_handle,
+   eir_handle_t texture_handle,
    int img_x_offset,
    int img_y_offset,
    int img_width_offset,
@@ -731,7 +760,7 @@ eir_handle_t eir_gfx_create_sprite_ref(
 {
    eir_handle_t sprite_ref_handle = EIR_INVALID_HANDLE;
    eir_gfx_sprite_ref_t * sprite_ref = 0;
-   eir_gfx_image_t * image = 0;
+   eir_gfx_texture_t * texture = 0;
    eir_gfx_env_t * gfx_env = 0;
       
    if (env)
@@ -748,8 +777,8 @@ eir_handle_t eir_gfx_create_sprite_ref(
       sprite_ref->uv_offset.y = (float)img_y_offset;
       sprite_ref->uv_size.x = (float)img_width_offset;
       sprite_ref->uv_size.y = (float)img_height_offset;
-      EIR_KER_GET_ARRAY_ITEM(gfx_env->images, img_handle, image);
-      sprite_ref->image = image;
+      EIR_KER_GET_ARRAY_ITEM(gfx_env->textures, texture_handle, texture);
+      sprite_ref->texture = texture;
    }
    return sprite_ref_handle;
 }
@@ -758,14 +787,34 @@ void eir_gfx_create_all_batches(eir_gfx_env_t * gfx_env)
 {
    if (gfx_env)
    {
+      eir_gfx_sprite_batch_array_t * batch_array = &gfx_env->sprite_batches;
       eir_gfx_sprite_ref_array_t * sprite_ref_array = &gfx_env->sprites_ref;
-      eir_gfx_sprite_ref_t * sprite_ref = 0;
 
       for (int sprite_ref_index = 0; sprite_ref_index < sprite_ref_array->used; ++sprite_ref_index)
       {
+	 eir_gfx_sprite_ref_t * sprite_ref = 0;
+
 	 EIR_KER_GET_ARRAY_ITEM((*sprite_ref_array), sprite_ref_index, sprite_ref);
 	 if (sprite_ref)
 	 {
+	    eir_gfx_sprite_batch_t * batch = 0;
+
+	    for (int batch_index = 0; batch_index < batch_array->used; ++batch_index)
+	    {
+	       eir_gfx_sprite_batch_t * batch_iter = 0;
+
+	       EIR_KER_GET_ARRAY_ITEM((*batch_array), batch_index, batch_iter);
+	       if (batch_iter && batch_iter->texture == sprite_ref->texture)
+	       {
+		  batch = batch_iter;
+		  break;
+	       }
+	    }
+	    if (!batch)
+	    {
+	       // TODO: create batch
+	    }
+	    // TODO: add sprite to batch using sprite_ref info and entity info
 	 }
       }
    }

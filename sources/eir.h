@@ -155,7 +155,7 @@ eir_handle_t eir_gfx_create_texture(eir_env_t * env, eir_handle_t img_handle);
 void eir_gfx_set_max_sprite_ref_count(eir_env_t * env, size_t max_count);
 eir_handle_t eir_gfx_create_sprite_ref(
    eir_env_t * env,
-   eir_handle_t img_handle,
+   eir_handle_t texture_handle,
    int img_x_offset,
    int img_y_offset,
    int img_width_offset,

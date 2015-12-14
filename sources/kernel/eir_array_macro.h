@@ -31,10 +31,15 @@
       size_t used;						\
    } array_name;
 
+#define EIR_KER_INIT_ARRAY(array)		\
+   array.data = 0;				\
+   array.used = 0;				\
+   array.capacity = 0;
+
 /**
  * Init an array.
  */
-#define EIR_KER_INIT_ARRAY(item_type, array, max_capacity)		\
+#define EIR_KER_ALLOCATE_ARRAY(item_type, array, max_capacity)		\
    EIR_SYS_ALLOC(array.data, sizeof(item_type), max_capacity);		\
    array.capacity = max_capacity;					\
    array.used = 0;
@@ -42,8 +47,8 @@
 /**
  * Init an array and all its elements
  */
-#define EIR_KER_INIT_ARRAY_AND_DATA(item_type, array, max_capacity, data_init_func) \
-   EIR_KER_INIT_ARRAY(item_type, array, max_capacity)			\
+#define EIR_KER_ALLOCATE_ARRAY_BIS(item_type, array, max_capacity, data_init_func) \
+   EIR_KER_ALLOCATE_ARRAY(item_type, array, max_capacity)		\
    for (int data_index = 0; data_index < array.capacity; ++data_index)	\
    {									\
       data_init_func(&array.data[data_index]);				\
@@ -112,17 +117,38 @@
    item_ptr = (index >= 0 && index < array.used) ? &array.data[index] : 0;
 
 /**
- * Release array data allocated memory and reinit the struct.
+ * Reinit structure. Does not change array size and does not free allocated memory
  */
 #define EIR_KER_RELEASE_ARRAY(array)		\
+   array.used = 0;				\
+   array.capacity = 0;
+
+/**
+ * Release array data and reinit structure. Does not change array size and doest not free allocated
+ * memory
+ */
+#define EIR_KER_RELEASE_ARRAY_BIS(array, data_release_func)		\
+   for (int data_index = 0; data_index < array.capacity; ++data_index)	\
+   {									\
+      data_release_func(&array.data[data_index]);			\
+   }									\
+   EIR_KER_RELEASE_ARRAY(array);
+
+/**
+ * Free array data allocated memory and reinit the struct.
+ */
+#define EIR_KER_FREE_ARRAY(array)		\
    EIR_SYS_FREE(array.data);			\
    array.capacity = 0;				\
    array.used = 0;				\
    array.data = 0;
 
-#define EIR_KER_RELEASE_ARRAY_AND_DATA(array, data_release_func)	\
+/**
+ * Free array allocated memory, release data and reinit the struct.
+ */
+#define EIR_KER_FREE_ARRAY_BIS(array, data_release_func)		\
    for (int data_index = 0; data_index < array.capacity; ++data_index)	\
    {									\
       data_release_func(&array.data[data_index]);			\
    }									\
-   EIR_KER_RELEASE_ARRAY(array)
+   EIR_KER_FREE_ARRAY(array)

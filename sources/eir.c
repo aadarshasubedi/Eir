@@ -54,15 +54,7 @@ static void eir_stop(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env, eir_snd_e
    eir_snd_release_all_sounds(snd_env);
    eir_snd_api_release();
    eir_sys_close_joystick(sys_env->joystick.handle);
-   eir_gfx_release_all_batches(gfx_env);
-   eir_gfx_release_all_images(gfx_env);
-   eir_gfx_release_all_sprites_ref(gfx_env);
    eir_sys_win_api_destroy_window(gfx_env);
-   EIR_KER_RELEASE_ARRAY(gfx_env->sprite_batches);
-   EIR_KER_RELEASE_ARRAY(gfx_env->text_batches);
-   EIR_KER_RELEASE_ARRAY(snd_env->sounds);
-   EIR_KER_RELEASE_ARRAY(gfx_env->images);
-   EIR_KER_RELEASE_ARRAY(gfx_env->sprites_ref);
 }
 
 static void eir_check_allocate_and_free_func()
@@ -115,14 +107,22 @@ eir_env_t * eir_create_env()
 {
    eir_check_allocate_and_free_func();
 
-   eir_env_t * env = eir_sys_allocate(sizeof(eir_env_t), 1);
+   eir_env_t * private_env = eir_sys_allocate(sizeof(eir_env_t), 1);
+   eir_ker_env_t * env = 0;
 
+   if (private_env)
+   {
+      private_env->private = eir_sys_allocate(sizeof(eir_ker_env_t), 1);
+      env = (eir_ker_env_t *)(env->private);
+   }
    if (env)
    {
-      env->private = eir_sys_allocate(sizeof(eir_ker_env_t), 1);
-      ((eir_ker_env_t *)(env->private))->event_callback = 0;
+      env->event_callback = 0;
+      eir_gfx_init_env(&env->gfx_env);
+      eir_snd_init_env(&env->snd_env);
+      eir_fsm_init_env(&env->fsm_env);
    }
-   return env;
+   return private_env;
 }
 
 void eir_run(eir_env_t * env)
@@ -167,17 +167,17 @@ void eir_run(eir_env_t * env)
    eir_handle_t sound_handle;
    eir_handle_t text_handle;
 
-   eir_gfx_set_batch_capacity(gfx_env, 2);
-   eir_gfx_set_text_capacity(gfx_env, 2);
-   eir_gfx_set_line_capacity(gfx_env, 10);
-   eir_gfx_set_quad_capacity(gfx_env, 10);
-   eir_snd_set_sound_capacity(snd_env, 2);
+   //eir_gfx_set_batch_capacity(gfx_env, 2);
+   //eir_gfx_set_text_capacity(gfx_env, 2);
+   //eir_gfx_set_line_capacity(gfx_env, 10);
+   //eir_gfx_set_quad_capacity(gfx_env, 10);
+   //eir_snd_set_sound_capacity(snd_env, 2);
 
-   batch_handle = eir_gfx_create_sprite_batch(gfx_env, 2);
+   //batch_handle = eir_gfx_create_sprite_batch(gfx_env, 2);
 
    eir_init_player_state(&gme_env->player_1_state);
 
-/**/
+/*
    position.x = gme_env->player_1_state.position.x;
    position.y = gme_env->player_1_state.position.y;
    size.x = 1.0f;
@@ -205,7 +205,7 @@ void eir_run(eir_env_t * env)
    color.b = 1.0f;
    color.a = 1.0f;
    eir_gfx_add_sprite(gfx_env, &position, &size, &uv_offset, &uv_size, &color, batch_handle);
-/**/
+*/
 
    position.x = -18.0f;
    position.y = 9.0f;
@@ -285,7 +285,7 @@ void eir_run(eir_env_t * env)
    eir_snd_api_init();
 
    // TODO: to remove 
-   sound_handle = eir_snd_load_sound_file(snd_env, "../resources/sounds/medium.wav");
+   //sound_handle = eir_snd_load_sound_file(snd_env, "../resources/sounds/medium.wav");
    // -------------------------
 
    eir_sys_start_timer(&sys_env->timer);
@@ -336,6 +336,11 @@ void eir_destroy_env(eir_env_t * env)
    {
       if (env->private)
       {
+	 eir_ker_env_t * all_env = (eir_ker_env_t *)(env->private);
+
+	 eir_gfx_release_env(&all_env->gfx_env);
+	 eir_snd_release_env(&all_env->snd_env);
+	 eir_fsm_release_env(&all_env->fsm_env);
 	 eir_sys_free(env->private);
 	 env->private = 0;
       }
