@@ -87,22 +87,8 @@ static void eir_fsm_release_state_machine(eir_fsm_state_machine_t * state_machin
 {
    if (state_machine)
    {
-      EIR_KER_RELEASE_ARRAY_AND_DATA(state_machine->states, eir_fsm_release_state);
+      EIR_KER_FREE_ARRAY_BIS(state_machine->states, eir_fsm_release_state);
       eir_fsm_init_state_machine(state_machine);
-   }
-}
-
-static void eir_fsm_init_env(eir_fsm_env_t * env, size_t max_state_machine_count)
-{
-   if (env)
-   {
-      EIR_KER_INIT_ARRAY_AND_DATA(
-	 eir_fsm_state_machine_t,
-	 env->state_machines,
-	 max_state_machine_count, 
-	 eir_fsm_init_state_machine
-	 );
-      env->curr_state_machine = 0;
    }
 }
 
@@ -111,6 +97,14 @@ static void eir_fsm_init_env(eir_fsm_env_t * env, size_t max_state_machine_count
  * EIR INTERNAL FUNCTIONS (eir_fsm_func.h)
  *
  *******************************************************/
+
+void eir_fsm_init_env(eir_fsm_env_t * env)
+{
+   if (env)
+   {
+      EIR_KER_INIT_ARRAY(env->state_machines);
+   }
+}
 
 void eir_fsm_run_state_machine(eir_fsm_env_t * env)
 {
@@ -183,7 +177,7 @@ void eir_fsm_release_env(eir_fsm_env_t * env)
 {
    if (env)
    {
-      EIR_KER_RELEASE_ARRAY_AND_DATA(env->state_machines, eir_fsm_release_state_machine);
+      EIR_KER_FREE_ARRAY_BIS(env->state_machines, eir_fsm_release_state_machine);
       env->curr_state_machine = 0;
    }
 }
@@ -200,7 +194,12 @@ void eir_fsm_set_max_state_machine_count(eir_env_t * env, size_t max_state_machi
 
    if (fsm_env)
    {
-      eir_fsm_init_env(fsm_env, max_state_machine_count);
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+	 eir_fsm_state_machine_t,
+	 fsm_env->state_machines,
+	 max_state_machine_count, 
+	 eir_fsm_init_state_machine
+	 );
    }
 }
 
@@ -216,7 +215,7 @@ eir_handle_t eir_fsm_create_state_machine(eir_env_t * env, size_t max_state_coun
    }
    if (state_machine)
    {
-      EIR_KER_INIT_ARRAY_AND_DATA(
+      EIR_KER_ALLOCATE_ARRAY_BIS(
 	 eir_fsm_state_t,
 	 state_machine->states,
 	 max_state_count,

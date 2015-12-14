@@ -28,6 +28,7 @@ static void eir_gfx_init_sprite_batch(eir_gfx_sprite_batch_t * batch)
 
 static void eir_gfx_release_sprite_batch(eir_gfx_sprite_batch_t * batch)
 {
+   eir_gfx_api_release_sprite_batch(batch);
    eir_gfx_init_sprite_batch(batch);
 }
 
@@ -78,8 +79,29 @@ static void eir_gfx_init_texture(eir_gfx_texture_t * texture)
 
 static void eir_gfx_release_texture(eir_gfx_texture_t * texture)
 {
-   eir_gfx_init_texture(texture);
-   // TODO: call to destroy texture API function
+   if (texture)
+   {
+      eir_gfx_api_destroy_texture(texture->id);
+      eir_gfx_init_texture(texture);
+   }
+}
+
+static void eir_gfx_init_vertex(eir_gfx_vertex_t * vertex)
+{
+   if (vertex)
+   {
+      vertex->position.x = 0.0f;
+      vertex->position.y = 0.0f;
+      vertex->color.r = 0.0f;
+      vertex->color.g = 0.0f;
+      vertex->color.b = 0.0f;
+      vertex->color.a = 0.0f;
+   }
+}
+
+static void eir_gfx_release_vertex(eir_gfx_vertex_t * vertex)
+{
+   eir_gfx_init_vertex(vertex);
 }
 
 void eir_gfx_init_env(eir_gfx_env_t * gfx_env)
@@ -102,7 +124,7 @@ void eir_gfx_release_env(eir_gfx_env_t * gfx_env)
    {
       EIR_KER_FREE_ARRAY_BIS(gfx_env->sprite_batches, eir_gfx_release_sprite_batch);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->text_batches, eir_gfx_release_sprite_batch);
-      EIR_KER_FREE_ARRAY_BIS(gfx_env->sprite_ref, eir_gfx_release_sprite_ref);
+      EIR_KER_FREE_ARRAY_BIS(gfx_env->sprites_ref, eir_gfx_release_sprite_ref);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->images, eir_gfx_release_image);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->textures, eir_gfx_release_texture);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->line_batch.vertices, eir_gfx_release_vertex);
@@ -114,7 +136,7 @@ void eir_gfx_set_sprite_batch_capacity(eir_gfx_env_t * gfx_env, int max_capacity
 {
    if (gfx_env)
    {
-      EIR_KER_INIT_ARRAY_AND_DATA(
+      EIR_KER_ALLOCATE_ARRAY_BIS(
 	 eir_gfx_sprite_batch_t,
 	 gfx_env->sprite_batches,
 	 max_capacity,
@@ -127,7 +149,7 @@ void eir_gfx_set_text_capacity(eir_gfx_env_t * gfx_env, int max_capacity)
 {
    if (gfx_env)
    {
-      EIR_KER_INIT_ARRAY_AND_DATA(
+      EIR_KER_ALLOCATE_ARRAY_BIS(
 	 eir_gfx_sprite_batch_t,
 	 gfx_env->text_batches,
 	 max_capacity,
@@ -143,7 +165,12 @@ void eir_gfx_set_line_capacity(eir_gfx_env_t * gfx_env, int max_capacity)
       gfx_env->line_batch.built = false;
       gfx_env->line_batch.modified = false;
       gfx_env->line_batch.primitive_type = eir_gfx_primitive_type_lines;
-      EIR_KER_INIT_ARRAY(eir_gfx_vertex_t, gfx_env->line_batch.vertices, max_capacity * 2);
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+	 eir_gfx_vertex_t,
+	 gfx_env->line_batch.vertices,
+	 max_capacity * 2,
+	 eir_gfx_init_vertex
+	 );
    }
 }
 
@@ -154,7 +181,12 @@ void eir_gfx_set_quad_capacity(eir_gfx_env_t * gfx_env, int max_capacity)
       gfx_env->quad_batch.built = false;
       gfx_env->quad_batch.modified = false;
       gfx_env->quad_batch.primitive_type = eir_gfx_primitive_type_quads;
-      EIR_KER_INIT_ARRAY(eir_gfx_vertex_t, gfx_env->quad_batch.vertices, max_capacity * 4);
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+	 eir_gfx_vertex_t,
+	 gfx_env->quad_batch.vertices,
+	 max_capacity * 4,
+	 eir_gfx_init_vertex
+	 );
    }
 }
 
@@ -169,7 +201,7 @@ eir_handle_t eir_gfx_create_sprite_batch(eir_gfx_env_t * gfx_env, int max_capaci
    }
    if (batch)
    {
-      EIR_KER_INIT_ARRAY(eir_gfx_sprite_t, batch->sprites, max_capacity);
+      EIR_KER_ALLOCATE_ARRAY(eir_gfx_sprite_t, batch->sprites, max_capacity);
       batch->built = false;
       batch->modified = false;
    }
@@ -243,7 +275,7 @@ eir_handle_t eir_gfx_add_text(
    EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->text_batches, batch, batch_handle);
    if (batch)
    {
-      EIR_KER_INIT_ARRAY(eir_gfx_sprite_t, batch->sprites, text_len);
+      EIR_KER_ALLOCATE_ARRAY(eir_gfx_sprite_t, batch->sprites, text_len);
       batch->built = false;
       batch->modified = true;
    }
@@ -510,11 +542,11 @@ void eir_gfx_update_text(eir_gfx_env_t * gfx_env, eir_handle_t text_handle, cons
    color.b = batch->sprites.data[0].color.b;
    color.a = batch->sprites.data[0].color.a;
 
-   EIR_KER_RELEASE_ARRAY(batch->sprites);
+   EIR_KER_FREE_ARRAY(batch->sprites);
 
    int text_len = strlen(text);
 
-   EIR_KER_INIT_ARRAY(eir_gfx_sprite_t, batch->sprites, text_len);
+   EIR_KER_ALLOCATE_ARRAY(eir_gfx_sprite_t, batch->sprites, text_len);
    batch->modified = true;
 
    const float MAX_TEXTURE_WIDTH = 320;
@@ -559,35 +591,6 @@ void eir_gfx_update_text(eir_gfx_env_t * gfx_env, eir_handle_t text_handle, cons
    }
 }
 
-void eir_gfx_release_all_batches(eir_gfx_env_t * gfx_env)
-{
-   if (!gfx_env)
-   {
-      return;
-   }
-
-   eir_gfx_sprite_batch_t * batch = 0;
-
-   for (int index = 0; index < gfx_env->sprite_batches.used; ++index)
-   {
-      EIR_KER_GET_ARRAY_ITEM(gfx_env->sprite_batches, index, batch);
-      if (batch)
-      {
-	 eir_gfx_api_release_sprite_batch(batch);
-      }
-   }
-   for (int index = 0; index < gfx_env->text_batches.used; ++index)
-   {
-      EIR_KER_GET_ARRAY_ITEM(gfx_env->text_batches, index, batch);
-      if (batch)
-      {
-	 eir_gfx_api_release_sprite_batch(batch);
-      }
-   }
-   eir_gfx_api_release_vertex_batch(&gfx_env->line_batch);
-   eir_gfx_api_release_vertex_batch(&gfx_env->quad_batch);
-}
-
 void eir_gfx_set_max_image_count(eir_env_t * env, size_t max_count)
 {
    eir_gfx_env_t * gfx_env = 0;
@@ -595,7 +598,7 @@ void eir_gfx_set_max_image_count(eir_env_t * env, size_t max_count)
    if (env)
    {
       gfx_env = &(((eir_ker_env_t *)env->private)->gfx_env);
-      EIR_KER_INIT_ARRAY_AND_DATA(eir_gfx_image_t, gfx_env->images, max_count, eir_gfx_init_image);
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gfx_image_t, gfx_env->images, max_count, eir_gfx_init_image);
    }
 }
 
@@ -637,7 +640,7 @@ void eir_gfx_set_max_texture_count(eir_env_t * env, size_t max_count)
    if (env)
    {
       gfx_env = &(((eir_ker_env_t *)env->private)->gfx_env);
-      EIR_KER_INIT_ARRAY_AND_DATA(
+      EIR_KER_ALLOCATE_ARRAY_BIS(
 	 eir_gfx_texture_t,
 	 gfx_env->textures,
 	 max_count,
@@ -689,58 +692,13 @@ eir_handle_t eir_gfx_create_texture(eir_env_t * env, eir_handle_t img_handle)
    return texture_handle;
 }
 
-void eir_gfx_release_all_images(eir_gfx_env_t * gfx_env)
-{
-   if (gfx_env)
-   {
-      for (int index = 0; index < gfx_env->images.used; ++index)
-      {
-	 eir_gfx_image_t * image = 0;
-
-	 EIR_KER_GET_ARRAY_ITEM(gfx_env->images, index, image);
-	 eir_gfx_release_image(image);
-      }
-      gfx_env->images.used = 0;
-   }
-}
-
-void eir_gfx_release_all_sprites_ref(eir_gfx_env_t * gfx_env)
-{
-   if (gfx_env)
-   {
-      for (int index = 0; index < gfx_env->sprites_ref.used; ++index)
-      {
-	 eir_gfx_sprite_ref_t * sprite_ref = 0;
-
-	 EIR_KER_GET_ARRAY_ITEM(gfx_env->sprites_ref, index, sprite_ref);
-	 eir_gfx_release_sprite_ref(sprite_ref);
-      }
-      gfx_env->sprites_ref.used = 0;
-   }
-}
-
-void eir_gfx_release_all_textures(eir_gfx_env_t * gfx_env)
-{
-   if (gfx_env)
-   {
-      for (int index = 0; index < gfx_env->textures.used; ++index)
-      {
-	 eir_gfx_texture_t * texture = 0;
-
-	 EIR_KER_GET_ARRAY_ITEM(gfx_env->textures, index, texture);
-	 eir_gfx_release_texture(texture);
-      }
-      gfx_env->textures.used = 0;
-   }
-}
-
 void eir_gfx_set_max_sprite_ref_count(eir_env_t * env, size_t max_count)
 {
    if (env)
    {
       eir_gfx_env_t * gfx_env = &(((eir_ker_env_t *)env->private)->gfx_env);
 
-      EIR_KER_INIT_ARRAY_AND_DATA(
+      EIR_KER_ALLOCATE_ARRAY_BIS(
 	 eir_gfx_sprite_ref_t,
 	 gfx_env->sprites_ref,
 	 max_count,

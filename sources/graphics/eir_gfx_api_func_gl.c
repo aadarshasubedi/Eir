@@ -34,6 +34,10 @@ void eir_gfx_api_init()
    glDisable(GL_DEPTH_TEST);
 }
 
+void eir_gfx_api_release()
+{
+}
+
 eir_gfx_api_texture_handle_t eir_gfx_api_create_texture(eir_gfx_image_t * image)
 {
    eir_gfx_api_texture_handle_t texture = EIR_GFX_INVALID_TEXTURE_HANDLE;
@@ -428,11 +432,15 @@ void eir_gfx_api_bind_sprite_attributes(
    glEnableVertexAttribArray(color_attr);
 }
 
+void eir_gfx_api_destroy_texture(eir_gfx_api_texture_handle_t texture_handle)
+{
+   glDeleteTextures(1, &texture_handle);
+}
+
 void eir_gfx_api_release_sprite_batch(eir_gfx_sprite_batch_t * batch)
 {
    glDeleteBuffers(1, &batch->vbo);
    glDeleteVertexArrays(1, &batch->vao);
-   glDeleteTextures(1, batch->texture_id);
    EIR_KER_RELEASE_ARRAY(batch->sprites);
 }
 

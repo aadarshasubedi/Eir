@@ -34,27 +34,27 @@
 
 #include "fsm/eir_fsm_func.h"
 
-static void eir_start(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env)
+static void eir_start(eir_ker_env_t * env)//eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env)
 {
    eir_sys_win_api_init();
-   eir_sys_win_api_create_window(gfx_env);
+   eir_sys_win_api_create_window(&env->gfx_env);
    eir_gfx_api_init();
    eir_snd_api_init();
-   eir_sys_init(sys_env);
-   eir_gfx_api_load_sprite_shaders(gfx_env);
-   eir_gfx_api_load_text_shaders(gfx_env);
-   eir_gfx_api_load_default_shaders(gfx_env);
+   eir_gfx_api_load_sprite_shaders(&env->gfx_env);
+   eir_gfx_api_load_text_shaders(&env->gfx_env);
+   eir_gfx_api_load_default_shaders(&env->gfx_env);
 }
 
-static void eir_stop(eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env, eir_snd_env_t * snd_env)
+static void eir_stop(eir_ker_env_t * env)//eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env, eir_snd_env_t * snd_env)
 {
-   eir_gfx_api_unload_default_shaders(gfx_env);
-   eir_gfx_api_unload_text_shaders(gfx_env);
-   eir_gfx_api_unload_sprite_shaders(gfx_env);
-   eir_snd_release_all_sounds(snd_env);
+   eir_gfx_api_unload_default_shaders(&env->gfx_env);
+   eir_gfx_api_unload_text_shaders(&env->gfx_env);
+   eir_gfx_api_unload_sprite_shaders(&env->gfx_env);
    eir_snd_api_release();
-   eir_sys_close_joystick(sys_env->joystick.handle);
-   eir_sys_win_api_destroy_window(gfx_env);
+   eir_gfx_api_release();
+   //eir_sys_close_joystick(&env->sys_env.joystick.handle); // TODO: close anywhere else
+   eir_sys_win_api_destroy_window(&env->gfx_env);
+   eir_sys_win_api_release();
 }
 
 static void eir_check_allocate_and_free_func()
@@ -93,6 +93,13 @@ static void eir_check_event_callback(eir_ker_env_t * env)
    }
 }
 
+static void eir_render_frame_rate(eir_gfx_env_t * gfx_env, float elapsed_time, eir_handle_t text_handle)
+{
+   char c[32];
+   sprintf(c, "frame rate: %1.3f", elapsed_time);
+   eir_gfx_update_text(gfx_env, text_handle, c);
+}
+
 void eir_set_allocate_func(eir_allocate_t allocate_func)
 {
    eir_sys_allocate = allocate_func;
@@ -113,7 +120,7 @@ eir_env_t * eir_create_env()
    if (private_env)
    {
       private_env->private = eir_sys_allocate(sizeof(eir_ker_env_t), 1);
-      env = (eir_ker_env_t *)(env->private);
+      env = (eir_ker_env_t *)(private_env->private);
    }
    if (env)
    {
@@ -121,6 +128,7 @@ eir_env_t * eir_create_env()
       eir_gfx_init_env(&env->gfx_env);
       eir_snd_init_env(&env->snd_env);
       eir_fsm_init_env(&env->fsm_env);
+      eir_sys_init_env(&env->sys_env);
    }
    return private_env;
 }
@@ -156,6 +164,7 @@ void eir_run(eir_env_t * env)
       return;
    }
 
+/*
    eir_mth_vec2_t position;
    eir_mth_vec2_t size;
    eir_mth_vec2_t uv_offset;
@@ -166,6 +175,7 @@ void eir_run(eir_env_t * env)
    eir_handle_t sprite_handle;
    eir_handle_t sound_handle;
    eir_handle_t text_handle;
+*/
 
    //eir_gfx_set_batch_capacity(gfx_env, 2);
    //eir_gfx_set_text_capacity(gfx_env, 2);
@@ -175,7 +185,7 @@ void eir_run(eir_env_t * env)
 
    //batch_handle = eir_gfx_create_sprite_batch(gfx_env, 2);
 
-   eir_init_player_state(&gme_env->player_1_state);
+   //eir_init_player_state(&gme_env->player_1_state);
 
 /*
    position.x = gme_env->player_1_state.position.x;
@@ -207,14 +217,21 @@ void eir_run(eir_env_t * env)
    eir_gfx_add_sprite(gfx_env, &position, &size, &uv_offset, &uv_size, &color, batch_handle);
 */
 
+#ifdef EIR_DEBUG
+   eir_mth_vec2_t position;
+   eir_gfx_color_t color;
+   eir_handle_t frame_rate_text_handle;
+
    position.x = -18.0f;
    position.y = 9.0f;
    color.r = 0.0f;
    color.g = 0.0f;
    color.b = 1.0f;
    color.a = 1.0f;
-   text_handle = eir_gfx_add_text(gfx_env, "DEBUG TEST TEXT", &position, 1.0f, &color);
+   frame_rate_text_handle = eir_gfx_add_text(gfx_env, "DEBUG TEST TEXT", &position, 1.0f, &color);
+#endif
 
+/*
    eir_mth_vec2_t line_a;
    eir_mth_vec2_t line_b;
    eir_gfx_color_t line_a_color;
@@ -271,18 +288,17 @@ void eir_run(eir_env_t * env)
    color.b = 0.8f;
    color.a = 1.0f;
    eir_gfx_add_quad(gfx_env, &position, &size, &color);
+*/
 
-   eir_start(gfx_env, sys_env);
+   eir_start(all_env);
 
    // TODO: put anywhere else
-   if (eir_sys_get_joystick_count() > 0)
-   {
-      sys_env->joystick.handle = eir_sys_get_joystick(0);
-      gme_env->player_1_state.pad_index = 0;
-   }
+   //if (eir_sys_get_joystick_count() > 0)
+   //{
+   //   sys_env->joystick.handle = eir_sys_get_joystick(0);
+   //   gme_env->player_1_state.pad_index = 0;
+   //}
    // -------------------------
-
-   eir_snd_api_init();
 
    // TODO: to remove 
    //sound_handle = eir_snd_load_sound_file(snd_env, "../resources/sounds/medium.wav");
@@ -293,40 +309,31 @@ void eir_run(eir_env_t * env)
    for (;;)
    {
       eir_sys_update_timer(&sys_env->timer);
-
-      char c[32];
-      sprintf(c, "frame rate: %1.3f", sys_env->timer.elapsed_time);
-      eir_gfx_update_text(gfx_env, text_handle, c);
-
+#ifdef EIR_DEBUG
+      eir_render_frame_rate(gfx_env, sys_env->timer.elapsed_time, frame_rate_text_handle);
+#endif
       if (!eir_sys_win_api_poll_all_events(all_env->event_callback, env))
       {
 	 break;
       }
-
       eir_fsm_update_state_machine(fsm_env);
-
       eir_gfx_api_set_clear_color();
       eir_gfx_api_clear_buffer();
-      
+      eir_gfx_render_all_batches(gfx_env);
+      eir_sys_win_api_swap_buffer(gfx_env);
       // TODO: remove when plauer state system fully implemented
       //gfx_env->sprite_batches.data[0].sprites.data[0].position.x = gme_env->player_1_state.position.x;
       //gfx_env->sprite_batches.data[0].sprites.data[0].position.y = gme_env->player_1_state.position.y;
       //gfx_env->sprite_batches.data[0].modified = true;
       // -------------------------
-
       // TODO: remove when event sound system up
       //if (sys_env->joystick.x_axis_value != 0)
       //{
       // eir_snd_play_sound(snd_env, sound_handle);
       //}
       // -------------------------
-
-      eir_gfx_render_all_batches(gfx_env);
-      eir_sys_win_api_swap_buffer(gfx_env);
    }
-   EIR_KER_LOG_MESSAGE("stop eir");
-   eir_fsm_release_env(fsm_env);
-   eir_stop(gfx_env, sys_env, snd_env);
+   eir_stop(all_env);
    EIR_SYS_LOG_ALLOCATED_ELEM;
 }
 
@@ -341,6 +348,7 @@ void eir_destroy_env(eir_env_t * env)
 	 eir_gfx_release_env(&all_env->gfx_env);
 	 eir_snd_release_env(&all_env->snd_env);
 	 eir_fsm_release_env(&all_env->fsm_env);
+	 eir_sys_release_env(&all_env->sys_env);
 	 eir_sys_free(env->private);
 	 env->private = 0;
       }

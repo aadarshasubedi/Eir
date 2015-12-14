@@ -21,6 +21,11 @@ bool eir_sys_win_api_init()
    return result;
 }
 
+void eir_sys_win_api_release()
+{
+   SDL_Quit();
+}
+
 // TOOD: use window own env when created
 void eir_sys_win_api_create_window(eir_gfx_env_t * gfx_env)
 {
@@ -155,5 +160,4 @@ bool eir_sys_win_api_poll_all_events(eir_sys_event_callback_t event_callback, ei
 void eir_sys_win_api_destroy_window(eir_gfx_env_t * gfx_env)
 {
    SDL_GL_DeleteContext(gfx_env->context);
-   SDL_Quit();
 }
