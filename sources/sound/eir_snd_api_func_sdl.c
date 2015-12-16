@@ -32,23 +32,23 @@ void eir_snd_api_release()
    Mix_CloseAudio();
 }
 
-eir_snd_sound_handle_t eir_snd_api_load_sound_file(const char * filename)
+eir_snd_api_chunk_t eir_snd_api_create_chunk_from_file(const char * filename)
 {
-   eir_snd_sound_handle_t result = Mix_LoadWAV(filename);
+   eir_snd_api_chunk_t chunk = Mix_LoadWAV(filename);
    
-   if (!result)
+   if (!chunk)
    {
       EIR_KER_LOG_ERROR("cannot load sound file %s: %s", filename, Mix_GetError());
    }
-   return result;
+   return chunk;
 }
 
-void eir_snd_api_release_sound(eir_snd_sound_handle_t handle)
+void eir_snd_api_destroy_chunk(eir_snd_api_chunk_t * chunk)
 {
-   Mix_FreeChunk(handle);
+   Mix_FreeChunk(*chunk);
 }
 
-void eir_snd_api_play_sound(eir_snd_sound_handle_t handle)
+void eir_snd_api_play_chunk(eir_snd_api_chunk_t * chunk)
 {
-   Mix_PlayChannel(-1, handle, 0);
+   Mix_PlayChannel(-1, *chunk, 0);
 }

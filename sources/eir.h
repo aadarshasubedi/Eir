@@ -163,6 +163,7 @@ eir_handle_t eir_gfx_create_sprite_ref(
    );
 
 // ENTITY MANAGEMENT
+void eir_ecs_set_max_entity_count(eir_env_t * env, size_t max_count);
 eir_handle_t eir_ecs_create_entity(eir_env_t * env);
 bool eir_ecs_set_entity_position(eir_env_t * env, int x, int y);
 bool eir_ecs_set_entity_size(eir_env_t * env, int width, int height);

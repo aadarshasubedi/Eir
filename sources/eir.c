@@ -125,6 +125,7 @@ eir_env_t * eir_create_env()
    if (env)
    {
       env->event_callback = 0;
+      eir_ecs_init_env(&env->ecs_env_;
       eir_gfx_init_env(&env->gfx_env);
       eir_snd_init_env(&env->snd_env);
       eir_fsm_init_env(&env->fsm_env);
@@ -345,6 +346,7 @@ void eir_destroy_env(eir_env_t * env)
       {
 	 eir_ker_env_t * all_env = (eir_ker_env_t *)(env->private);
 
+	 eir_ecs_release_env(&all_env->ecs_env);
 	 eir_gfx_release_env(&all_env->gfx_env);
 	 eir_snd_release_env(&all_env->snd_env);
 	 eir_fsm_release_env(&all_env->fsm_env);

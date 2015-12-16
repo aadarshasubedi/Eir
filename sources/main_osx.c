@@ -88,7 +88,6 @@ static void init_gfx(eir_env_t * env)
       "../resources/images/placeholder_atlas.png",
       true
       );
-   
 }
 
 int main()

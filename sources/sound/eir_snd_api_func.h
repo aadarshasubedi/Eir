@@ -4,6 +4,6 @@
 
 void eir_snd_api_init();
 void eir_snd_api_release();
-eir_snd_sound_handle_t eir_snd_api_load_sound_file(const char * filename);
-void eir_snd_api_release_sound(eir_snd_sound_handle_t handle);
-void eir_snd_api_play_sound(eir_snd_sound_handle_t handle);
+eir_snd_api_chunk_t eir_snd_api_create_chunk_from_file(const char * filename);
+void eir_snd_api_destroy_chunk(eir_snd_api_chunk_t * chunk);
+void eir_snd_api_play_chunk(eir_snd_api_chunk_t * chunk);
