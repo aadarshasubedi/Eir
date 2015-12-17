@@ -6,7 +6,6 @@
 #include "../sound/eir_snd_env.h"
 #include "../game/eir_gme_env.h"
 #include "../fsm/eir_fsm_env.h"
-#include "../ecs/eir_ecs_env.h"
 
 typedef struct
 {
@@ -15,6 +14,5 @@ typedef struct
    eir_snd_env_t snd_env;
    eir_gme_env_t gme_env;
    eir_fsm_env_t fsm_env;
-   eir_ecs_env_t ecs_env;
    eir_sys_event_callback_t event_callback;
 } eir_ker_env_t;

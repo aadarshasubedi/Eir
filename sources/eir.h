@@ -162,12 +162,32 @@ eir_handle_t eir_gfx_create_sprite_ref(
    int img_height_offset
    );
 
-// ENTITY MANAGEMENT
-void eir_ecs_set_max_entity_count(eir_env_t * env, size_t max_count);
-eir_handle_t eir_ecs_create_entity(eir_env_t * env);
-bool eir_ecs_set_entity_position(eir_env_t * env, int x, int y);
-bool eir_ecs_set_entity_size(eir_env_t * env, int width, int height);
-bool eir_ecs_set_entity_sprite(eir_env_t * env, eir_handle_t sprite_ref_handle);
+// WORLD AND ENTITY MANAGEMENT
+void eir_gme_set_world_count(eir_env_t * env, size_t max_count);
+eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count);
+void eir_gme_set_curr_world(eir_env_t * env, eir_handle_t world_handle);
+
+eir_handle_t eir_gme_create_world_entity(eir_env_t * env, eir_handle_t world_handle);
+bool eir_gme_set_world_entity_position(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle,
+   int x,
+   int y
+   );
+bool eir_gme_set_world_entity_size(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle,
+   int width,
+   int height
+   );
+bool eir_gme_set_world_entity_sprite_ref(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle,
+   eir_handle_t sprite_ref_handle
+   );
 
 // RUN GAME LOOP
 void eir_run(eir_env_t * env);

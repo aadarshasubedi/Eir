@@ -30,7 +30,7 @@
 #include "game/eir_gme_env.h"
 #include "game/eir_gme_func.h"
 
-#include "kernel/eir_env.h"
+#include "kernel/eir_ker_env.h"
 
 #include "fsm/eir_fsm_func.h"
 
@@ -69,6 +69,7 @@ static void eir_check_allocate_and_free_func()
    }
 }
 
+/*
 static void eir_init_player_state(eir_gme_player_state_t * player_state)
 {
    if (!player_state)
@@ -84,6 +85,7 @@ static void eir_init_player_state(eir_gme_player_state_t * player_state)
    player_state->motion_param.acceleration.x = 0.0f;
    player_state->motion_param.acceleration.y = 0.0f;
 }
+*/
 
 static void eir_check_event_callback(eir_ker_env_t * env)
 {
@@ -125,11 +127,11 @@ eir_env_t * eir_create_env()
    if (env)
    {
       env->event_callback = 0;
-      eir_ecs_init_env(&env->ecs_env_;
       eir_gfx_init_env(&env->gfx_env);
       eir_snd_init_env(&env->snd_env);
       eir_fsm_init_env(&env->fsm_env);
       eir_sys_init_env(&env->sys_env);
+      eir_gme_init_env(&env->gme_env);
    }
    return private_env;
 }
@@ -346,11 +348,11 @@ void eir_destroy_env(eir_env_t * env)
       {
 	 eir_ker_env_t * all_env = (eir_ker_env_t *)(env->private);
 
-	 eir_ecs_release_env(&all_env->ecs_env);
 	 eir_gfx_release_env(&all_env->gfx_env);
 	 eir_snd_release_env(&all_env->snd_env);
 	 eir_fsm_release_env(&all_env->fsm_env);
 	 eir_sys_release_env(&all_env->sys_env);
+	 eir_gme_release_env(&all_env->gme_env);
 	 eir_sys_free(env->private);
 	 env->private = 0;
       }
