@@ -194,3 +194,6 @@ void eir_run(eir_env_t * env);
 
 // CALL AT THE END
 void eir_destroy_env(eir_env_t * env);
+
+//DEBUG
+void eir_display_mem_leaks();

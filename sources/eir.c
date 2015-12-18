@@ -34,7 +34,7 @@
 
 #include "fsm/eir_fsm_func.h"
 
-static void eir_start(eir_ker_env_t * env)//eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env)
+static void eir_start(eir_ker_env_t * env)
 {
    eir_sys_win_api_init();
    eir_sys_win_api_create_window(&env->gfx_env);
@@ -45,7 +45,7 @@ static void eir_start(eir_ker_env_t * env)//eir_gfx_env_t * gfx_env, eir_sys_env
    eir_gfx_api_load_default_shaders(&env->gfx_env);
 }
 
-static void eir_stop(eir_ker_env_t * env)//eir_gfx_env_t * gfx_env, eir_sys_env_t * sys_env, eir_snd_env_t * snd_env)
+static void eir_stop(eir_ker_env_t * env)
 {
    eir_gfx_api_unload_default_shaders(&env->gfx_env);
    eir_gfx_api_unload_text_shaders(&env->gfx_env);
@@ -181,7 +181,7 @@ void eir_run(eir_env_t * env)
 */
 
    //eir_gfx_set_batch_capacity(gfx_env, 2);
-   //eir_gfx_set_text_capacity(gfx_env, 2);
+   eir_gfx_set_text_capacity(gfx_env, 2);
    //eir_gfx_set_line_capacity(gfx_env, 10);
    //eir_gfx_set_quad_capacity(gfx_env, 10);
    //eir_snd_set_sound_capacity(snd_env, 2);
@@ -337,11 +337,11 @@ void eir_run(eir_env_t * env)
       // -------------------------
    }
    eir_stop(all_env);
-   EIR_SYS_LOG_ALLOCATED_ELEM;
 }
 
 void eir_destroy_env(eir_env_t * env)
 {
+   EIR_KER_LOG_MESSAGE("destroy all env");
    if (env)
    {
       if (env->private)
@@ -359,4 +359,11 @@ void eir_destroy_env(eir_env_t * env)
       eir_sys_free(env);
       env = 0;
    }
+}
+
+void eir_display_mem_leaks()
+{
+#ifdef EIR_DEBUG
+   EIR_SYS_LOG_ALLOCATED_ELEM;
+#endif
 }

@@ -16,6 +16,7 @@ static void eir_gfx_init_sprite_batch(eir_gfx_sprite_batch_t * batch)
 {
    if (batch)
    {
+      EIR_KER_INIT_ARRAY(batch->sprites);
       batch->vbo = EIR_GFX_INVALID_VBO_HANDLE;
       batch->vao = EIR_GFX_INVALID_VAO_HANDLE;
       batch->texture = 0;
@@ -28,8 +29,12 @@ static void eir_gfx_init_sprite_batch(eir_gfx_sprite_batch_t * batch)
 
 static void eir_gfx_release_sprite_batch(eir_gfx_sprite_batch_t * batch)
 {
-   eir_gfx_api_release_sprite_batch(batch);
-   eir_gfx_init_sprite_batch(batch);
+   if (batch)
+   {
+      eir_gfx_api_release_sprite_batch(batch);
+      EIR_KER_FREE_ARRAY(batch->sprites);
+      eir_gfx_init_sprite_batch(batch);
+   }
 }
 
 static void eir_gfx_init_image(eir_gfx_image_t * image)

@@ -94,9 +94,10 @@ int main()
 {
    eir_env_t * env = 0;
    env = eir_create_env();
-   init_fsm(env);
-   init_gfx(env);
+   //init_fsm(env);
+   //init_gfx(env);
    eir_run(env);
    eir_destroy_env(env);
+   eir_display_mem_leaks();
    return 0;
 }
