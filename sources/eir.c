@@ -348,11 +348,21 @@ void eir_destroy_env(eir_env_t * env)
       {
 	 eir_ker_env_t * all_env = (eir_ker_env_t *)(env->private);
 
+	 EIR_KER_LOG_MESSAGE("before gfx release");
 	 eir_gfx_release_env(&all_env->gfx_env);
+	 EIR_KER_LOG_MESSAGE("after gfx release");
+	 EIR_KER_LOG_MESSAGE("before snd release");
 	 eir_snd_release_env(&all_env->snd_env);
+	 EIR_KER_LOG_MESSAGE("after snd release");
+	 EIR_KER_LOG_MESSAGE("before fsm release");
 	 eir_fsm_release_env(&all_env->fsm_env);
+	 EIR_KER_LOG_MESSAGE("after fsm release");
+	 EIR_KER_LOG_MESSAGE("before sys release");
 	 eir_sys_release_env(&all_env->sys_env);
+	 EIR_KER_LOG_MESSAGE("after sys release");
+	 EIR_KER_LOG_MESSAGE("before gme release");
 	 eir_gme_release_env(&all_env->gme_env);
+	 EIR_KER_LOG_MESSAGE("after gme release");
 	 eir_sys_free(env->private);
 	 env->private = 0;
       }
