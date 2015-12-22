@@ -47,7 +47,7 @@ eir_handle_t eir_gfx_add_quad(
    );
 */
 
-void eir_gfx_create_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t * world);
+void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t * world);
 void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env);
 void eir_gfx_update_text(eir_gfx_env_t * gfx_env, eir_handle_t text_handle, const char * text);
 //void eir_gfx_release_all_batches(eir_gfx_env_t * gfx_env);

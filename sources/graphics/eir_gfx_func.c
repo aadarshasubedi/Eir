@@ -740,7 +740,7 @@ eir_handle_t eir_gfx_create_sprite_ref(
    return sprite_ref_handle;
 }
 
-void eir_gfx_create_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t * world)
+void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t * world)
 {
    if (gfx_env && world)
    {
