@@ -30,6 +30,7 @@ void eir_snd_release_env(eir_snd_env_t * env)
 {
    if (env)
    {
+      EIR_KER_LOG_MESSAGE("release sound env");
       EIR_KER_FREE_ARRAY_BIS(env->sounds, eir_snd_release_sound);
    }
 }

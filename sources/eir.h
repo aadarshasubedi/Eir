@@ -188,6 +188,15 @@ bool eir_gme_set_world_entity_sprite_ref(
    eir_handle_t entity_handle,
    eir_handle_t sprite_ref_handle
    );
+bool eir_gme_set_world_entity_color(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle,
+   float r,
+   float g,
+   float b,
+   float a
+   );
 
 // RUN GAME LOOP
 void eir_run(eir_env_t * env);

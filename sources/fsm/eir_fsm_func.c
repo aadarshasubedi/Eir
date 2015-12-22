@@ -177,6 +177,7 @@ void eir_fsm_release_env(eir_fsm_env_t * env)
 {
    if (env)
    {
+      EIR_KER_LOG_MESSAGE("release fsm env");
       EIR_KER_FREE_ARRAY_BIS(env->state_machines, eir_fsm_release_state_machine);
       env->curr_state_machine = 0;
    }

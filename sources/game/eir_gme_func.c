@@ -15,6 +15,7 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->positions);
       EIR_KER_INIT_ARRAY(world->sizes);
       EIR_KER_INIT_ARRAY(world->sprite_ref_handles);
+      EIR_KER_INIT_ARRAY(world->colors);
    }
 }
 
@@ -26,6 +27,7 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->positions);
       EIR_KER_FREE_ARRAY(world->sizes);
       EIR_KER_FREE_ARRAY(world->sprite_ref_handles);
+      EIR_KER_FREE_ARRAY(world->colors);
    }
 }
 
@@ -94,6 +96,22 @@ static void eir_gme_release_sprite_ref_handle(eir_handle_t * sprite_ref_handle)
    eir_gme_init_sprite_ref_handle(sprite_ref_handle);
 }
 
+static void eir_gme_init_color(eir_gfx_color_t * color)
+{
+   if (color)
+   {
+      color->r = 1.0f;
+      color->g = 1.0f;
+      color->b = 1.0f;
+      color->a = 1.0f;
+   }
+}
+
+static void eir_gme_release_color(eir_gfx_color_t * color)
+{
+   eir_gme_init_color(color);
+}
+
 static eir_gme_world_t * eir_gme_get_world(eir_gme_env_t * env, eir_handle_t world_handle)
 {
    eir_gme_world_t * world = 0;
@@ -122,6 +140,7 @@ void eir_gme_release_env(eir_gme_env_t * env)
 {
    if (env)
    {
+      EIR_KER_LOG_MESSAGE("release game env");
       EIR_KER_FREE_ARRAY_BIS(env->worlds, eir_gme_release_world);
       env->curr_world = 0;
    }
@@ -181,6 +200,12 @@ eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count)
 	 world->sprite_ref_handles,
 	 max_entity_count,
 	 eir_gme_init_sprite_ref_handle
+	 );
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+	 eir_handle_t,
+	 world->colors,
+	 max_entity_count,
+	 eir_gme_init_color
 	 );
    }
    return world_handle;
@@ -293,6 +318,38 @@ bool eir_gme_set_world_entity_sprite_ref(
       (*entity) |= eir_gme_component_type_sprite;
       (*sprite_ref_handle_ptr) = sprite_ref_handle;
       result = true;
+   }
+   return result;
+}
+
+bool eir_gme_set_world_entity_color(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle,
+   float r,
+   float g,
+   float b,
+   float a
+   )
+{
+   bool result = false;
+   eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
+   eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
+   eir_gme_entity_t * entity = 0;
+   eir_gfx_color_t * color = 0;
+
+   if (world)
+   {
+      EIR_KER_GET_ARRAY_ITEM(world->entities, entity_handle, entity);
+      EIR_KER_GET_ARRAY_ITEM(world->colors, entity_handle,color);
+   }
+   if (entity && color)
+   {
+      (*entity) |= eir_gme_component_type_color;
+      color->r = r;
+      color->g = g;
+      color->b = b;
+      color->a = a;
    }
    return result;
 }

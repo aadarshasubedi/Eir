@@ -53,6 +53,7 @@ static void update_move_state()
    // TODO: move entity
 }
 
+/*
 static void init_fsm(eir_env_t * env)
 {
    if (!env)
@@ -77,7 +78,9 @@ static void init_fsm(eir_env_t * env)
    eir_fsm_add_state_transition(env, fsm, move_state, idle_state);
    eir_fsm_set_active_state_machine(env, fsm);
 }
+*/
 
+ /*
 static void init_gfx(eir_env_t * env)
 {
    eir_gfx_set_max_image_count(env, 10);
@@ -89,6 +92,7 @@ static void init_gfx(eir_env_t * env)
       true
       );
 }
+ */
 
 int main()
 {

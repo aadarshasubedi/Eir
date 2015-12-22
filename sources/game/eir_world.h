@@ -3,6 +3,7 @@
 #include "../kernel/eir_array_macro.h"
 #include "../maths/eir_vector.h"
 #include "../eir_internal.h"
+#include "../graphics/eir_color.h"
 
 typedef int eir_gme_entity_t;
 #define EIR_GME_INVALID_ENTITY 0
@@ -14,7 +15,8 @@ typedef enum
    eir_gme_component_type_none = 0,
    eir_gme_component_type_sprite = 1 << 0,
    eir_gme_component_type_position = 1 << 1,
-   eir_gme_component_type_size = 1 << 2
+   eir_gme_component_type_size = 1 << 2,
+   eir_gme_component_type_color = 1 << 3
 } eir_gme_component_type;
 
 typedef struct
@@ -23,4 +25,5 @@ typedef struct
    eir_mth_vec2_array_t positions;
    eir_mth_vec2_array_t sizes;
    eir_handle_array_t sprite_ref_handles;
+   eir_gfx_color_array_t colors;
 } eir_gme_world_t;

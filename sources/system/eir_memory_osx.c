@@ -86,7 +86,7 @@ void eir_sys_debug_free(void * item_ptr)
 	       elem_iter->previous->next = elem_iter->next;
 	    }
 	    if (elem_iter->next)
-	    {
+ 	    {
 	       elem_iter->next->previous = elem_iter->previous;
 	    }
 	    if (elem_iter == eir_sys_allocated_elem_curr)
@@ -99,8 +99,8 @@ void eir_sys_debug_free(void * item_ptr)
 	 }
 	 elem_iter = elem_iter->previous;
       }
+      EIR_KER_LOG_ERROR("no allocated item found for %p", item_ptr);
    }
-   EIR_KER_LOG_ERROR("no allocated item found for %p", item_ptr);
 }
 
 void eir_sys_debug_log_allocation()
