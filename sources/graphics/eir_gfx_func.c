@@ -27,7 +27,7 @@ static void eir_gfx_init_sprite_batch(eir_gfx_sprite_batch_t * batch)
       batch->vbo = EIR_GFX_INVALID_VBO_HANDLE;
       batch->vao = EIR_GFX_INVALID_VAO_HANDLE;
       batch->texture = 0;
-      batch->texture_id[0] = EIR_GFX_INVALID_TEXTURE_HANDLE;
+      //batch->texture-[0] = EIR_GFX_INVALID_TEXTURE_HANDLE;
       batch->program = EIR_GFX_INVALID_PROGRAM_HANDLE;
       batch->built = false;
       batch->modified = false;
@@ -135,6 +135,8 @@ void eir_gfx_release_env(eir_gfx_env_t * gfx_env)
    if (gfx_env)
    {
       EIR_KER_LOG_MESSAGE("release graphics env");
+      eir_gfx_api_destroy_texture(gfx_env->text_texture.id);
+      eir_gfx_api_destroy_image(&gfx_env->text_image);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->sprite_batches, eir_gfx_release_sprite_batch);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->text_batches, eir_gfx_release_sprite_batch);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->sprites_ref, eir_gfx_release_sprite_ref);
@@ -483,7 +485,7 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	    eir_gfx_api_set_buffer_data(batch);
 	    glBindVertexArray(0);
 	 }
-	 glBindTexture(GL_TEXTURE_2D, batch->texture_id[0]); // TODO: put in api func file !
+	 glBindTexture(GL_TEXTURE_2D, batch->texture->id); // TODO: put in api func file !
 	 glUseProgram(batch->program); // TODO: put in the api func file !
 	 eir_gfx_api_draw_sprite_batch(batch);
 	 glUseProgram(0); // TODO: put in api func file !

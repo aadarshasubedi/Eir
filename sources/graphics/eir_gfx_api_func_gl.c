@@ -10,7 +10,7 @@ static void eir_gfx_debug_log_sprite_batch(eir_gfx_sprite_batch_t * batch)
    EIR_KER_LOG_MESSAGE("%s", "sprite batch info:");
    EIR_KER_LOG_MESSAGE("vbo: %d", batch->vbo);
    EIR_KER_LOG_MESSAGE("vao: %d", batch->vao);
-   EIR_KER_LOG_MESSAGE("texture: %d", batch->texture_id[0]);
+   EIR_KER_LOG_MESSAGE("texture: %d", batch->texture->id);
    EIR_KER_LOG_MESSAGE("sprites count: %d", batch->sprites.used);
    EIR_KER_LOG_MESSAGE("%s", "---------------------------");
 }
@@ -262,14 +262,21 @@ void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_
 
    EIR_KER_LOG_MESSAGE("load and use atlas texture");
 
-   eir_gfx_image_t * image = eir_gfx_api_create_image(DEFAULT_FONT_IMAGE_PATH, true);
+   bool result = eir_gfx_api_load_image(DEFAULT_FONT_IMAGE_PATH, true, &gfx_env->text_image);
 
-   if (image)
+   if (result)
    {
-      batch->texture_id[0] = eir_gfx_api_create_texture(image);
+      gfx_env->text_texture.image = &gfx_env->text_image;
+      gfx_env->text_texture.id = eir_gfx_api_create_texture(&gfx_env->text_image);
+      batch->texture = &gfx_env->text_texture;
+      //batch->texture_id[0] = eir_gfx_api_create_texture(image);
       glUniform1i(glGetUniformLocation(gfx_env->text_program, "tex0"), 0);
-      glUniform2f(glGetUniformLocation(gfx_env->text_program, "atlasSize"), image->width, image->height);
-      eir_gfx_api_destroy_image(image);
+      glUniform2f(
+	 glGetUniformLocation(gfx_env->text_program, "atlasSize"),
+	 gfx_env->text_image.width,
+	 gfx_env->text_image.height
+	 );
+      //eir_gfx_api_destroy_image(image);
    }
    else
    {
