@@ -103,6 +103,7 @@ void eir_fsm_init_env(eir_fsm_env_t * env)
    if (env)
    {
       EIR_KER_INIT_ARRAY(env->state_machines);
+      env->curr_state_machine = 0;
    }
 }
 

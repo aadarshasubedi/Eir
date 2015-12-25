@@ -94,12 +94,34 @@ static void init_gfx(eir_env_t * env)
 }
  */
 
+#define PLACE_HOLDER_IMAGE_PATH "../resources/images/placeholder_atlas.png"
+
 int main()
 {
    eir_env_t * env = 0;
    env = eir_create_env();
-   //init_fsm(env);
-   //init_gfx(env);
+
+   eir_gfx_set_max_image_count(env, 1);
+   eir_gfx_set_max_sprite_ref_count(env, 1);
+   eir_gfx_set_max_texture_count(env, 1);
+
+   eir_handle_t ph_atlas_image = eir_gfx_load_image(env, PLACE_HOLDER_IMAGE_PATH, true);
+   eir_handle_t ph_texture = eir_gfx_create_texture(env, ph_atlas_image);
+   eir_handle_t ph_sprite_ref = eir_gfx_create_sprite_ref(env, ph_texture, 0, 0, 64, 64);
+
+   eir_gme_set_max_world_count(env, 1);
+
+   eir_handle_t world = eir_gme_create_world(env, 1);
+   
+   eir_gme_set_curr_world(env, world);
+
+   eir_handle_t entity = eir_gme_create_world_entity(env, world);
+
+   eir_gme_set_world_entity_position(env, world, entity, 0, 0);
+   eir_gme_set_world_entity_size(env, world, entity, 2, 2);
+   eir_gme_set_world_entity_sprite_ref(env, world, entity, ph_sprite_ref);
+   eir_gme_set_world_entity_color(env, world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
+
    eir_run(env);
    eir_destroy_env(env);
    eir_display_mem_leaks();

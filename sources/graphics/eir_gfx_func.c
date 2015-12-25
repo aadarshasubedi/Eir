@@ -9,6 +9,13 @@ static void eir_gfx_debug_log_sprite(eir_gfx_sprite_t * sprite)
    EIR_KER_LOG_MESSAGE("size = (%f, %f)", sprite->size.x, sprite->size.y);
    EIR_KER_LOG_MESSAGE("uv_offset = (%f, %f)", sprite->uv_offset.x, sprite->uv_offset.y);
    EIR_KER_LOG_MESSAGE("uv_size = (%f, %f)", sprite->uv_size.x, sprite->uv_size.y);
+   EIR_KER_LOG_MESSAGE(
+      "color = (%f, %f, %f, %f)",
+      sprite->color.r,
+      sprite->color.g,
+      sprite->color.b,
+      sprite->color.a
+      );
    EIR_KER_LOG_MESSAGE("%s", "---------------------------");
 }
 
@@ -454,7 +461,7 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	    eir_gfx_api_set_buffer_data(batch);
 	    glBindVertexArray(0);
 	 }
-	 glBindTexture(GL_TEXTURE_2D, batch->texture_id[0]); // TODO: put in api func file !
+	 glBindTexture(GL_TEXTURE_2D, batch->texture->id); // TODO: put in api func file !
 	 glUseProgram(batch->program); // TODO: put in the api func file !
 	 eir_gfx_api_draw_sprite_batch(batch);
 	 glUseProgram(0); // TODO: put in api func file !
@@ -628,6 +635,10 @@ eir_handle_t eir_gfx_load_image(eir_env_t * env, const char * img_filename, bool
 	 EIR_KER_FREE_ARRAY_LAST_RESERVED_SLOT(gfx_env->images);
 	 image_handle = EIR_INVALID_HANDLE;
       }
+      else
+      {
+	 EIR_KER_LOG_MESSAGE("%s has been loaded", img_filename);
+      }
    }
    return image_handle;
 }
@@ -683,6 +694,7 @@ eir_handle_t eir_gfx_create_texture(eir_env_t * env, eir_handle_t img_handle)
 	 {
 	    EIR_KER_LOG_ERROR("cannot create texture from image handle %d", img_handle);
 	 }
+	 EIR_KER_LOG_ERROR("create texture from image %d has failed: release texture slot", img_handle);
 	 eir_gfx_release_texture(texture);
 	 EIR_KER_FREE_ARRAY_LAST_RESERVED_SLOT(gfx_env->textures);
 	 texture_handle = EIR_INVALID_HANDLE;
@@ -730,11 +742,16 @@ eir_handle_t eir_gfx_create_sprite_ref(
    }
    if (sprite_ref)
    {
+      EIR_KER_LOG_MESSAGE("create sprite ref with texture %d", texture_handle)
       sprite_ref->uv_offset.x = (float)img_x_offset;
       sprite_ref->uv_offset.y = (float)img_y_offset;
       sprite_ref->uv_size.x = (float)img_width_offset;
       sprite_ref->uv_size.y = (float)img_height_offset;
       EIR_KER_GET_ARRAY_ITEM(gfx_env->textures, texture_handle, texture);
+      if (!texture)
+      {
+	 EIR_KER_LOG_ERROR("cannot find texture %d in textures array", texture_handle);
+      }
       sprite_ref->texture = texture;
    }
    return sprite_ref_handle;
@@ -742,17 +759,57 @@ eir_handle_t eir_gfx_create_sprite_ref(
 
 void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t * world)
 {
+   EIR_KER_LOG_MESSAGE("generate all batches from specified world");
    if (gfx_env && world)
    {
-      const eir_gme_entity_t * entity = 0;
+      size_t needed_batch_count = 0;
+      eir_gme_entity_t * entity = 0;
+
+      EIR_KER_LOG_MESSAGE("%d entities found", world->entities.used);
+
+      for (int i = 0; i < world->entities.used; ++i)
+      {
+	 EIR_KER_LOG_MESSAGE("entity %d flags = %d", i, world->entities.data[i]);
+	 if ((world->entities.data[i] & eir_gme_component_type_sprite) == eir_gme_component_type_sprite)
+	 {
+	    EIR_KER_LOG_MESSAGE("entity %d has sprite", i);
+
+	    int j;
+
+	    for (j = 0; j < i; ++j)
+	    {
+	       if (world->sprite_ref_handles.data[i] == world->sprite_ref_handles.data[j])
+	       {
+		  break;
+	       }
+	    }
+	    if (j == i)
+	    {
+	       ++needed_batch_count;
+	    }
+	 }
+      }
+
+      if (needed_batch_count == 0)
+      {
+	 EIR_KER_LOG_MESSAGE("no need to generate batch. 0 sprite entities found")
+	 return;
+      }
+
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+	 eir_gfx_sprite_batch_t,
+	 gfx_env->sprite_batches,
+	 needed_batch_count,
+	 eir_gfx_init_sprite_batch
+	 );
 
       for (int entity_index = 0; entity_index < world->entities.used; ++entity_index)
       {
 	 EIR_KER_GET_ARRAY_ITEM(world->entities, entity_index, entity);
 	 if (entity && ((*entity) & eir_gme_component_type_sprite))
 	 {
-	    int batch_item_count = 0;
-	    const eir_handle_t * sprite_ref_handle_ptr = 0;
+	    int batch_item_count = 1;
+	    eir_handle_t * sprite_ref_handle_ptr = 0;
 	    eir_handle_t sprite_ref_handle = EIR_INVALID_HANDLE;
 
 	    EIR_KER_GET_ARRAY_ITEM(world->sprite_ref_handles, entity_index, sprite_ref_handle_ptr);
@@ -788,6 +845,7 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 		     batch_index,
 		     batch_iter
 		     );
+
 		  if (batch_iter && batch_iter->texture == sprite_ref->texture)
 		  {
 		     batch = batch_iter;
@@ -797,7 +855,7 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	       if (!batch)
 	       {
 		  int sibling_entity_index = entity_index + 1;
-		  const eir_handle_t * sibling_sprite_ref_handle_ptr = 0;
+		  eir_handle_t * sibling_sprite_ref_handle_ptr = 0;
 		  EIR_KER_GET_ARRAY_ITEM(
 		     world->sprite_ref_handles,
 		     sibling_entity_index,
@@ -825,6 +883,14 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 		  continue;
 	       }
 
+	       EIR_KER_LOG_MESSAGE(
+		  "create batch for %d sprite(s) with texture id = %d",
+		  batch_item_count,
+		  sprite_ref->texture->id
+		  );
+
+	       batch->texture = sprite_ref->texture;
+
 	       eir_mth_vec2_t * position = 0;
 	       eir_mth_vec2_t * size = 0;
 	       eir_gfx_color_t * color = 0;
@@ -844,9 +910,9 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 		  entity_index,
 		  color
 		  );
-	       if (batch && sprite_ref && position && size && color)
+
+	       if (sprite_ref && position && size && color)
 	       {
-		  batch->texture = sprite_ref->texture;
 		  eir_gfx_add_sprite_to_batch(
 		     batch,
 		     position,
@@ -859,5 +925,9 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	    }
 	 }
       }
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot generate all batches : gfx env or world are empty");
    }
 }

@@ -163,7 +163,7 @@ eir_handle_t eir_gfx_create_sprite_ref(
    );
 
 // WORLD AND ENTITY MANAGEMENT
-void eir_gme_set_world_count(eir_env_t * env, size_t max_count);
+void eir_gme_set_max_world_count(eir_env_t * env, size_t max_count);
 eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count);
 void eir_gme_set_curr_world(eir_env_t * env, eir_handle_t world_handle);
 

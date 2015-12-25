@@ -150,7 +150,7 @@ void eir_gme_release_env(eir_gme_env_t * env)
  * EXTERNAL FUNCTIONS
  *****************************************/
 
-void eir_gme_set_world_count(eir_env_t * env, size_t max_count)
+void eir_gme_set_max_world_count(eir_env_t * env, size_t max_count)
 {
    eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
 
@@ -231,6 +231,10 @@ eir_handle_t eir_gme_create_world_entity(eir_env_t * env, eir_handle_t world_han
    if (world)
    {
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->entities, entity_handle);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->positions, entity_handle);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->sizes, entity_handle);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->sprite_ref_handles, entity_handle);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->colors, entity_handle);
    }
    return entity_handle;
 }
@@ -261,6 +265,10 @@ bool eir_gme_set_world_entity_position(
       position->y = (float)y;
       result = true;
    }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity_handle);
+   }
    return result;
 }
 
@@ -290,6 +298,10 @@ bool eir_gme_set_world_entity_size(
       size->y = (float)height;
       result = true;
    }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity_handle);
+   }
    return result;
 }
 
@@ -318,6 +330,10 @@ bool eir_gme_set_world_entity_sprite_ref(
       (*entity) |= eir_gme_component_type_sprite;
       (*sprite_ref_handle_ptr) = sprite_ref_handle;
       result = true;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity_handle);
    }
    return result;
 }
@@ -350,6 +366,11 @@ bool eir_gme_set_world_entity_color(
       color->g = g;
       color->b = b;
       color->a = a;
+      result = true;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity_handle);
    }
    return result;
 }

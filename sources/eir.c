@@ -34,7 +34,7 @@
 
 #include "fsm/eir_fsm_func.h"
 
-static void eir_start(eir_ker_env_t * env)
+static void eir_init_all_api(eir_ker_env_t * env)
 {
    eir_sys_win_api_init();
    eir_sys_win_api_create_window(&env->gfx_env);
@@ -132,6 +132,7 @@ eir_env_t * eir_create_env()
       eir_fsm_init_env(&env->fsm_env);
       eir_sys_init_env(&env->sys_env);
       eir_gme_init_env(&env->gme_env);
+      eir_init_all_api(env);
    }
    return private_env;
 }
@@ -228,9 +229,9 @@ void eir_run(eir_env_t * env)
    position.x = -18.0f;
    position.y = 9.0f;
    color.r = 0.0f;
-   color.g = 0.0f;
-   color.b = 1.0f;
-   color.a = 1.0f;
+   color.g = 1.0f;
+   color.b = 0.0f;
+   color.a = 0.7f;
    frame_rate_text_handle = eir_gfx_add_text(gfx_env, "DEBUG TEST TEXT", &position, 1.0f, &color);
 #endif
 
@@ -293,8 +294,6 @@ void eir_run(eir_env_t * env)
    eir_gfx_add_quad(gfx_env, &position, &size, &color);
 */
 
-   eir_start(all_env);
-
    // TODO: put anywhere else
    //if (eir_sys_get_joystick_count() > 0)
    //{
@@ -309,6 +308,7 @@ void eir_run(eir_env_t * env)
 
    eir_sys_start_timer(&sys_env->timer);
    eir_fsm_run_state_machine(fsm_env);
+   eir_gfx_generate_all_batches(gfx_env, gme_env->curr_world);
    for (;;)
    {
       eir_sys_update_timer(&sys_env->timer);

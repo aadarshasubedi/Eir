@@ -44,8 +44,13 @@ eir_gfx_api_texture_handle_t eir_gfx_api_create_texture(eir_gfx_image_t * image)
 
    if (image)
    {
-      EIR_KER_LOG_MESSAGE("create texture image: w=%d, h=%d", image->width, image->height);
       glGenTextures(1, &texture);
+      EIR_KER_LOG_MESSAGE(
+	 "create texture image: w=%d, h=%d, id = %d",
+	 image->width,
+	 image->height,
+	 texture
+	 );
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, texture);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -365,7 +370,7 @@ void eir_gfx_api_draw_vertex_batch(eir_gfx_vertex_batch_t * batch)
 
 void eir_gfx_api_set_clear_color()
 {
-   glClearColor(1.f, .5f, 0.5f, 1.f);
+   glClearColor(0.f, 0.f, 0.f, 1.f);
 }
 
 void eir_gfx_api_clear_buffer()
