@@ -269,14 +269,12 @@ void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_
       gfx_env->text_texture.image = &gfx_env->text_image;
       gfx_env->text_texture.id = eir_gfx_api_create_texture(&gfx_env->text_image);
       batch->texture = &gfx_env->text_texture;
-      //batch->texture_id[0] = eir_gfx_api_create_texture(image);
       glUniform1i(glGetUniformLocation(gfx_env->text_program, "tex0"), 0);
       glUniform2f(
 	 glGetUniformLocation(gfx_env->text_program, "atlasSize"),
 	 gfx_env->text_image.width,
 	 gfx_env->text_image.height
 	 );
-      //eir_gfx_api_destroy_image(image);
    }
    else
    {

@@ -27,7 +27,6 @@ static void eir_gfx_init_sprite_batch(eir_gfx_sprite_batch_t * batch)
       batch->vbo = EIR_GFX_INVALID_VBO_HANDLE;
       batch->vao = EIR_GFX_INVALID_VAO_HANDLE;
       batch->texture = 0;
-      //batch->texture-[0] = EIR_GFX_INVALID_TEXTURE_HANDLE;
       batch->program = EIR_GFX_INVALID_PROGRAM_HANDLE;
       batch->built = false;
       batch->modified = false;
@@ -136,7 +135,7 @@ void eir_gfx_release_env(eir_gfx_env_t * gfx_env)
    {
       EIR_KER_LOG_MESSAGE("release graphics env");
       eir_gfx_api_destroy_texture(gfx_env->text_texture.id);
-      eir_gfx_api_destroy_image(&gfx_env->text_image);
+      EIR_SYS_FREE(gfx_env->text_image.pixels);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->sprite_batches, eir_gfx_release_sprite_batch);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->text_batches, eir_gfx_release_sprite_batch);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->sprites_ref, eir_gfx_release_sprite_ref);
