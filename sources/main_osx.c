@@ -8,7 +8,7 @@ typedef struct
    eir_handle_t entity_handle;
 } player_t;
 
-static bool validate_idle_state_by_event(const eir_event_t * event)
+static bool validate_idle_state(const eir_event_t * event)
 {
    bool result = false;
 
@@ -29,7 +29,7 @@ static bool validate_idle_state_by_event(const eir_event_t * event)
    return result;
 }
 
-static bool validate_move_right_state_by_event(const eir_event_t * event)
+static bool validate_move_right_state(const eir_event_t * event)
 {
    bool result = false;
 
@@ -45,7 +45,7 @@ static bool validate_move_right_state_by_event(const eir_event_t * event)
    return result;
 }
 
-static bool validate_move_left_state_by_event(const eir_event_t * event)
+static bool validate_move_left_state(const eir_event_t * event)
 {
    bool result = false;
 
@@ -168,13 +168,9 @@ int main()
 
    eir_fsm_set_begin_state(env, fsm, idle_state);
    eir_fsm_set_end_state(env, fsm, end_state);
-   eir_fsm_set_state_validate_by_event_func(env, fsm, idle_state, validate_idle_state_by_event);
-   eir_fsm_set_state_validate_by_event_func(
-      env, fsm, move_right_state, validate_move_right_state_by_event
-      );
-   eir_fsm_set_state_validate_by_event_func(
-      env, fsm, move_left_state, validate_move_left_state_by_event
-      );
+   eir_fsm_set_state_validate_by_event_func(env, fsm, idle_state, validate_idle_state);
+   eir_fsm_set_state_validate_by_event_func(env, fsm, move_right_state, validate_move_right_state);
+   eir_fsm_set_state_validate_by_event_func(env, fsm, move_left_state, validate_move_left_state);
    eir_fsm_set_state_update_func(env, fsm, idle_state, update_idle_state);
    eir_fsm_set_state_update_func(env, fsm, move_right_state, update_move_right_state);
    eir_fsm_set_state_update_func(env, fsm, move_left_state, update_move_left_state);
