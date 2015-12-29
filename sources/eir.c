@@ -54,7 +54,6 @@ static void eir_stop(eir_ker_env_t * env)
    eir_gfx_api_unload_sprite_shaders(&env->gfx_env);
    eir_snd_api_release();
    eir_gfx_api_release();
-   //eir_sys_close_joystick(&env->sys_env.joystick.handle); // TODO: close anywhere else
    eir_sys_win_api_destroy_window(&env->gfx_env);
    eir_sys_win_api_release();
 }
@@ -70,24 +69,6 @@ static void eir_check_allocate_and_free_func()
       eir_sys_free = eir_sys_default_free;
    }
 }
-
-/*
-static void eir_init_player_state(eir_gme_player_state_t * player_state)
-{
-   if (!player_state)
-   {
-      return;
-   }
-   player_state->position.x = 0.0f;
-   player_state->position.y = 0.0f;
-   player_state->motion_param.velocity.x = 0.0f;
-   player_state->motion_param.velocity.y = 0.0f;
-   player_state->motion_param.max_velocity.x = 5.0f;
-   player_state->motion_param.max_velocity.y = 5.0f;
-   player_state->motion_param.acceleration.x = 0.0f;
-   player_state->motion_param.acceleration.y = 0.0f;
-}
-*/
 
 static void eir_check_event_callback(eir_ker_env_t * env)
 {
@@ -128,13 +109,13 @@ eir_env_t * eir_create_env()
    }
    if (env)
    {
+      eir_init_all_api(env);
       env->event_callback = 0;
       eir_gfx_init_env(&env->gfx_env);
       eir_snd_init_env(&env->snd_env);
       eir_fsm_init_env(&env->fsm_env);
       eir_sys_init_env(&env->sys_env);
       eir_gme_init_env(&env->gme_env);
-      eir_init_all_api(env);
    }
    return private_env;
 }
@@ -174,9 +155,6 @@ void eir_run(eir_env_t * env)
    //eir_gfx_set_line_capacity(gfx_env, 10);
    //eir_gfx_set_quad_capacity(gfx_env, 10);
    //eir_snd_set_sound_capacity(snd_env, 2);
-
-
-   //eir_init_player_state(&gme_env->player_1_state);
 
 #ifdef EIR_DEBUG
    eir_mth_vec2_t position;
@@ -251,18 +229,6 @@ void eir_run(eir_env_t * env)
    eir_gfx_add_quad(gfx_env, &position, &size, &color);
 */
 
-   // TODO: put anywhere else
-   //if (eir_sys_get_joystick_count() > 0)
-   //{
-   //   sys_env->joystick.handle = eir_sys_get_joystick(0);
-   //   gme_env->player_1_state.pad_index = 0;
-   //}
-   // -------------------------
-
-   // TODO: to remove 
-   //sound_handle = eir_snd_load_sound_file(snd_env, "../resources/sounds/medium.wav");
-   // -------------------------
-
    float time_per_frame = 1.0f / 60.0f;
    float time_since_last_update = 0.0f;
 
@@ -281,6 +247,7 @@ void eir_run(eir_env_t * env)
 	    return;
 	 }
 	 // UPDATE ALL SYSTEMS HERE EXCEPT RENDERING AND TIMER
+
 	 eir_fsm_update_state_machine(fsm_env);
 	 eir_phy_proceed_motion_entity_update(gme_env->curr_world, time_per_frame);
 
@@ -295,18 +262,6 @@ void eir_run(eir_env_t * env)
       eir_gfx_api_clear_buffer();
       eir_gfx_render_all_batches(gfx_env);
       eir_sys_win_api_swap_buffer(gfx_env);
-
-      // TODO: remove when plauer state system fully implemented
-      //gfx_env->sprite_batches.data[0].sprites.data[0].position.x = gme_env->player_1_state.position.x;
-      //gfx_env->sprite_batches.data[0].sprites.data[0].position.y = gme_env->player_1_state.position.y;
-      //gfx_env->sprite_batches.data[0].modified = true;
-      // -------------------------
-      // TODO: remove when event sound system up
-      //if (sys_env->joystick.x_axis_value != 0)
-      //{
-      // eir_snd_play_sound(snd_env, sound_handle);
-      //}
-      // -------------------------
    }
 }
 

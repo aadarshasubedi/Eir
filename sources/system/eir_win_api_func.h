@@ -2,7 +2,6 @@
 
 #include "../eir.h"
 #include "../graphics/eir_gfx_env.h" // TODO: use sys env when created
-#include "../system/eir_joystick.h"
 
 bool eir_sys_win_api_init();
 void eir_sys_win_api_release();

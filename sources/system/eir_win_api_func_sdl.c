@@ -113,6 +113,8 @@ bool eir_sys_win_api_poll_all_events(eir_sys_event_callback_t event_callback, ei
 
 	    event.type = eir_event_type_pad;
 	    event.pad_event.pad_index = sdl_event.jaxis.which;
+	    event.pad_event.x_axis_value = 0.0f;
+	    event.pad_event.y_axis_value = 0.0f;
 	    if (sdl_event.jaxis.axis == 0)
 	    {
 	       if (sdl_event.jaxis.value > EIR_SYS_JOYSTICK_DEAD_ZONE)

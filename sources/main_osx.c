@@ -26,6 +26,14 @@ static bool validate_idle_state(const eir_event_t * event)
    {
       result = true;
    }
+   else if (
+      event &&
+      eir_event_type_pad == event->type &&
+      event->pad_event.x_axis_value == 0.0f
+      )
+   {
+      result = true;
+   }
    return result;
 }
 
@@ -42,6 +50,15 @@ static bool validate_move_right_state(const eir_event_t * event)
    {
       result = true;
    }
+   else if (
+      event &&
+      eir_event_type_pad == event->type &&
+      event->pad_event.x_axis_value > 0.0f
+      )
+   {
+      printf("pad right\n");
+      result = true;
+   }
    return result;
 }
 
@@ -56,6 +73,15 @@ static bool validate_move_left_state(const eir_event_t * event)
       eir_keyboard_key_left == event->keyboard_event.key
       )
    {
+      result = true;
+   }
+   else if (
+      event &&
+      eir_event_type_pad == event->type &&
+      event->pad_event.x_axis_value < 0.0f
+      )
+   {
+      printf("pad left\n");
       result = true;
    }
    return result;

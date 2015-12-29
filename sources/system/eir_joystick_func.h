@@ -1,7 +1,5 @@
 #pragma once
 
-#include "eir_sys_types.h"
-
-int eir_sys_get_joystick_count();
-eir_sys_joystick_handle_t eir_sys_get_joystick(int joystick_index);
-void eir_sys_close_joystick(eir_sys_joystick_handle_t handle);
+int eir_sys_get_pad_count();
+eir_sys_pad_handle_t eir_sys_init_pad(int pad_index);
+void eir_sys_release_pad(eir_sys_pad_handle_t pad_handle);

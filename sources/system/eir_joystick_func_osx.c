@@ -1,20 +1,20 @@
 #include <SDL2/SDL.h>
 #include "eir_joystick_func.h"
 
-int eir_sys_get_joystick_count()
+int eir_sys_get_pad_count()
 {
    return SDL_NumJoysticks();
 }
 
-eir_sys_joystick_handle_t eir_sys_get_joystick(int joystick_index)
+eir_sys_pad_handle_t eir_sys_init_pad(int pad_index)
 {
-   return SDL_JoystickOpen(joystick_index);
+   return SDL_JoystickOpen(pad_index);
 }
 
-void eir_sys_close_joystick(eir_sys_joystick_handle_t handle)
+void eir_sys_release_pad(eir_sys_pad_handle_t pad_handle)
 {
-   if (handle && 0 < SDL_NumJoysticks())
+   if (SDL_JoystickGetAttached(pad_handle))
    {
-      SDL_JoystickClose(handle);
+      SDL_JoystickClose(pad_handle);
    }
 }
