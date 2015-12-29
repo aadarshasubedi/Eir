@@ -56,7 +56,6 @@ static bool validate_move_right_state(const eir_event_t * event)
       event->pad_event.x_axis_value > 0.0f
       )
    {
-      printf("pad right\n");
       result = true;
    }
    return result;
@@ -81,7 +80,6 @@ static bool validate_move_left_state(const eir_event_t * event)
       event->pad_event.x_axis_value < 0.0f
       )
    {
-      printf("pad left\n");
       result = true;
    }
    return result;
@@ -173,7 +171,7 @@ int main()
    eir_gme_set_world_entity_size(env, world, entity, 2, 2);
    eir_gme_set_world_entity_sprite_ref(env, world, entity, ph_sprite_ref);
    eir_gme_set_world_entity_color(env, world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
-   eir_gme_set_world_entity_acceleration(env, world, entity, 0.0f, 0.0f, 5.0f);
+   eir_gme_set_world_entity_acceleration(env, world, entity, 0.0f, 0.0f, 30.0f);
 
    // INIT PLAYER STRUCT
 
