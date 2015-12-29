@@ -34,6 +34,8 @@
 
 #include "fsm/eir_fsm_func.h"
 
+#include "physics/eir_motion_func.h"
+
 static void eir_init_all_api(eir_ker_env_t * env)
 {
    eir_sys_win_api_init();
@@ -168,58 +170,13 @@ void eir_run(eir_env_t * env)
       return;
    }
 
-/*
-   eir_mth_vec2_t position;
-   eir_mth_vec2_t size;
-   eir_mth_vec2_t uv_offset;
-   eir_mth_vec2_t uv_size;
-   eir_gfx_color_t color;
-   eir_gfx_sprite_batch_t * sprite_batch = 0;
-   eir_handle_t batch_handle;
-   eir_handle_t sprite_handle;
-   eir_handle_t sound_handle;
-   eir_handle_t text_handle;
-*/
-
-   /*eir_gfx_set_batch_capacity(gfx_env, 2);*/
    eir_gfx_set_text_capacity(gfx_env, 2);
    //eir_gfx_set_line_capacity(gfx_env, 10);
    //eir_gfx_set_quad_capacity(gfx_env, 10);
    //eir_snd_set_sound_capacity(snd_env, 2);
 
-   //batch_handle = eir_gfx_create_sprite_batch(gfx_env, 2);
 
    //eir_init_player_state(&gme_env->player_1_state);
-
-/*
-   position.x = gme_env->player_1_state.position.x;
-   position.y = gme_env->player_1_state.position.y;
-   size.x = 1.0f;
-   size.y = 1.0f;
-   uv_offset.x = 0.0f;
-   uv_offset.y = 0.0f;
-   uv_size.x = 64.0f;
-   uv_size.y = 64.0f;
-   color.r = 1.0f;
-   color.g = 0.0f;
-   color.b = 0.0f;
-   color.a = 1.0f;
-   eir_gfx_add_sprite(gfx_env, &position, &size, &uv_offset, &uv_size, &color, batch_handle);
-
-   position.x = 2.0f;
-   position.y = 2.0f;
-   size.x = 2.0f;
-   size.y = 2.0f;
-   uv_offset.x = 0.0f;
-   uv_offset.y = 64.0f;
-   uv_size.x = 64.0f;
-   uv_size.y = 64.0f;
-   color.r = 1.0f;
-   color.g = 1.0f;
-   color.b = 1.0f;
-   color.a = 1.0f;
-   eir_gfx_add_sprite(gfx_env, &position, &size, &uv_offset, &uv_size, &color, batch_handle);
-*/
 
 #ifdef EIR_DEBUG
    eir_mth_vec2_t position;
@@ -306,24 +263,39 @@ void eir_run(eir_env_t * env)
    //sound_handle = eir_snd_load_sound_file(snd_env, "../resources/sounds/medium.wav");
    // -------------------------
 
+   float time_per_frame = 1.0f / 60.0f;
+   float time_since_last_update = 0.0f;
+
    eir_sys_start_timer(&sys_env->timer);
    eir_fsm_run_state_machine(fsm_env);
    eir_gfx_generate_all_batches(gfx_env, gme_env->curr_world);
    for (;;)
    {
       eir_sys_update_timer(&sys_env->timer);
+      time_since_last_update += sys_env->timer.elapsed_time;
+      while (time_since_last_update > time_per_frame)
+      {
+	 time_since_last_update -= time_per_frame;
+	 if (!eir_sys_win_api_poll_all_events(all_env->event_callback, env))
+	 {
+	    return;
+	 }
+	 // UPDATE ALL SYSTEMS HERE EXCEPT RENDERING AND TIMER
+	 eir_fsm_update_state_machine(fsm_env);
+	 eir_phy_proceed_motion_entity_update(gme_env->curr_world, time_per_frame);
+
+	 // TODO: update only real modified batch
+	 eir_gfx_force_update_all_batches(gfx_env);
+      }
+
 #ifdef EIR_DEBUG
       eir_render_frame_rate(gfx_env, sys_env->timer.elapsed_time, frame_rate_text_handle);
 #endif
-      if (!eir_sys_win_api_poll_all_events(all_env->event_callback, env))
-      {
-	 break;
-      }
-      eir_fsm_update_state_machine(fsm_env);
       eir_gfx_api_set_clear_color();
       eir_gfx_api_clear_buffer();
       eir_gfx_render_all_batches(gfx_env);
       eir_sys_win_api_swap_buffer(gfx_env);
+
       // TODO: remove when plauer state system fully implemented
       //gfx_env->sprite_batches.data[0].sprites.data[0].position.x = gme_env->player_1_state.position.x;
       //gfx_env->sprite_batches.data[0].sprites.data[0].position.y = gme_env->player_1_state.position.y;
@@ -336,7 +308,6 @@ void eir_run(eir_env_t * env)
       //}
       // -------------------------
    }
-   eir_stop(all_env);
 }
 
 void eir_destroy_env(eir_env_t * env)
@@ -348,6 +319,7 @@ void eir_destroy_env(eir_env_t * env)
       {
 	 eir_ker_env_t * all_env = (eir_ker_env_t *)(env->private);
 
+	 eir_stop(all_env);
 	 eir_gfx_release_env(&all_env->gfx_env);
 	 eir_snd_release_env(&all_env->snd_env);
 	 eir_fsm_release_env(&all_env->fsm_env);

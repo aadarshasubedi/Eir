@@ -17,6 +17,7 @@ EIR_KER_DEFINE_ARRAY_STRUCT(eir_fsm_state_t, eir_fsm_state_array_t);
 
 typedef struct
 {
+   void * user_data;
    eir_fsm_state_t * begin_state;
    eir_fsm_state_t * end_state;
    eir_fsm_state_t * curr_state;

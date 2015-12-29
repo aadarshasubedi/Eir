@@ -1,27 +1,42 @@
 #include "eir_motion_func.h"
+#include "../maths/eir_mth_func.h"
 
-void eir_phy_proceed_euler_integration(
-   const eir_mth_vec2_t * old_position,
-   const eir_phy_motion_param_t * motion_param,
-   double elapsed_time,
-   eir_mth_vec2_t * out_new_position,
-   eir_mth_vec2_t * out_new_velocity
+static void eir_phy_proceed_euler_integration(
+   eir_mth_vec2_t * position,
+   eir_phy_motion_param_t * motion_param,
+   float dtime
    )
 {
-   if (!old_position || !motion_param || !out_new_position || !out_new_velocity)
+   eir_mth_vec2_t acceleration;
+
+   // TODO: add forces to limit speed if needed
+   acceleration.x = motion_param->acceleration.x * motion_param->speed_factor;
+   acceleration.y = motion_param->acceleration.y * motion_param->speed_factor;
+   position->x += 0.5 * acceleration.x * eir_mth_square_f(dtime) + motion_param->velocity.x * dtime;
+   position->y += 0.5 * acceleration.y * eir_mth_square_f(dtime) + motion_param->velocity.y * dtime;
+   motion_param->velocity.x += acceleration.x * dtime;
+   motion_param->velocity.y += acceleration.y * dtime;
+}
+
+void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
+{
+   if (world)
    {
-      return;
-   }
-   out_new_position->x = old_position->x + motion_param->velocity.x * elapsed_time;
-   out_new_position->y = old_position->y + motion_param->velocity.y * elapsed_time;
-   out_new_velocity->x = motion_param->velocity.x + motion_param->acceleration.x * elapsed_time;
-   out_new_velocity->y = motion_param->velocity.y + motion_param->acceleration.y * elapsed_time;
-   if (motion_param->velocity.x > motion_param->max_velocity.x)
-   {
-      out_new_velocity->x = motion_param->max_velocity.x;
-   }
-   if (motion_param->velocity.y > motion_param->max_velocity.y)
-   {
-      out_new_velocity->y = motion_param->max_velocity.y;
+      eir_gme_entity_t * entity = 0;
+
+      for (int index = 0; index < world->entities.used; ++index)
+      {
+	 if (world->entities.data[index] & eir_gme_component_type_motion_param)
+	 {
+	    eir_phy_motion_param_t * motion_param = &world->motion_params.data[index];
+	    eir_mth_vec2_t * position = world->positions.data[index].current;
+
+	    eir_phy_proceed_euler_integration(
+	       position,
+	       motion_param,
+	       dtime
+	       );
+	 }
+      }
    }
 }

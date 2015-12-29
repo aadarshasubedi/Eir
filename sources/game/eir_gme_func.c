@@ -1,7 +1,6 @@
 #include "eir_gme_func.h"
 #include "../kernel/eir_ker_env.h"
 #include "../kernel/eir_log.h"
-//#include "../physics/eir_motion_func.h"
 
 /*******************************************
  * LOCAL FUNCTIONS
@@ -16,6 +15,7 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->sizes);
       EIR_KER_INIT_ARRAY(world->sprite_ref_handles);
       EIR_KER_INIT_ARRAY(world->colors);
+      EIR_KER_INIT_ARRAY(world->motion_params);
    }
 }
 
@@ -28,6 +28,7 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->sizes);
       EIR_KER_FREE_ARRAY(world->sprite_ref_handles);
       EIR_KER_FREE_ARRAY(world->colors);
+      EIR_KER_FREE_ARRAY(world->motion_params);
    }
 }
 
@@ -55,16 +56,17 @@ static void eir_gme_release_entity(eir_gme_entity_t * entity)
    eir_gme_init_entity(entity);
 }
 
-static void eir_gme_init_position(eir_mth_vec2_t * position)
+static void eir_gme_init_position(eir_gme_position_component_t * position)
 {
    if (position)
    {
-      position->x = 0.0f;
-      position->y = 0.0f;
+      position->initial.x = 0.0f;
+      position->initial.y = 0.0f;
+      position->current = 0;
    }
 }
 
-static void eir_gme_release_position(eir_mth_vec2_t * position)
+static void eir_gme_release_position(eir_gme_position_component_t * position)
 {
    eir_gme_init_position(position);
 }
@@ -80,7 +82,7 @@ static void eir_gme_init_size(eir_mth_vec2_t * size)
 
 static void eir_gme_release_size(eir_mth_vec2_t * size)
 {
-   eir_gme_init_position(size);
+   eir_gme_init_size(size);
 }
 
 static void eir_gme_init_sprite_ref_handle(eir_handle_t * sprite_ref_handle)
@@ -110,6 +112,23 @@ static void eir_gme_init_color(eir_gfx_color_t * color)
 static void eir_gme_release_color(eir_gfx_color_t * color)
 {
    eir_gme_init_color(color);
+}
+
+static void eir_gme_init_motion_param(eir_phy_motion_param_t * motion_param)
+{
+   if (motion_param)
+   {
+      motion_param->velocity.x = 0.0f;
+      motion_param->velocity.y = 0.0f;
+      motion_param->acceleration.x = 0.0f;
+      motion_param->acceleration.y = 0.0f;
+      motion_param->speed_factor = 1.0f;
+   }
+}
+
+static void eir_gme_release_motion_param(eir_phy_motion_param_t * motion_param)
+{
+   eir_gme_init_motion_param(motion_param);
 }
 
 static eir_gme_world_t * eir_gme_get_world(eir_gme_env_t * env, eir_handle_t world_handle)
@@ -184,7 +203,7 @@ eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count)
 	 eir_gme_init_entity
 	 );
       EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_mth_vec2_t,
+	 eir_gme_position_component_t,
 	 world->positions,
 	 max_entity_count,
 	 eir_gme_init_position
@@ -202,10 +221,16 @@ eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count)
 	 eir_gme_init_sprite_ref_handle
 	 );
       EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_handle_t,
+	 eir_gfx_color_t,
 	 world->colors,
 	 max_entity_count,
 	 eir_gme_init_color
+	 );
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+	 eir_phy_motion_param_t,
+	 world->motion_params,
+	 max_entity_count,
+	 eir_gme_init_motion_param
 	 );
    }
    return world_handle;
@@ -235,6 +260,7 @@ eir_handle_t eir_gme_create_world_entity(eir_env_t * env, eir_handle_t world_han
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->sizes, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->sprite_ref_handles, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->colors, entity_handle);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->motion_params, entity_handle);
    }
    return entity_handle;
 }
@@ -251,7 +277,7 @@ bool eir_gme_set_world_entity_position(
    eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
    eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
    eir_gme_entity_t * entity = 0;
-   eir_mth_vec2_t * position = 0;
+   eir_gme_position_component_t * position = 0;
 
    if (world)
    {
@@ -261,8 +287,8 @@ bool eir_gme_set_world_entity_position(
    if (entity && position)
    {
       (*entity) |= eir_gme_component_type_position;
-      position->x = (float)x;
-      position->y = (float)y;
+      position->initial.x = (float)x;
+      position->initial.y = (float)y;
       result = true;
    }
    else
@@ -357,7 +383,7 @@ bool eir_gme_set_world_entity_color(
    if (world)
    {
       EIR_KER_GET_ARRAY_ITEM(world->entities, entity_handle, entity);
-      EIR_KER_GET_ARRAY_ITEM(world->colors, entity_handle,color);
+      EIR_KER_GET_ARRAY_ITEM(world->colors, entity_handle, color);
    }
    if (entity && color)
    {
@@ -375,55 +401,37 @@ bool eir_gme_set_world_entity_color(
    return result;
 }
 
-/*
-void eir_gme_proceed_player_move(
-   eir_gme_player_state_t * player_state,
-   eir_mth_vec2_t * velocity,
-   double elapsed_time)
-{
-   if (player_state && velocity)
-   {
-      player_state->motion_param.velocity.x = velocity->x;
-      player_state->motion_param.velocity.y = velocity->y;
-
-      eir_mth_vec2_t new_position;
-      eir_mth_vec2_t new_velocity;
-
-      eir_phy_proceed_euler_integration(
-	 &player_state->position,
-	 &player_state->motion_param,
-	 elapsed_time,
-	 &new_position,
-	 &new_velocity
-	 );
-      player_state->position.x = new_position.x;
-      player_state->position.y = new_position.y;
-   }
-}
-*/
-
-/*
-
-static void eir_proceed_player_move(
-   eir_gme_player_state_t * player_state,
-   eir_sys_env_t * sys_env,
-   double elapsed_time
+bool eir_gme_set_world_entity_acceleration(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle,
+   float x_acceleration,
+   float y_acceleration,
+   float speed_factor
    )
 {
-   if (!player_state || !sys_env)
+   bool result = false;
+   eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
+   eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
+   eir_gme_entity_t * entity = 0;
+   eir_phy_motion_param_t * motion_param = 0;
+
+   if (world)
    {
-      return;
+      EIR_KER_GET_ARRAY_ITEM(world->entities, entity_handle, entity);
+      EIR_KER_GET_ARRAY_ITEM(world->motion_params, entity_handle, motion_param);
    }
-
-   eir_mth_vec2_t velocity;
-
-   velocity.x = sys_env->joystick.x_axis_value;
-   velocity.y = sys_env->joystick.y_axis_value;
-   // TODO: check keyboard too if player 1 use keyboard instead of pad
-   
-   eir_gme_proceed_player_move(player_state, &velocity, elapsed_time);
+   if (entity && motion_param)
+   {
+      (*entity) |= eir_gme_component_type_motion_param;
+      motion_param->acceleration.x = x_acceleration;
+      motion_param->acceleration.y = y_acceleration;
+      motion_param->speed_factor = speed_factor;
+      result = true;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity_handle);
+   }
+   return result;
 }
-
-eir_proceed_player_move(&gme_env->player_1_state, sys_env, sys_env->timer.elapsed_time);
-
- */

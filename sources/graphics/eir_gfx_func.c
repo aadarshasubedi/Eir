@@ -221,7 +221,7 @@ static eir_gfx_sprite_batch_t * eir_gfx_create_sprite_batch(eir_gfx_env_t * gfx_
    return batch;
 }
 
-static void eir_gfx_add_sprite_to_batch(
+static eir_gfx_sprite_t * eir_gfx_add_sprite_to_batch(
    eir_gfx_sprite_batch_t * batch,
    const eir_mth_vec2_t * position,
    const eir_mth_vec2_t * size,
@@ -254,6 +254,7 @@ static void eir_gfx_add_sprite_to_batch(
       eir_gfx_debug_log_sprite(sprite);
       batch->modified = true;
    }
+   return sprite;
 }
 
 eir_handle_t eir_gfx_add_text(
@@ -435,6 +436,17 @@ eir_handle_t eir_gfx_add_quad(
 	 );
    }
    return a_handle;
+}
+
+void eir_gfx_force_update_all_batches(eir_gfx_env_t * gfx_env)
+{
+   if (gfx_env)
+   {
+      for (int index = 0; index < gfx_env->sprite_batches.used; ++index)
+      {
+	 gfx_env->sprite_batches.data[index].modified = true;
+      }
+   }
 }
 
 void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
@@ -892,7 +904,7 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 
 	       batch->texture = sprite_ref->texture;
 
-	       eir_mth_vec2_t * position = 0;
+	       eir_gme_position_component_t * position = 0;
 	       eir_mth_vec2_t * size = 0;
 	       eir_gfx_color_t * color = 0;
 
@@ -914,14 +926,15 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 
 	       if (sprite_ref && position && size && color)
 	       {
-		  eir_gfx_add_sprite_to_batch(
+		  eir_gfx_sprite_t * sprite = eir_gfx_add_sprite_to_batch(
 		     batch,
-		     position,
+		     &position->initial,
 		     size,
 		     &sprite_ref->uv_offset,
 		     &sprite_ref->uv_size,
 		     color
 		     );
+		  position->current = &sprite->position;
 	       }
 	    }
 	 }

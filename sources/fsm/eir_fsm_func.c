@@ -11,6 +11,7 @@ static void eir_fsm_init_state_machine(eir_fsm_state_machine_t * state_machine)
 {
    if (state_machine)
    {
+      state_machine->user_data = 0;
       state_machine->begin_state = 0;
       state_machine->end_state = 0;
       state_machine->curr_state = 0;
@@ -141,7 +142,7 @@ void eir_fsm_update_state_machine(eir_fsm_env_t * env)
       }
       if (state_machine->curr_state && state_machine->curr_state->update)
       {
-	 state_machine->curr_state->update();
+	 state_machine->curr_state->update(state_machine->user_data);
       }
    }
 }
@@ -205,7 +206,7 @@ void eir_fsm_set_max_state_machine_count(eir_env_t * env, size_t max_state_machi
    }
 }
 
-eir_handle_t eir_fsm_create_state_machine(eir_env_t * env, size_t max_state_count)
+eir_handle_t eir_fsm_create_state_machine(eir_env_t * env, size_t max_state_count, void * user_data)
 {
    eir_handle_t handle = EIR_INVALID_HANDLE;
    eir_fsm_env_t * fsm_env = eir_fsm_get_env(env);
@@ -223,6 +224,7 @@ eir_handle_t eir_fsm_create_state_machine(eir_env_t * env, size_t max_state_coun
 	 max_state_count,
 	 eir_fsm_init_state
 	 );
+      state_machine->user_data = user_data;
    }
    return handle;
 }
