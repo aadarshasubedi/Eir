@@ -2,6 +2,36 @@
 #include "../graphics/eir_gfx_types.h" // TODO: use own include for api include when created
 #include "eir_sys_defines.h"
 
+static void eir_sys_process_button_state(eir_button_state_t * button, bool pressed)
+{
+   button->pressed = pressed;
+}
+
+static void eir_sys_process_keyboard_event(eir_input_controller_t * controller, SDL_Event * sdl_event)
+{
+   if (controller)
+   {
+      bool pressed = (sdl_event->type == SDL_KEYDOWN);
+
+      if (sdl_event->key.keysym.sym == SDLK_LEFT)
+      {
+	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_LEFT_BUTTON_INDEX], pressed);
+      }
+      if (sdl_event->key.keysym.sym == SDLK_RIGHT)
+      {
+	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_RIGHT_BUTTON_INDEX], pressed);
+      }
+      if (sdl_event->key.keysym.sym == SDLK_UP)
+      {
+	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_UP_BUTTON_INDEX], pressed);
+      }
+      if (sdl_event->key.keysym.sym == SDLK_DOWN)
+      {
+	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_DOWN_BUTTON_INDEX], pressed);
+      }
+   }
+}
+
 bool eir_sys_win_api_init()
 {
    bool result = true;
@@ -26,7 +56,7 @@ void eir_sys_win_api_release()
    SDL_Quit();
 }
 
-// TOOD: use window own env when created
+// TODO: use window own env when created
 void eir_sys_win_api_create_window(eir_gfx_env_t * gfx_env)
 {
    EIR_KER_LOG_MESSAGE("create window");
@@ -34,29 +64,51 @@ void eir_sys_win_api_create_window(eir_gfx_env_t * gfx_env)
    gfx_env->context = SDL_GL_CreateContext(gfx_env->window);
 }
 
-// TOOD: use window own env when created
+// TODO: use window own env when created
 void eir_sys_win_api_swap_buffer(eir_gfx_env_t * gfx_env)
 {
    SDL_GL_SwapWindow(gfx_env->window);
 }
 
-bool eir_sys_win_api_poll_all_events(eir_sys_event_callback_t event_callback, eir_env_t * env)
+
+
+bool eir_sys_win_api_poll_all_events(eir_gme_env_t * gme_env)
 {
+   if (!gme_env)
+   {
+      return false;
+   }
+
    SDL_Event sdl_event;
+   eir_input_t * old_input = &gme_env->input_buffer.inputs[0];
+   eir_input_t * new_input = &gme_env->input_buffer.inputs[1];
 
    while (SDL_PollEvent(&sdl_event))
+   {
+      if (sdl_event.type == SDL_KEYUP || sdl_event.type == SDL_KEYDOWN)
+      {
+	 if (sdl_event.key.keysym.sym == SDLK_ESCAPE)
+	 {
+	    return false;
+	 }
+	 else
+	 {
+	    eir_sys_process_keyboard_event(
+	       &new_input->controllers[EIR_KEYBOARD_CONTROLLER_INDEX],
+	       &sdl_event
+	       );
+	 }
+      }
+   }
+/*
       switch (sdl_event.type)
       {
       case SDL_QUIT:
 	 return false;
       case SDL_KEYUP:
       {
-	 eir_event_t event;
-
-	 event.type = eir_event_type_keyboard;
-	 event.keyboard_event.type = eir_keyboard_event_type_key_up;
 	 if (sdl_event.key.keysym.sym == SDLK_ESCAPE)
-	 {
+	 {    
 	    event.keyboard_event.key = eir_keyboard_key_esc;
 	 }
 	 if (sdl_event.key.keysym.sym == SDLK_LEFT)
@@ -156,6 +208,7 @@ bool eir_sys_win_api_poll_all_events(eir_sys_event_callback_t event_callback, ei
       default:
 	 break;
       }
+*/
    return true;
 }
 

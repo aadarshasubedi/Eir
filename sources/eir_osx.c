@@ -8,7 +8,6 @@
 #include "system/eir_file_system_osx.c"
 #include "system/eir_joystick_func_osx.c"
 #include "system/eir_sys_func.c"
-#include "system/eir_event_callback.c"
 #include "system/eir_win_api_func_sdl.c"
 #include "graphics/eir_image_func.c"
 #include "graphics/eir_image_api_func_sdl.c"

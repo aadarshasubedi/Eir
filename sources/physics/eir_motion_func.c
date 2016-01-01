@@ -9,11 +9,10 @@ static void eir_phy_proceed_euler_integration(
 {
    eir_mth_vec2_t acceleration;
 
-   // TODO: add forces to limit speed if needed
    acceleration.x = motion_param->acceleration.x * motion_param->speed_factor;
    acceleration.y = motion_param->acceleration.y * motion_param->speed_factor;
-   acceleration.x += -1.5f * motion_param->velocity.x;
-   acceleration.y += -1.5f * motion_param->velocity.y;
+   acceleration.x += -motion_param->friction_factor * motion_param->velocity.x;
+   acceleration.y += -motion_param->friction_factor * motion_param->velocity.y;
    position->x += 0.5f * acceleration.x * eir_mth_square_f(dtime) + motion_param->velocity.x * dtime;
    position->y += 0.5f * acceleration.y * eir_mth_square_f(dtime) + motion_param->velocity.y * dtime;
    motion_param->velocity.x += acceleration.x * dtime;

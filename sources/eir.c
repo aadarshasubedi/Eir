@@ -14,7 +14,6 @@
 #include "system/eir_memory.h"
 #include "system/eir_joystick_func.h"
 #include "system/eir_win_api_func.h"
-#include "system/eir_event_callback.h"
 
 #include "graphics/eir_sprite.h"
 #include "graphics/eir_gfx_types.h"
@@ -70,14 +69,6 @@ static void eir_check_allocate_and_free_func()
    }
 }
 
-static void eir_check_event_callback(eir_ker_env_t * env)
-{
-   if (env && !env->event_callback)
-   {
-      env->event_callback = eir_sys_default_event_callback;
-   }
-}
-
 static void eir_render_frame_rate(eir_gfx_env_t * gfx_env, float elapsed_time, eir_handle_t text_handle)
 {
    char c[32];
@@ -110,7 +101,6 @@ eir_env_t * eir_create_env()
    if (env)
    {
       eir_init_all_api(env);
-      env->event_callback = 0;
       eir_gfx_init_env(&env->gfx_env);
       eir_snd_init_env(&env->snd_env);
       eir_fsm_init_env(&env->fsm_env);
@@ -137,8 +127,6 @@ void eir_run(eir_env_t * env)
    {
       return;
    }
-
-   eir_check_event_callback(all_env);
 
    eir_gfx_env_t * gfx_env = &all_env->gfx_env;
    eir_sys_env_t * sys_env = &all_env->sys_env;
@@ -242,7 +230,7 @@ void eir_run(eir_env_t * env)
       while (time_since_last_update > time_per_frame)
       {
 	 time_since_last_update -= time_per_frame;
-	 if (!eir_sys_win_api_poll_all_events(all_env->event_callback, env))
+	 if (!eir_sys_win_api_poll_all_events(gme_env))
 	 {
 	    return;
 	 }

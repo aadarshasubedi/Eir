@@ -123,6 +123,7 @@ static void eir_gme_init_motion_param(eir_phy_motion_param_t * motion_param)
       motion_param->acceleration.x = 0.0f;
       motion_param->acceleration.y = 0.0f;
       motion_param->speed_factor = 1.0f;
+      motion_param->friction_factor = 0.0f;
    }
 }
 
@@ -142,6 +143,39 @@ static eir_gme_world_t * eir_gme_get_world(eir_gme_env_t * env, eir_handle_t wor
    return world;
 }
 
+static void eir_gme_init_button_state(eir_button_state_t * button_state)
+{
+   if (button_state)
+   {
+      button_state->pressed = false;
+   }
+}
+
+static void eir_gme_init_input_controller(eir_input_controller_t * input_controller)
+{
+   if (input_controller)
+   {
+      input_controller->is_analog = false;
+      input_controller->left_stick_value_x = 0.0f;
+      input_controller->left_stick_value_y = 0.0f;
+      for (int button_index = 0; button_index < EIR_TOTAL_INPUT_BUTTON_COUNT; ++button_index)
+      {
+	 eir_gme_init_button_state(&input_controller->buttons[button_index]);
+      }
+   }
+}
+
+static void eir_gme_init_input(eir_input_t * input)
+{
+   if (input)
+   {
+      for (int controller_index = 0; controller_index < EIR_MAX_INPUT_CONTROLLER; ++controller_index)
+      {
+	 eir_gme_init_input_controller(&input->controllers[controller_index]);
+      }
+   }
+}
+
 /*******************************************
  * INTERNAL FUNCTIONS
  *****************************************/
@@ -152,6 +186,10 @@ void eir_gme_init_env(eir_gme_env_t * env)
    {
       EIR_KER_INIT_ARRAY(env->worlds);
       env->curr_world = 0;
+      for (int input_index = 0; input_index < EIR_MAX_INPUT_BUFFER_COUNT; ++input_index)
+      {
+	 eir_gme_init_input(&env->input_buffer.inputs[input_index]);
+      }
    }
 }
 
@@ -407,7 +445,8 @@ bool eir_gme_set_world_entity_acceleration(
    eir_handle_t entity_handle,
    float x_acceleration,
    float y_acceleration,
-   float speed_factor
+   float speed_factor,
+   float friction_factor
    )
 {
    bool result = false;
@@ -427,6 +466,7 @@ bool eir_gme_set_world_entity_acceleration(
       motion_param->acceleration.x = x_acceleration;
       motion_param->acceleration.y = y_acceleration;
       motion_param->speed_factor = speed_factor;
+      motion_param->friction_factor = friction_factor;
       result = true;
    }
    else
