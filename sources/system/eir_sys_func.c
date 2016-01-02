@@ -6,13 +6,16 @@ void eir_sys_init_env(eir_sys_env_t * sys_env)
    EIR_KER_LOG_MESSAGE("init system env");
    if (sys_env)
    {
-      if (eir_sys_get_pad_count() > 0)
+      for (int index = 0; index < EIR_TOTAL_INPUT_CONTROLLER - 1; ++index)
       {
-	 sys_env->pad_handle = eir_sys_init_pad(0);
-      }
-      else
-      {
-	 sys_env->pad_handle = EIR_SYS_INVALID_PAD_HANDLE;
+	 if (index < eir_sys_get_pad_count())
+	 {
+	    sys_env->pad_handles[index] = eir_sys_init_pad(index);
+	 }
+	 else
+	 {
+	    sys_env->pad_handles[index] = EIR_SYS_INVALID_PAD_HANDLE;
+	 }
       }
    }
 }
@@ -22,6 +25,9 @@ void eir_sys_release_env(eir_sys_env_t * sys_env)
    EIR_KER_LOG_MESSAGE("release system env");
    if (sys_env)
    {
-      eir_sys_release_pad(sys_env->pad_handle);
+      for (int index = 0; index < EIR_TOTAL_INPUT_CONTROLLER - 1; ++index)
+      {
+	 eir_sys_release_pad(sys_env->pad_handles[index]);
+      }
    }
 }

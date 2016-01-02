@@ -27,26 +27,24 @@ typedef struct
 
 typedef struct
 {
+   bool is_connected;
    bool is_analog;
    float left_stick_value_x;
    float left_stick_value_y;
    eir_button_state_t buttons[EIR_TOTAL_INPUT_BUTTON_COUNT];
 } eir_input_controller_t;
 
-#define EIR_MAX_INPUT_CONTROLLER 4
+#define EIR_TOTAL_INPUT_CONTROLLER_BUFFER_COUNT 2
+
+typedef struct
+{
+   eir_input_controller_t controllers[EIR_TOTAL_INPUT_CONTROLLER_BUFFER_COUNT];
+} eir_input_controller_buffer_t;
+
 #define EIR_KEYBOARD_CONTROLLER_INDEX 0
 
-typedef struct
-{
-   eir_input_controller_t controllers[EIR_MAX_INPUT_CONTROLLER];
-} eir_input_t;
-
-#define EIR_MAX_INPUT_BUFFER_COUNT 2
-
-typedef struct
-{
-   eir_input_t inputs[EIR_MAX_INPUT_BUFFER_COUNT];
-} eir_input_buffer_t;
+// three player can play at the same time and index 0 is for keyboard
+#define EIR_TOTAL_INPUT_CONTROLLER 4
 
 /**
  * global env management
@@ -181,7 +179,11 @@ bool eir_gme_set_world_entity_acceleration(
    float friction_factor
    );
 
-/* RUN EIR  ENGINE ----------- ---------------- */
+/* ACCESSORS ---------------------------------- */
+
+eir_input_controller_buffer_t * eir_get_input_controller_buffer(eir_env_t * env, int controller_index);
+
+/* RUN EIR ENGINE ----------------------------- */
 
 void eir_run(eir_env_t * env);
 

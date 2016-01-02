@@ -100,6 +100,7 @@ static void eir_fsm_release_state_machine(eir_fsm_state_machine_t * state_machin
 
 void eir_fsm_init_env(eir_fsm_env_t * env)
 {
+   EIR_KER_LOG_MESSAGE("init fsm env");
    if (env)
    {
       EIR_KER_INIT_ARRAY(env->state_machines);
@@ -109,6 +110,7 @@ void eir_fsm_init_env(eir_fsm_env_t * env)
 
 void eir_fsm_run_state_machine(eir_fsm_env_t * env)
 {
+   EIR_KER_LOG_MESSAGE("release fsm env");
    if (env && env->curr_state_machine)
    {
       env->curr_state_machine->curr_state = env->curr_state_machine->begin_state;

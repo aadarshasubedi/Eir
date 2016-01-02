@@ -117,6 +117,7 @@ static void eir_gfx_release_vertex(eir_gfx_vertex_t * vertex)
 
 void eir_gfx_init_env(eir_gfx_env_t * gfx_env)
 {
+   EIR_KER_LOG_MESSAGE("init graphics env");
    if (gfx_env)
    {
       EIR_KER_INIT_ARRAY(gfx_env->sprite_batches);
@@ -131,9 +132,9 @@ void eir_gfx_init_env(eir_gfx_env_t * gfx_env)
 
 void eir_gfx_release_env(eir_gfx_env_t * gfx_env)
 {
+   EIR_KER_LOG_MESSAGE("release graphics env");
    if (gfx_env)
    {
-      EIR_KER_LOG_MESSAGE("release graphics env");
       eir_gfx_api_destroy_texture(gfx_env->text_texture.id);
       EIR_SYS_FREE(gfx_env->text_image.pixels);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->sprite_batches, eir_gfx_release_sprite_batch);

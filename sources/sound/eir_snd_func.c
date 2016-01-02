@@ -20,6 +20,7 @@ static void eir_snd_release_sound(eir_snd_sound_t * sound)
 
 void eir_snd_init_env(eir_snd_env_t * env)
 {
+   EIR_KER_LOG_MESSAGE("init sound env");
    if (env)
    {
       EIR_KER_INIT_ARRAY(env->sounds);
@@ -28,9 +29,9 @@ void eir_snd_init_env(eir_snd_env_t * env)
 
 void eir_snd_release_env(eir_snd_env_t * env)
 {
+   EIR_KER_LOG_MESSAGE("release sound env");
    if (env)
    {
-      EIR_KER_LOG_MESSAGE("release sound env");
       EIR_KER_FREE_ARRAY_BIS(env->sounds, eir_snd_release_sound);
    }
 }

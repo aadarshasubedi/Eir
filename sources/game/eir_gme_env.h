@@ -11,5 +11,5 @@ typedef struct
 {
    eir_gme_world_array_t worlds;
    eir_gme_world_t * curr_world;
-   eir_input_buffer_t input_buffer;
+   eir_input_controller_buffer_t input_controllers[EIR_TOTAL_INPUT_CONTROLLER];
 } eir_gme_env_t;

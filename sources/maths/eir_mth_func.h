@@ -1,13 +1,5 @@
 #pragma once
 
-float eir_mth_square_f(float value)
-{
-   float result = value * value;
-   return result;
-}
-
-double eir_mth_square_d(double value)
-{
-   double result = value * value;
-   return result;
-}
+float eir_mth_square_f(float value);
+double eir_mth_square_d(double value);
+float eir_mth_abs(float value);

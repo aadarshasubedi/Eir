@@ -1,6 +1,7 @@
 #include "eir_gme_func.h"
 #include "../kernel/eir_ker_env.h"
 #include "../kernel/eir_log.h"
+#include "../system/eir_joystick_func.h"
 
 /*******************************************
  * LOCAL FUNCTIONS
@@ -151,10 +152,11 @@ static void eir_gme_init_button_state(eir_button_state_t * button_state)
    }
 }
 
-static void eir_gme_init_input_controller(eir_input_controller_t * input_controller)
+static void eir_gme_init_input_controller(eir_input_controller_t * input_controller, bool is_connected)
 {
    if (input_controller)
    {
+      input_controller->is_connected = is_connected;
       input_controller->is_analog = false;
       input_controller->left_stick_value_x = 0.0f;
       input_controller->left_stick_value_y = 0.0f;
@@ -165,13 +167,28 @@ static void eir_gme_init_input_controller(eir_input_controller_t * input_control
    }
 }
 
-static void eir_gme_init_input(eir_input_t * input)
+static void eir_gme_init_input_controller_buffer(
+   eir_input_controller_buffer_t * controller_buffer,
+   bool is_connected
+   )
 {
-   if (input)
+   if (controller_buffer)
    {
-      for (int controller_index = 0; controller_index < EIR_MAX_INPUT_CONTROLLER; ++controller_index)
+      for (int index = 0; index < EIR_TOTAL_INPUT_CONTROLLER_BUFFER_COUNT; ++index)
       {
-	 eir_gme_init_input_controller(&input->controllers[controller_index]);
+	 eir_gme_init_input_controller(&controller_buffer->controllers[index], is_connected);
+      }
+   }
+}
+
+static void eir_gme_init_all_input_controller_buffer(eir_gme_env_t * env)
+{
+   if (env)
+   {
+      for (int index = 0; index < EIR_TOTAL_INPUT_CONTROLLER; ++index)
+      {
+	 bool is_connected = (index == 0 || index <= eir_sys_get_pad_count());
+	 eir_gme_init_input_controller_buffer(&env->input_controllers[index], is_connected);
       }
    }
 }
@@ -182,19 +199,18 @@ static void eir_gme_init_input(eir_input_t * input)
 
 void eir_gme_init_env(eir_gme_env_t * env)
 {
+   EIR_KER_LOG_MESSAGE("init game env");
    if (env)
    {
       EIR_KER_INIT_ARRAY(env->worlds);
       env->curr_world = 0;
-      for (int input_index = 0; input_index < EIR_MAX_INPUT_BUFFER_COUNT; ++input_index)
-      {
-	 eir_gme_init_input(&env->input_buffer.inputs[input_index]);
-      }
+      eir_gme_init_all_input_controller_buffer(env);
    }
 }
 
 void eir_gme_release_env(eir_gme_env_t * env)
 {
+   EIR_KER_LOG_MESSAGE("release game env");
    if (env)
    {
       EIR_KER_LOG_MESSAGE("release game env");

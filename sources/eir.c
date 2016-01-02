@@ -110,6 +110,18 @@ eir_env_t * eir_create_env()
    return private_env;
 }
 
+eir_input_controller_buffer_t * eir_get_input_controller_buffer(eir_env_t * env, int controller_index)
+{
+   eir_input_controller_buffer_t * input_controller_buffer = 0;
+
+   if (env && controller_index >= 0 && controller_index < EIR_TOTAL_INPUT_CONTROLLER)
+   {
+      eir_ker_env_t * all_env = (eir_ker_env_t *)(env->private);
+      input_controller_buffer = &all_env->gme_env.input_controllers[controller_index];
+   }
+   return input_controller_buffer;
+}
+
 void eir_run(eir_env_t * env)
 {
    if (!env)
@@ -230,7 +242,7 @@ void eir_run(eir_env_t * env)
       while (time_since_last_update > time_per_frame)
       {
 	 time_since_last_update -= time_per_frame;
-	 if (!eir_sys_win_api_poll_all_events(gme_env))
+	 if (!eir_sys_win_api_poll_all_events(gme_env, sys_env))
 	 {
 	    return;
 	 }
