@@ -2,6 +2,10 @@
 #include "../graphics/eir_gfx_types.h" // TODO: use own include for api include when created
 #include "eir_sys_defines.h"
 
+#define EIR_SYS_PAD_MAX_ABS_VALUE 32767
+#define EIR_SYS_PAD_MIN_ABS_VALUE 32768
+#define EIR_SYS_PAD_DEAD_ZONE_THRESHOLD 8000
+
 static void eir_sys_process_button_state(eir_button_state_t * button, bool pressed)
 {
    button->pressed = pressed;
@@ -32,33 +36,21 @@ static void eir_sys_process_keyboard_event(eir_input_controller_t * controller, 
    }
 }
 
-static void eir_sys_process_pad_event(eir_input_controller_t * controller, SDL_Event * sdl_event)
+static float eir_sys_process_stick_value(int value, int dead_zone_threshold)
 {
-   if (controller)
-   {
-      bool pressed = (sdl_event->jbutton.state == SDL_PRESSED);
+   float result = 0;
 
-      if (sdl_event->jbutton.button == 2)
-      {
-	 EIR_KER_LOG_MESSAGE("button 2");
-	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_LEFT_BUTTON_INDEX], pressed);
-      }
-      if (sdl_event->jbutton.button == 3)
-      {
-	 EIR_KER_LOG_MESSAGE("button 3");
-	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_RIGHT_BUTTON_INDEX], pressed);
-      }
-      if (sdl_event->jbutton.button == 0)
-      {
-	 EIR_KER_LOG_MESSAGE("button 0");
-	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_UP_BUTTON_INDEX], pressed);
-      }
-      if (sdl_event->jbutton.button == 1)
-      {
-	 EIR_KER_LOG_MESSAGE("button 1");
-	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_DOWN_BUTTON_INDEX], pressed);
-      }
+   if (value < -dead_zone_threshold)
+   {
+      result = (float)(value) / (EIR_SYS_JOYSTICK_MIN_ABS_VALUE);
+      //result = (float)(value + dead_zone_threshold) / (EIR_SYS_JOYSTICK_MIN_ABS_VALUE - dead_zone_threshold);
    }
+   else if (value > dead_zone_threshold)
+   {
+      result = (float)(value) / (EIR_SYS_JOYSTICK_MAX_ABS_VALUE);
+      //result = (float)(value - dead_zone_threshold) / (EIR_SYS_JOYSTICK_MAX_ABS_VALUE - dead_zone_threshold);
+   }
+   return result;
 }
 
 bool eir_sys_win_api_init()
@@ -140,6 +132,26 @@ bool eir_sys_win_api_poll_all_events(eir_gme_env_t * gme_env, eir_sys_env_t * sy
 	 continue;
       }
       new_pad->is_connected = true;
+
+      new_pad->left_stick_value_x =
+	 eir_sys_process_stick_value(
+	    SDL_JoystickGetAxis(pad_handle, 0),
+	    EIR_SYS_PAD_DEAD_ZONE_THRESHOLD
+	    );
+      new_pad->left_stick_value_y =
+	 -eir_sys_process_stick_value(
+	    SDL_JoystickGetAxis(pad_handle, 1),
+	    EIR_SYS_PAD_DEAD_ZONE_THRESHOLD
+	    );
+
+      if (new_pad->left_stick_value_x != 0.0f || new_pad->left_stick_value_y != 0.0f)
+      {
+	 new_pad->is_analog = true;
+      }
+      else
+      {
+	 new_pad->is_analog = false;
+      }
       
       if (SDL_JoystickGetButton(pad_handle, 13))
       {

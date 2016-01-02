@@ -22,28 +22,31 @@ static bool validate_idle_state(void * user_data)
    {
       player_t * player = (player_t *)user_data;
 
-      if (
-	 player->keyboard_buffer
-	 && player->pad_buffer
-	 && !player->pad_buffer->controllers[1].is_connected
-	 && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
-	 && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
-	 && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
-	 && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
-	 )
+      if (!player->pad_buffer->controllers[1].is_analog)
       {
-	 result = true;
-      }
-      else if (
-	 player->pad_buffer
-	 && player->pad_buffer->controllers[1].is_connected
-	 && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
-	 && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
-	 && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
-	 && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
-	 )
-      {
-	 result = true;
+	 if (
+	    player->keyboard_buffer
+	    && player->pad_buffer
+	    && !player->pad_buffer->controllers[1].is_connected
+	    && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
+	    && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
+	    && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    )
+	 {
+	    result = true;
+	 }
+	 else if (
+	    player->pad_buffer
+	    && player->pad_buffer->controllers[1].is_connected
+	    && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
+	    && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
+	    && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    )
+	 {
+	    result = true;
+	 }
       }
    }
    return result;
@@ -74,11 +77,24 @@ static bool validate_move_state(void * user_data)
       else if (
 	 player->pad_buffer
 	 && player->pad_buffer->controllers[1].is_connected
+	 && !player->pad_buffer->controllers[1].is_analog
 	 && (
 	    player->pad_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
 	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
 	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
 	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    )
+	 )
+      {
+	 result = true;
+      }
+      else if (
+	 player->pad_buffer
+	 && player->pad_buffer->controllers[1].is_connected
+	 && player->pad_buffer->controllers[1].is_analog
+	 && (
+	    player->pad_buffer->controllers[1].left_stick_value_x
+	    || player->pad_buffer->controllers[1].left_stick_value_y
 	    )
 	 )
       {
@@ -115,7 +131,12 @@ static void update_move_state(void * user_data)
       float x_velocity = 0.0f;
       float y_velocity = 0.0f;
 
-      if (player->keyboard_buffer)
+      if (player->pad_buffer->controllers[1].is_analog)
+      {
+	 x_velocity = player->pad_buffer->controllers[1].left_stick_value_x;
+	 y_velocity = player->pad_buffer->controllers[1].left_stick_value_y;
+      }
+      else
       {
 	 if (
 	    player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
@@ -152,6 +173,8 @@ static void update_move_state(void * user_data)
 	 x_velocity *= 0.707107f;
 	 y_velocity *= 0.707107f;
       }
+
+      printf("velocity = {%f; %f}\n", x_velocity, y_velocity);
 
       eir_gme_set_world_entity_acceleration(
 	 player->env,
