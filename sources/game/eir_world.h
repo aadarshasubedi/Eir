@@ -5,6 +5,7 @@
 #include "../eir_internal.h"
 #include "../graphics/eir_color.h"
 #include "../physics/eir_motion_param.h"
+#include "../physics/eir_aabb.h"
 #include "eir_position_component.h"
 
 typedef int eir_gme_entity_t;
@@ -19,19 +20,19 @@ typedef enum
    eir_gme_component_type_position = 1 << 1,
    eir_gme_component_type_size = 1 << 2,
    eir_gme_component_type_color = 1 << 3,
-   eir_gme_component_type_motion_param = 1 << 4
+   eir_gme_component_type_motion_param = 1 << 4,
+   eir_gme_component_type_aabb = 1 << 5
 } eir_gme_component_type;
 
+// TODO: use component struct with batch linked variable for color and size
+// for batch update !
 typedef struct
 {
    eir_gme_entity_array_t entities;
-
    eir_gme_position_component_array_t positions;
-   // TODO: use component struct with batch linked variable for position, color and size
-   // for batch update !
    eir_mth_vec2_array_t sizes;
    eir_gfx_color_array_t colors;
-
    eir_handle_array_t sprite_ref_handles;
    eir_phy_motion_param_array_t motion_params;
+   eir_phy_aabb_array_t aabbs;
 } eir_gme_world_t;

@@ -174,8 +174,6 @@ static void update_move_state(void * user_data)
 	 y_velocity *= 0.707107f;
       }
 
-      printf("velocity = {%f; %f}\n", x_velocity, y_velocity);
-
       eir_gme_set_world_entity_acceleration(
 	 player->env,
 	 player->world_handle,

@@ -16,7 +16,7 @@ typedef int eir_handle_t;
 
 typedef struct
 {
-   bool pressed; // TODO: init to false somewhere
+   bool pressed;
 } eir_button_state_t;
 
 #define EIR_MOVE_RIGHT_BUTTON_INDEX 0
@@ -138,7 +138,6 @@ eir_handle_t eir_gfx_create_sprite_ref(
 void eir_gme_set_max_world_count(eir_env_t * env, size_t max_count);
 eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count);
 void eir_gme_set_curr_world(eir_env_t * env, eir_handle_t world_handle);
-
 eir_handle_t eir_gme_create_world_entity(eir_env_t * env, eir_handle_t world_handle);
 bool eir_gme_set_world_entity_position(
    eir_env_t * env,
@@ -178,6 +177,16 @@ bool eir_gme_set_world_entity_acceleration(
    float speed_factor,
    float friction_factor
    );
+bool eir_gme_set_world_entity_aabb(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle,
+   float x,
+   float y,
+   float width,
+   float height
+   );
+
 
 /* ACCESSORS ---------------------------------- */
 

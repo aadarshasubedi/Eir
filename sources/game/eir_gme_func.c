@@ -17,6 +17,7 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->sprite_ref_handles);
       EIR_KER_INIT_ARRAY(world->colors);
       EIR_KER_INIT_ARRAY(world->motion_params);
+      EIR_KER_INIT_ARRAY(world->aabbs);
    }
 }
 
@@ -30,6 +31,7 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->sprite_ref_handles);
       EIR_KER_FREE_ARRAY(world->colors);
       EIR_KER_FREE_ARRAY(world->motion_params);
+      EIR_KER_FREE_ARRAY(world->aabbs);
    }
 }
 
@@ -131,6 +133,22 @@ static void eir_gme_init_motion_param(eir_phy_motion_param_t * motion_param)
 static void eir_gme_release_motion_param(eir_phy_motion_param_t * motion_param)
 {
    eir_gme_init_motion_param(motion_param);
+}
+
+static void eir_gme_init_aabb(eir_phy_aabb_t * aabb)
+{
+   if (aabb)
+   {
+      aabb->position.x = 0.0f;
+      aabb->position.y = 0.0f;
+      aabb->size.x = 0.0f;
+      aabb->size.y = 0.0f;
+   }
+}
+
+static void eir_gme_release_aabb(eir_phy_aabb_t * aabb)
+{
+   eir_gme_init_aabb(aabb);
 }
 
 static eir_gme_world_t * eir_gme_get_world(eir_gme_env_t * env, eir_handle_t world_handle)
@@ -286,6 +304,12 @@ eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count)
 	 max_entity_count,
 	 eir_gme_init_motion_param
 	 );
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+	 eir_phy_aabb_t,
+	 world->aabbs,
+	 max_entity_count,
+	 eir_gme_init_aabb
+	 );
    }
    return world_handle;
 }
@@ -315,6 +339,7 @@ eir_handle_t eir_gme_create_world_entity(eir_env_t * env, eir_handle_t world_han
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->sprite_ref_handles, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->colors, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->motion_params, entity_handle);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->aabbs, entity_handle);
    }
    return entity_handle;
 }
@@ -483,6 +508,43 @@ bool eir_gme_set_world_entity_acceleration(
       motion_param->acceleration.y = y_acceleration;
       motion_param->speed_factor = speed_factor;
       motion_param->friction_factor = friction_factor;
+      result = true;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity_handle);
+   }
+   return result;
+}
+
+bool eir_gme_set_world_entity_aabb(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle,
+   float x,
+   float y,
+   float width,
+   float height
+   )
+{
+   bool result = false;
+   eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
+   eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
+   eir_gme_entity_t * entity = 0;
+   eir_phy_aabb_t * aabb = 0;
+
+   if (world)
+   {
+      EIR_KER_GET_ARRAY_ITEM(world->entities, entity_handle, entity);
+      EIR_KER_GET_ARRAY_ITEM(world->aabbs, entity_handle, aabb);
+   }
+   if (entity && aabb)
+   {
+      (*entity) |= eir_gme_component_type_aabb;
+      aabb->position.x = x;
+      aabb->position.y = y;
+      aabb->size.x = width;
+      aabb->size.y = height;
       result = true;
    }
    else

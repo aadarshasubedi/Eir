@@ -372,6 +372,110 @@ eir_handle_t eir_gfx_add_line(
    return a_handle;
 }
 
+eir_handle_t eir_gfx_add_quad_with_lines(
+   eir_gfx_env_t * gfx_env,
+   eir_mth_vec2_t * position,
+   eir_mth_vec2_t * size,
+   eir_gfx_color_t * color
+   )
+{
+   eir_gfx_vertex_t * a = 0;
+   eir_gfx_vertex_t * b = 0;
+   eir_gfx_vertex_t * c = 0;
+   eir_gfx_vertex_t * d = 0;
+   eir_gfx_vertex_t * e = 0;
+   eir_gfx_vertex_t * f = 0;
+   eir_gfx_vertex_t * g = 0;
+   eir_gfx_vertex_t * h = 0;
+   eir_handle_t a_handle = EIR_INVALID_HANDLE;
+   eir_handle_t b_handle = EIR_INVALID_HANDLE;
+   eir_handle_t c_handle = EIR_INVALID_HANDLE;
+   eir_handle_t d_handle = EIR_INVALID_HANDLE;
+   eir_handle_t e_handle = EIR_INVALID_HANDLE;
+   eir_handle_t f_handle = EIR_INVALID_HANDLE;
+   eir_handle_t g_handle = EIR_INVALID_HANDLE;
+   eir_handle_t h_handle = EIR_INVALID_HANDLE;
+
+   if (gfx_env && size && position && color)
+   {
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, a, a_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, b, b_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, c, c_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, d, d_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, e, e_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, f, f_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, g, g_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, h, h_handle);
+   }
+   if (a && b && c && d && e && f && g && h)
+   {
+      a->position.x = position->x;
+      a->position.y = position->y;
+      a->position.z = 0.0f;
+      a->color.r = color->r;
+      a->color.g = color->g;
+      a->color.b = color->b;
+      a->color.a = color->a;
+
+      b->position.x = position->x + size->x;
+      b->position.y = position->y;
+      b->position.z = 0.0f;
+      b->color.r = color->r;
+      b->color.g = color->g;
+      b->color.b = color->b;
+      b->color.a = color->a;
+
+      c->position.x = position->x + size->x;
+      c->position.y = position->y;
+      c->position.z = 0.0f;
+      c->color.r = color->r;
+      c->color.g = color->g;
+      c->color.b = color->b;
+      c->color.a = color->a;
+
+      d->position.x = position->x + size->x;
+      d->position.y = position->y + size->y;
+      d->position.z = 0.0f;
+      d->color.r = color->r;
+      d->color.g = color->g;
+      d->color.b = color->b;
+      d->color.a = color->a;
+
+      e->position.x = position->x + size->x;
+      e->position.y = position->y + size->y;
+      e->position.z = 0.0f;
+      e->color.r = color->r;
+      e->color.g = color->g;
+      e->color.b = color->b;
+      e->color.a = color->a;
+
+      f->position.x = position->x;
+      f->position.y = position->y + size->y;
+      f->position.z = 0.0f;
+      f->color.r = color->r;
+      f->color.g = color->g;
+      f->color.b = color->b;
+      f->color.a = color->a;
+
+      g->position.x = position->x;
+      g->position.y = position->y + size->y;
+      g->position.z = 0.0f;
+      g->color.r = color->r;
+      g->color.g = color->g;
+      g->color.b = color->b;
+      g->color.a = color->a;
+
+      h->position.x = position->x;
+      h->position.y = position->y;
+      h->position.z = 0.0f;
+      h->color.r = color->r;
+      h->color.g = color->g;
+      h->color.b = color->b;
+      h->color.a = color->a;
+   }
+   return a_handle;
+}
+
 eir_handle_t eir_gfx_add_quad(
    eir_gfx_env_t * gfx_env,
    eir_mth_vec2_t * position,

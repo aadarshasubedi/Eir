@@ -42,13 +42,11 @@ static float eir_sys_process_stick_value(int value, int dead_zone_threshold)
 
    if (value < -dead_zone_threshold)
    {
-      result = (float)(value) / (EIR_SYS_JOYSTICK_MIN_ABS_VALUE);
-      //result = (float)(value + dead_zone_threshold) / (EIR_SYS_JOYSTICK_MIN_ABS_VALUE - dead_zone_threshold);
+      result = (float)(value + dead_zone_threshold) / (EIR_SYS_JOYSTICK_MIN_ABS_VALUE - dead_zone_threshold);
    }
    else if (value > dead_zone_threshold)
    {
-      result = (float)(value) / (EIR_SYS_JOYSTICK_MAX_ABS_VALUE);
-      //result = (float)(value - dead_zone_threshold) / (EIR_SYS_JOYSTICK_MAX_ABS_VALUE - dead_zone_threshold);
+      result = (float)(value - dead_zone_threshold) / (EIR_SYS_JOYSTICK_MAX_ABS_VALUE - dead_zone_threshold);
    }
    return result;
 }
@@ -74,6 +72,7 @@ bool eir_sys_win_api_init()
 
 void eir_sys_win_api_release()
 {
+   EIR_KER_LOG_MESSAGE("release SDL");
    SDL_Quit();
 }
 
