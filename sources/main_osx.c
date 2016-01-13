@@ -191,7 +191,7 @@ int main()
    // CREATE ENV
 
    eir_env_t * env = 0;
-   env = eir_create_env();
+   env = eir_create_env(800, 600);
 
    // INIT GFX ITEMS CAPACITY
 
@@ -215,11 +215,14 @@ int main()
 
    eir_handle_t entity = eir_gme_create_world_entity(env, world);
 
-   eir_gme_set_world_entity_position(env, world, entity, -10, 0);
+   eir_gme_set_world_entity_position(env, world, entity, 0, 0);
    eir_gme_set_world_entity_size(env, world, entity, 2, 2);
    eir_gme_set_world_entity_sprite_ref(env, world, entity, ph_sprite_ref);
    eir_gme_set_world_entity_color(env, world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
    eir_gme_set_world_entity_acceleration(env, world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
+   eir_gme_set_world_entity_aabb(env, world, entity, 0.0f, 0.0f, 0.8, 0.8f);
+   eir_gme_set_world_entity_following_camera(env, world, entity, 2.0f);
+   eir_gme_set_world_entity_active_camera(env, world, entity);
 
    // INIT PLAYER USER DATA
 

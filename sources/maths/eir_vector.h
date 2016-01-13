@@ -16,3 +16,11 @@ typedef struct
    float y;
    float z;
 } eir_mth_vec3_t;
+
+typedef struct
+{
+   float x;
+   float y;
+   float z;
+   float w;
+} eir_mth_vec4_t;

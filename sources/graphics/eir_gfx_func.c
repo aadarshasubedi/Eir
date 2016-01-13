@@ -1,5 +1,6 @@
 #include "eir_gfx_func.h"
 #include "eir_gfx_api_func.h"
+#include "../maths/eir_mth_func.h"
 
 static void eir_gfx_debug_log_sprite(eir_gfx_sprite_t * sprite)
 {
@@ -115,11 +116,33 @@ static void eir_gfx_release_vertex(eir_gfx_vertex_t * vertex)
    eir_gfx_init_vertex(vertex);
 }
 
-void eir_gfx_init_env(eir_gfx_env_t * gfx_env)
+static void eir_gfx_init_rect(eir_gfx_rect_t * rect)
+{
+   if (rect)
+   {
+      for (int index = 0; index < EIR_GFX_TOTAL_RECT_VERTEX_COUNT; ++index)
+      {
+	 eir_gfx_init_vertex(&rect->vertices[index]);
+      }
+   }
+}
+
+static void eir_gfx_release_rect(eir_gfx_rect_t * rect)
+{
+   eir_gfx_init_rect(rect);
+}
+
+void eir_gfx_init_env(eir_gfx_env_t * gfx_env, int width, int height)
 {
    EIR_KER_LOG_MESSAGE("init graphics env");
    if (gfx_env)
    {
+      gfx_env->viewport.left = 0;
+      gfx_env->viewport.right = width;
+      gfx_env->viewport.bottom = height;
+      gfx_env->viewport.top = 0;
+      eir_mth_set_identity_mat4(&gfx_env->projection);
+      eir_mth_set_identity_mat4(&gfx_env->view);
       EIR_KER_INIT_ARRAY(gfx_env->sprite_batches);
       EIR_KER_INIT_ARRAY(gfx_env->text_batches);
       EIR_KER_INIT_ARRAY(gfx_env->images);
@@ -127,6 +150,7 @@ void eir_gfx_init_env(eir_gfx_env_t * gfx_env)
       EIR_KER_INIT_ARRAY(gfx_env->textures);
       EIR_KER_INIT_ARRAY(gfx_env->line_batch.vertices);
       EIR_KER_INIT_ARRAY(gfx_env->quad_batch.vertices);
+      EIR_KER_INIT_ARRAY(gfx_env->rect_batch.rects);
    }
 }
 
@@ -144,6 +168,7 @@ void eir_gfx_release_env(eir_gfx_env_t * gfx_env)
       EIR_KER_FREE_ARRAY_BIS(gfx_env->textures, eir_gfx_release_texture);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->line_batch.vertices, eir_gfx_release_vertex);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->quad_batch.vertices, eir_gfx_release_vertex);
+      EIR_KER_FREE_ARRAY_BIS(gfx_env->rect_batch.rects, eir_gfx_release_rect);
    }
 }
 
@@ -201,6 +226,21 @@ void eir_gfx_set_quad_capacity(eir_gfx_env_t * gfx_env, int max_capacity)
 	 gfx_env->quad_batch.vertices,
 	 max_capacity * 4,
 	 eir_gfx_init_vertex
+	 );
+   }
+}
+
+void eir_gfx_set_rect_capacity(eir_gfx_env_t * gfx_env, int max_capacity)
+{
+   if (gfx_env)
+   {
+      gfx_env->quad_batch.built = false;
+      gfx_env->quad_batch.modified = false;
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+	 eir_gfx_rect_t,
+	 gfx_env->rect_batch.rects,
+	 max_capacity,
+	 eir_gfx_init_rect
 	 );
    }
 }
@@ -372,108 +412,88 @@ eir_handle_t eir_gfx_add_line(
    return a_handle;
 }
 
-eir_handle_t eir_gfx_add_quad_with_lines(
+static eir_gfx_rect_t * eir_gfx_add_rect(
    eir_gfx_env_t * gfx_env,
    eir_mth_vec2_t * position,
    eir_mth_vec2_t * size,
    eir_gfx_color_t * color
    )
 {
-   eir_gfx_vertex_t * a = 0;
-   eir_gfx_vertex_t * b = 0;
-   eir_gfx_vertex_t * c = 0;
-   eir_gfx_vertex_t * d = 0;
-   eir_gfx_vertex_t * e = 0;
-   eir_gfx_vertex_t * f = 0;
-   eir_gfx_vertex_t * g = 0;
-   eir_gfx_vertex_t * h = 0;
-   eir_handle_t a_handle = EIR_INVALID_HANDLE;
-   eir_handle_t b_handle = EIR_INVALID_HANDLE;
-   eir_handle_t c_handle = EIR_INVALID_HANDLE;
-   eir_handle_t d_handle = EIR_INVALID_HANDLE;
-   eir_handle_t e_handle = EIR_INVALID_HANDLE;
-   eir_handle_t f_handle = EIR_INVALID_HANDLE;
-   eir_handle_t g_handle = EIR_INVALID_HANDLE;
-   eir_handle_t h_handle = EIR_INVALID_HANDLE;
+   eir_gfx_rect_t * rect = 0;
+   eir_handle_t handle = EIR_INVALID_HANDLE;
 
    if (gfx_env && size && position && color)
    {
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, a, a_handle);
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, b, b_handle);
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, c, c_handle);
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, d, d_handle);
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, e, e_handle);
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, f, f_handle);
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, g, g_handle);
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->line_batch.vertices, h, h_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->rect_batch.rects, rect, handle);
    }
-   if (a && b && c && d && e && f && g && h)
+   if (rect)
    {
-      a->position.x = position->x;
-      a->position.y = position->y;
-      a->position.z = 0.0f;
-      a->color.r = color->r;
-      a->color.g = color->g;
-      a->color.b = color->b;
-      a->color.a = color->a;
 
-      b->position.x = position->x + size->x;
-      b->position.y = position->y;
-      b->position.z = 0.0f;
-      b->color.r = color->r;
-      b->color.g = color->g;
-      b->color.b = color->b;
-      b->color.a = color->a;
+      rect->vertices[0].position.x = position->x;
+      rect->vertices[0].position.y = position->y;
+      rect->vertices[0].position.z = 0.0f;
+      rect->vertices[0].color.r = color->r;
+      rect->vertices[0].color.g = color->g;
+      rect->vertices[0].color.b = color->b;
+      rect->vertices[0].color.a = color->a;
 
-      c->position.x = position->x + size->x;
-      c->position.y = position->y;
-      c->position.z = 0.0f;
-      c->color.r = color->r;
-      c->color.g = color->g;
-      c->color.b = color->b;
-      c->color.a = color->a;
+      rect->vertices[1].position.x = position->x + size->x;
+      rect->vertices[1].position.y = position->y;
+      rect->vertices[1].position.z = 0.0f;
+      rect->vertices[1].color.r = color->r;
+      rect->vertices[1].color.g = color->g;
+      rect->vertices[1].color.b = color->b;
+      rect->vertices[1].color.a = color->a;
 
-      d->position.x = position->x + size->x;
-      d->position.y = position->y + size->y;
-      d->position.z = 0.0f;
-      d->color.r = color->r;
-      d->color.g = color->g;
-      d->color.b = color->b;
-      d->color.a = color->a;
+      rect->vertices[2].position.x = position->x + size->x;
+      rect->vertices[2].position.y = position->y;
+      rect->vertices[2].position.z = 0.0f;
+      rect->vertices[2].color.r = color->r;
+      rect->vertices[2].color.g = color->g;
+      rect->vertices[2].color.b = color->b;
+      rect->vertices[2].color.a = color->a;
 
-      e->position.x = position->x + size->x;
-      e->position.y = position->y + size->y;
-      e->position.z = 0.0f;
-      e->color.r = color->r;
-      e->color.g = color->g;
-      e->color.b = color->b;
-      e->color.a = color->a;
+      rect->vertices[3].position.x = position->x + size->x;
+      rect->vertices[3].position.y = position->y + size->y;
+      rect->vertices[3].position.z = 0.0f;
+      rect->vertices[3].color.r = color->r;
+      rect->vertices[3].color.g = color->g;
+      rect->vertices[3].color.b = color->b;
+      rect->vertices[3].color.a = color->a;
 
-      f->position.x = position->x;
-      f->position.y = position->y + size->y;
-      f->position.z = 0.0f;
-      f->color.r = color->r;
-      f->color.g = color->g;
-      f->color.b = color->b;
-      f->color.a = color->a;
+      rect->vertices[4].position.x = position->x + size->x;
+      rect->vertices[4].position.y = position->y + size->y;
+      rect->vertices[4].position.z = 0.0f;
+      rect->vertices[4].color.r = color->r;
+      rect->vertices[4].color.g = color->g;
+      rect->vertices[4].color.b = color->b;
+      rect->vertices[4].color.a = color->a;
 
-      g->position.x = position->x;
-      g->position.y = position->y + size->y;
-      g->position.z = 0.0f;
-      g->color.r = color->r;
-      g->color.g = color->g;
-      g->color.b = color->b;
-      g->color.a = color->a;
+      rect->vertices[5].position.x = position->x;
+      rect->vertices[5].position.y = position->y + size->y;
+      rect->vertices[5].position.z = 0.0f;
+      rect->vertices[5].color.r = color->r;
+      rect->vertices[5].color.g = color->g;
+      rect->vertices[5].color.b = color->b;
+      rect->vertices[5].color.a = color->a;
 
-      h->position.x = position->x;
-      h->position.y = position->y;
-      h->position.z = 0.0f;
-      h->color.r = color->r;
-      h->color.g = color->g;
-      h->color.b = color->b;
-      h->color.a = color->a;
+      rect->vertices[6].position.x = position->x;
+      rect->vertices[6].position.y = position->y + size->y;
+      rect->vertices[6].position.z = 0.0f;
+      rect->vertices[6].color.r = color->r;
+      rect->vertices[6].color.g = color->g;
+      rect->vertices[6].color.b = color->b;
+      rect->vertices[6].color.a = color->a;
+
+      rect->vertices[7].position.x = position->x;
+      rect->vertices[7].position.y = position->y;
+      rect->vertices[7].position.z = 0.0f;
+      rect->vertices[7].color.r = color->r;
+      rect->vertices[7].color.g = color->g;
+      rect->vertices[7].color.b = color->b;
+      rect->vertices[7].color.a = color->a;
    }
-   return a_handle;
+   return rect;
 }
 
 eir_handle_t eir_gfx_add_quad(
@@ -551,6 +571,7 @@ void eir_gfx_force_update_all_batches(eir_gfx_env_t * gfx_env)
       {
 	 gfx_env->sprite_batches.data[index].modified = true;
       }
+      gfx_env->rect_batch.modified = true;
    }
 }
 
@@ -625,6 +646,23 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
       }
       glUseProgram(gfx_env->quad_batch.program); // TODO: put in the api func file !
       eir_gfx_api_draw_vertex_batch(&gfx_env->quad_batch);
+      glUseProgram(0); // TODO: put in api func file !
+   }
+   if (0 < gfx_env->rect_batch.rects.used)
+   {
+      if (!gfx_env->rect_batch.built)
+      {
+	 eir_gfx_api_build_rect_batch(gfx_env, &gfx_env->rect_batch); // TODO: to declare/implement
+      }
+      else if (gfx_env->rect_batch.modified)
+      {
+	 glBindVertexArray(gfx_env->rect_batch.vao);
+	 glBindBuffer(GL_ARRAY_BUFFER, gfx_env->rect_batch.vbo);
+	 eir_gfx_api_set_rect_buffer_data(&gfx_env->rect_batch); // TODO: to declare/implement
+	 glBindVertexArray(0);
+      }
+      glUseProgram(gfx_env->rect_batch.program); // TODO: put in the api func file !
+      eir_gfx_api_draw_rect_batch(&gfx_env->rect_batch); // TODO: to declare/implement
       glUseProgram(0); // TODO: put in api func file !
    }
 }
@@ -1041,6 +1079,57 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 		     );
 		  position->current = &sprite->position;
 	       }
+	    }
+	 }
+      }
+
+      // TODO: add world active camera aabb rect here !
+
+      eir_gme_camera_component_t * camera = world->curr_camera;
+
+      if (camera)
+      {
+	 eir_gfx_color_t color;
+	       
+	 color.r = 1.0f;
+	 color.g = 0.5f;
+	 color.b = 0.0f;
+	 color.a = 1.0f;
+	 camera->cam_win_rect =  eir_gfx_add_rect(
+	    gfx_env,
+	    &camera->cam_win_aabb.position,
+	    &camera->cam_win_aabb.size,
+	    &color
+	    );
+      }
+
+      for (int entity_index = 0; entity_index < world->entities.used; ++entity_index)
+      {
+	 EIR_KER_GET_ARRAY_ITEM(world->entities, entity_index, entity);
+	 if (entity && ((*entity) & eir_gme_component_type_aabb))
+	 {
+	    eir_gme_aabb_component_t * aabb = 0;
+
+	    EIR_KER_GET_ARRAY_ITEM(
+		  world->aabbs,
+		  entity_index,
+		  aabb
+		  );
+
+	    if (aabb)
+	    {
+	       eir_gfx_color_t color;
+	       
+	       color.r = 1.0f;
+	       color.g = 1.0f;
+	       color.b = 0.0f;
+	       color.a = 1.0f;
+	       aabb->curr_rect =  eir_gfx_add_rect(
+		  gfx_env,
+		  &aabb->aabb.position,
+		  &aabb->aabb.size,
+		  &color
+		  );
 	    }
 	 }
       }

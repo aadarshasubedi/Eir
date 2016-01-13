@@ -35,10 +35,10 @@
 
 #include "physics/eir_motion_func.h"
 
-static void eir_init_all_api(eir_ker_env_t * env)
+static void eir_init_all_api(eir_ker_env_t * env, int width, int height)
 {
    eir_sys_win_api_init();
-   eir_sys_win_api_create_window(&env->gfx_env);
+   eir_sys_win_api_create_window(&env->gfx_env, width, height);
    eir_gfx_api_init();
    eir_snd_api_init();
    eir_gfx_api_load_sprite_shaders(&env->gfx_env);
@@ -86,7 +86,7 @@ void eir_set_free_func(eir_free_t free_func)
    eir_sys_free = free_func;
 }
 
-eir_env_t * eir_create_env()
+eir_env_t * eir_create_env(int width, int height)
 {
    eir_check_allocate_and_free_func();
 
@@ -100,8 +100,8 @@ eir_env_t * eir_create_env()
    }
    if (env)
    {
-      eir_init_all_api(env);
-      eir_gfx_init_env(&env->gfx_env);
+      eir_init_all_api(env, width, height);
+      eir_gfx_init_env(&env->gfx_env, width, height);
       eir_snd_init_env(&env->snd_env);
       eir_fsm_init_env(&env->fsm_env);
       eir_sys_init_env(&env->sys_env);
@@ -153,6 +153,7 @@ void eir_run(eir_env_t * env)
 
    eir_gfx_set_text_capacity(gfx_env, 1);
    eir_gfx_set_line_capacity(gfx_env, 16);
+   eir_gfx_set_rect_capacity(gfx_env, 2);
    eir_gfx_set_quad_capacity(gfx_env, 1);
    //eir_snd_set_sound_capacity(snd_env, 2);
 
@@ -169,28 +170,6 @@ void eir_run(eir_env_t * env)
    color.a = 0.7f;
    frame_rate_text_handle = eir_gfx_add_text(gfx_env, "DEBUG TEST TEXT", &position, 1.0f, &color);
 #endif
-
-/* TODO: remove when camera's and player's aabb will be displayed */
-   eir_mth_vec2_t size;
-   position.x = -0.2f;
-   position.y = -0.5f;
-   size.x = 0.5f;
-   size.y = 0.5f;
-   color.r = 1.0f;
-   color.g = 1.0f;
-   color.b = 0.8f;
-   color.a = 0.9f;
-   eir_gfx_add_quad(gfx_env, &position, &size, &color);
-   position.x = 0.2f;
-   position.y = 0.5f;
-   size.x = 0.2f;
-   size.y = 0.2f;
-   color.r = 1.0f;
-   color.g = 1.0f;
-   color.b = 0.0f;
-   color.a = 1.0f;
-   eir_gfx_add_quad_with_lines(gfx_env, &position, &size, &color);
-/* ------------------------------- */
 
    float time_per_frame = 1.0f / 60.0f;
    float time_since_last_update = 0.0f;

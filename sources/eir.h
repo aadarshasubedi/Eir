@@ -74,7 +74,7 @@ void eir_set_free_func(eir_free_t free_func);
 
 /* ENV CREATION ------------------------------- */
 
-eir_env_t * eir_create_env();
+eir_env_t * eir_create_env(int width, int height);
 
 /* FINITE STATE MACHINE CREATION -------------- */
 
@@ -186,7 +186,17 @@ bool eir_gme_set_world_entity_aabb(
    float width,
    float height
    );
-
+bool eir_gme_set_world_entity_following_camera(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle,
+   float cam_win_scale
+   );
+bool eir_gme_set_world_entity_active_camera(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle
+   );
 
 /* ACCESSORS ---------------------------------- */
 

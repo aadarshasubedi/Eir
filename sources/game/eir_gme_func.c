@@ -2,6 +2,7 @@
 #include "../kernel/eir_ker_env.h"
 #include "../kernel/eir_log.h"
 #include "../system/eir_joystick_func.h"
+#include "../maths/eir_mth_func.h"
 
 /*******************************************
  * LOCAL FUNCTIONS
@@ -18,6 +19,7 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->colors);
       EIR_KER_INIT_ARRAY(world->motion_params);
       EIR_KER_INIT_ARRAY(world->aabbs);
+      EIR_KER_INIT_ARRAY(world->cameras);
    }
 }
 
@@ -32,6 +34,7 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->colors);
       EIR_KER_FREE_ARRAY(world->motion_params);
       EIR_KER_FREE_ARRAY(world->aabbs);
+      EIR_KER_FREE_ARRAY(world->cameras);
    }
 }
 
@@ -135,20 +138,39 @@ static void eir_gme_release_motion_param(eir_phy_motion_param_t * motion_param)
    eir_gme_init_motion_param(motion_param);
 }
 
-static void eir_gme_init_aabb(eir_phy_aabb_t * aabb)
+static void eir_gme_init_aabb(eir_gme_aabb_component_t * aabb)
 {
    if (aabb)
    {
-      aabb->position.x = 0.0f;
-      aabb->position.y = 0.0f;
-      aabb->size.x = 0.0f;
-      aabb->size.y = 0.0f;
+      aabb->aabb.position.x = 0.0f;
+      aabb->aabb.position.y = 0.0f;
+      aabb->aabb.size.x = 0.0f;
+      aabb->aabb.size.y = 0.0f;
+      aabb->curr_rect = 0;
    }
 }
 
-static void eir_gme_release_aabb(eir_phy_aabb_t * aabb)
+static void eir_gme_release_aabb(eir_gme_aabb_component_t * aabb)
 {
    eir_gme_init_aabb(aabb);
+}
+
+static void eir_gme_init_camera(eir_gme_camera_component_t * camera)
+{
+   if (camera)
+   {
+      eir_mth_set_vec2(&camera->target_last_pos, 0.0f, 0.0f);
+      eir_mth_set_vec2(&camera->cam_pos, 0.0f, 0.0f);
+      eir_mth_set_vec2(&camera->cam_win_aabb.position, 0.0f, 0.0f);
+      eir_mth_set_vec2(&camera->cam_win_aabb.size, 0.0f, 0.0f);
+      camera->target_aabb = 0;
+      camera->cam_win_rect = 0;
+   }
+}
+
+static void eir_gme_release_camera(eir_gme_camera_component_t * camera)
+{
+   eir_gme_init_camera(camera);
 }
 
 static eir_gme_world_t * eir_gme_get_world(eir_gme_env_t * env, eir_handle_t world_handle)
@@ -305,11 +327,18 @@ eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count)
 	 eir_gme_init_motion_param
 	 );
       EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_phy_aabb_t,
+	 eir_gme_aabb_component_t,
 	 world->aabbs,
 	 max_entity_count,
 	 eir_gme_init_aabb
 	 );
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+	 eir_gme_camera_component_t,
+	 world->cameras,
+	 max_entity_count,
+	 eir_gme_init_camera
+	 );
+      world->curr_camera = 0;
    }
    return world_handle;
 }
@@ -340,6 +369,7 @@ eir_handle_t eir_gme_create_world_entity(eir_env_t * env, eir_handle_t world_han
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->colors, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->motion_params, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->aabbs, entity_handle);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->cameras, entity_handle);
    }
    return entity_handle;
 }
@@ -531,7 +561,7 @@ bool eir_gme_set_world_entity_aabb(
    eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
    eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
    eir_gme_entity_t * entity = 0;
-   eir_phy_aabb_t * aabb = 0;
+   eir_gme_aabb_component_t * aabb = 0;
 
    if (world)
    {
@@ -541,15 +571,88 @@ bool eir_gme_set_world_entity_aabb(
    if (entity && aabb)
    {
       (*entity) |= eir_gme_component_type_aabb;
-      aabb->position.x = x;
-      aabb->position.y = y;
-      aabb->size.x = width;
-      aabb->size.y = height;
+      aabb->aabb.position.x = x;
+      aabb->aabb.position.y = y;
+      aabb->aabb.size.x = width;
+      aabb->aabb.size.y = height;
       result = true;
    }
    else
    {
       EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity_handle);
+   }
+   return result;
+}
+
+bool eir_gme_set_world_entity_following_camera(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle,
+   float cam_win_scale
+   )
+{
+   bool result = false;
+   eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
+   eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
+   eir_gme_entity_t * entity = 0;
+   eir_gme_position_component_t * position = 0;
+   eir_gme_aabb_component_t * aabb = 0;
+   eir_gme_camera_component_t * camera = 0;
+
+   if (world)
+   {
+      EIR_KER_GET_ARRAY_ITEM(world->entities, entity_handle, entity);
+      EIR_KER_GET_ARRAY_ITEM(world->positions, entity_handle, position);
+      EIR_KER_GET_ARRAY_ITEM(world->aabbs, entity_handle, aabb);
+      EIR_KER_GET_ARRAY_ITEM(world->cameras, entity_handle, camera);
+   }
+   if (entity && camera && position)
+   {
+      (*entity) |= eir_gme_component_type_camera;
+      camera->target_last_pos.x = position->initial.x;
+      camera->target_last_pos.y = position->initial.y;
+      camera->cam_pos.x = position->initial.x;
+      camera->cam_pos.y = position->initial.y;
+      if (aabb)
+      {
+	 camera->cam_win_aabb.position.x = aabb->aabb.position.x - aabb->aabb.size.x;
+	 camera->cam_win_aabb.position.y = aabb->aabb.position.y - aabb->aabb.size.y;
+	 camera->cam_win_aabb.size.x = aabb->aabb.size.x * cam_win_scale;
+	 camera->cam_win_aabb.size.y = aabb->aabb.size.y * cam_win_scale;
+	 camera->target_aabb = &aabb->aabb;
+      }
+      result = true;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or components in array", entity_handle);
+   }
+   return result;
+}
+
+bool eir_gme_set_world_entity_active_camera(
+   eir_env_t * env,
+   eir_handle_t world_handle,
+   eir_handle_t entity_handle
+   )
+{
+   bool result = false;
+   eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
+   eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
+   eir_gme_camera_component_t * camera = 0;
+
+   if (world)
+   {
+      EIR_KER_GET_ARRAY_ITEM(world->cameras, entity_handle, camera);
+   }
+   if (camera)
+   {
+      world->curr_camera = camera;
+      result = true;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find camera %d", entity_handle);
    }
    return result;
 }

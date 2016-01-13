@@ -192,6 +192,16 @@ void eir_gfx_api_set_buffer_data(eir_gfx_sprite_batch_t * batch)
       );
 }
 
+void eir_gfx_api_set_rect_buffer_data(eir_gfx_rect_batch_t * batch)
+{
+   glBufferData(
+      GL_ARRAY_BUFFER,
+      batch->rects.used * sizeof (eir_gfx_rect_t),
+      batch->rects.data,
+      GL_DYNAMIC_DRAW
+      );
+}
+
 void eir_gfx_api_build_sprite_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_t * batch)
 {
    if (gfx_env && batch && batch->texture && batch->texture->image)
@@ -211,11 +221,6 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batc
 
       EIR_KER_LOG_MESSAGE("load and use atlas texture");
 
-   //eir_gfx_image_t * image = eir_gfx_api_create_image(PLACE_HOLDER_IMAGE_PATH, true);
-
-   //if (image)
-   //{
-   //   batch->texture[0] = eir_gfx_api_create_texture(image);
       glUniform1i(
 	 glGetUniformLocation(gfx_env->sprite_program, "tex0"),
 	 0
@@ -225,12 +230,6 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batc
 	 batch->texture->image->width,
 	 batch->texture->image->height
 	 );
-   //eir_gfx_api_destroy_image(image);
-      //}
-      //else
-      //{
-      //EIR_KER_LOG_ERROR("cannot create texture from image file %d", PLACE_HOLDER_IMAGE_PATH);
-      //}
       eir_gfx_api_bind_sprite_attributes(
 	 glGetAttribLocation(gfx_env->sprite_program, "position"),
 	 glGetAttribLocation(gfx_env->sprite_program, "size"),
@@ -355,6 +354,65 @@ void eir_gfx_api_build_vertex_batch(eir_gfx_env_t * gfx_env, eir_gfx_vertex_batc
    eir_gfx_debug_log_vertex_batch(batch);
 }
 
+void eir_gfx_api_build_rect_batch(eir_gfx_env_t * gfx_env, eir_gfx_rect_batch_t * batch)
+{
+   if (!batch)
+   {
+      return;
+   }
+
+   glUseProgram(gfx_env->default_program);
+
+   EIR_KER_LOG_MESSAGE("create vao");
+   glGenVertexArrays(1, &batch->vao);
+   glBindVertexArray(batch->vao);
+
+   EIR_KER_LOG_MESSAGE("create ibo and bind attributes");
+   glGenBuffers(1, &batch->vbo);
+   glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
+   glBufferData(
+      GL_ARRAY_BUFFER,
+      sizeof (eir_gfx_rect_t) * batch->rects.used,
+      batch->rects.data,
+      GL_DYNAMIC_DRAW
+      );
+
+   eir_gfx_api_att_handle_t pos_attr = glGetAttribLocation(
+      gfx_env->default_program,
+      "default_position"
+      );
+   eir_gfx_api_att_handle_t color_attr = glGetAttribLocation(
+      gfx_env->default_program,
+      "default_color"
+      );
+
+   glVertexAttribPointer(
+      pos_attr,
+      3,
+      GL_FLOAT,
+      GL_FALSE,
+      sizeof (eir_gfx_vertex_t),
+      (void *)offsetof(eir_gfx_vertex_t, position)
+      );
+   glEnableVertexAttribArray(pos_attr);
+
+   glVertexAttribPointer(
+      color_attr,
+      4,
+      GL_FLOAT,
+      GL_FALSE,
+      sizeof (eir_gfx_vertex_t),
+      (void *)offsetof(eir_gfx_vertex_t, color)
+      );
+   glEnableVertexAttribArray(color_attr);
+
+   glBindVertexArray(0);
+   glUseProgram(0);
+   batch->built = true;
+   batch->modified = false;
+   batch->program = gfx_env->default_program;
+}
+
 void eir_gfx_api_draw_sprite_batch(eir_gfx_sprite_batch_t * batch)
 {
    glBindVertexArray(batch->vao);
@@ -371,6 +429,13 @@ void eir_gfx_api_draw_vertex_batch(eir_gfx_vertex_batch_t * batch)
       0,
       batch->vertices.used
       );
+}
+
+void eir_gfx_api_draw_rect_batch(eir_gfx_rect_batch_t * batch)
+{
+   glBindVertexArray(batch->vao);
+   glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
+   glDrawArrays(GL_LINES, 0, batch->rects.used * EIR_GFX_TOTAL_RECT_VERTEX_COUNT);
 }
 
 void eir_gfx_api_set_clear_color()

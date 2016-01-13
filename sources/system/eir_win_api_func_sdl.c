@@ -77,10 +77,17 @@ void eir_sys_win_api_release()
 }
 
 // TODO: use window own env when created
-void eir_sys_win_api_create_window(eir_gfx_env_t * gfx_env)
+void eir_sys_win_api_create_window(eir_gfx_env_t * gfx_env, int width, int height)
 {
    EIR_KER_LOG_MESSAGE("create window");
-   gfx_env->window = SDL_CreateWindow("eir", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
+   gfx_env->window = SDL_CreateWindow(
+      "eir",
+      SDL_WINDOWPOS_UNDEFINED,
+      SDL_WINDOWPOS_UNDEFINED,
+      width,
+      height,
+      SDL_WINDOW_OPENGL
+      );
    gfx_env->context = SDL_GL_CreateContext(gfx_env->window);
 }
 
