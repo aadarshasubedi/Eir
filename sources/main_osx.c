@@ -157,14 +157,14 @@ static void update_move_state(void * user_data)
 	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
 	    )
 	 {
-	    y_velocity = -1.0f;
+	    y_velocity = 1.0f;
 	 }
 	 if (
 	    player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
 	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
 	    )
 	 {
-	    y_velocity = 1.0f;
+	    y_velocity = -1.0f;
 	 }
       }
 
@@ -201,7 +201,7 @@ int main()
 
    // LOAD SPRITE
 
-   eir_handle_t ph_atlas_image = eir_gfx_load_image(env, PLACE_HOLDER_IMAGE_PATH, true);
+   eir_handle_t ph_atlas_image = eir_gfx_load_image(env, PLACE_HOLDER_IMAGE_PATH, false);
    eir_handle_t ph_texture = eir_gfx_create_texture(env, ph_atlas_image);
    eir_handle_t ph_sprite_ref = eir_gfx_create_sprite_ref(env, ph_texture, 0, 0, 64, 64);
 
@@ -215,12 +215,12 @@ int main()
 
    eir_handle_t entity = eir_gme_create_world_entity(env, world);
 
-   eir_gme_set_world_entity_position(env, world, entity, 0, 0);
-   eir_gme_set_world_entity_size(env, world, entity, 2, 2);
+   eir_gme_set_world_entity_position(env, world, entity, 400, 300);
+   eir_gme_set_world_entity_size(env, world, entity, 64, 64);
    eir_gme_set_world_entity_sprite_ref(env, world, entity, ph_sprite_ref);
    eir_gme_set_world_entity_color(env, world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
    eir_gme_set_world_entity_acceleration(env, world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
-   eir_gme_set_world_entity_aabb(env, world, entity, 0.0f, 0.0f, 0.8, 0.8f);
+   eir_gme_set_world_entity_aabb(env, world, entity, 300.0f, 300.0f, 65.0f, 65.0f);
    eir_gme_set_world_entity_following_camera(env, world, entity, 2.0f);
    eir_gme_set_world_entity_active_camera(env, world, entity);
 

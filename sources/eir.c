@@ -168,7 +168,7 @@ void eir_run(eir_env_t * env)
    color.g = 1.0f;
    color.b = 0.0f;
    color.a = 0.7f;
-   frame_rate_text_handle = eir_gfx_add_text(gfx_env, "DEBUG TEST TEXT", &position, 1.0f, &color);
+   frame_rate_text_handle = eir_gfx_add_text(gfx_env, "DEBUG TEST TEXT", &position, 32.0f, &color);
 #endif
 
    float time_per_frame = 1.0f / 60.0f;

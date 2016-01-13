@@ -12,37 +12,26 @@ out vec2 texcoord;
 out vec4 finalColor;
 
 uniform vec2 atlasSize;
+uniform mat4 pmat;
 
 void main()
 {
-    // bottom left
-    gl_Position = gl_in[0].gl_Position + vec4(-0.5 * size_[0].x,  -0.5 * size_[0].y, 0.0, 0.0);
-    gl_Position *= vec4(0.08, 0.1066666667, 1.0, 1.0);
-    gl_Position += vec4(0.5, 0, 0, 0);
+    gl_Position = pmat * (gl_in[0].gl_Position + vec4(0.0, 0.0, 0.0, 0.0));
     texcoord = (uv_offset_[0] + uv_size_[0] * vec2(0.0, 0.0)) / atlasSize;
     finalColor = color_[0];
     EmitVertex();
 
-    //up left
-    gl_Position = gl_in[0].gl_Position + vec4(-0.5 * size_[0].x, 0.5 * size_[0].y, 0.0, 0.0);
-    gl_Position *= vec4(0.08, 0.1066666667, 1.0, 1.0);
-    gl_Position += vec4(0.5, 0, 0, 0);
+    gl_Position = pmat * (gl_in[0].gl_Position + vec4(0.0, size_[0].y, 0.0, 0.0));
     texcoord = (uv_offset_[0] + uv_size_[0] * vec2(0.0, 1.0)) / atlasSize;
     finalColor = color_[0];
     EmitVertex();
 
-    // bottom right
-    gl_Position = gl_in[0].gl_Position + vec4(0.5 * size_[0].x, -0.5 * size_[0].y, 0.0, 0.0);
-    gl_Position *= vec4(0.08, 0.1066666667, 1.0, 1.0);
-    gl_Position += vec4(0.5, 0, 0, 0);
+    gl_Position = pmat * (gl_in[0].gl_Position + vec4(size_[0].x, 0.0, 0.0, 0.0));
     texcoord = (uv_offset_[0] + uv_size_[0] * vec2(1.0, 0.0)) / atlasSize;
     finalColor = color_[0];
     EmitVertex();
 
-    // up right
-    gl_Position = gl_in[0].gl_Position + vec4(0.5 * size_[0].x, 0.5 * size_[0].y, 0.0, 0.0);
-    gl_Position *= vec4(0.08, 0.1066666667, 1.0, 1.0);
-    gl_Position += vec4(0.5, 0, 0, 0);
+    gl_Position = pmat * (gl_in[0].gl_Position + vec4(size_[0].x, size_[0].y, 0.0, 0.0));
     texcoord = (uv_offset_[0] + uv_size_[0] * vec2(1.0, 1.0)) / atlasSize;
     finalColor = color_[0];
     EmitVertex();

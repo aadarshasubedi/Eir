@@ -141,7 +141,7 @@ void eir_gfx_init_env(eir_gfx_env_t * gfx_env, int width, int height)
       gfx_env->viewport.right = width;
       gfx_env->viewport.bottom = height;
       gfx_env->viewport.top = 0;
-      eir_mth_set_identity_mat4(&gfx_env->projection);
+      eir_mth_set_ortho_mat4(&gfx_env->projection, 0, width, height, 0);
       eir_mth_set_identity_mat4(&gfx_env->view);
       EIR_KER_INIT_ARRAY(gfx_env->sprite_batches);
       EIR_KER_INIT_ARRAY(gfx_env->text_batches);
@@ -602,6 +602,12 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	 }
 	 glBindTexture(GL_TEXTURE_2D, batch->texture->id); // TODO: put in api func file !
 	 glUseProgram(batch->program); // TODO: put in the api func file !
+	 glUniformMatrix4fv(
+	    glGetUniformLocation(batch->program, "pmat"),
+	    1,
+	    GL_FALSE,
+	    &gfx_env->projection.values[0][0]
+	    );
 	 eir_gfx_api_draw_sprite_batch(batch);
 	 glUseProgram(0); // TODO: put in api func file !
       }
@@ -624,6 +630,12 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	 }
 	 glBindTexture(GL_TEXTURE_2D, batch->texture->id); // TODO: put in api func file !
 	 glUseProgram(batch->program); // TODO: put in the api func file !
+	 glUniformMatrix4fv(
+	    glGetUniformLocation(batch->program, "pmat"),
+	    1,
+	    GL_FALSE,
+	    &gfx_env->projection.values[0][0]
+	    );
 	 eir_gfx_api_draw_sprite_batch(batch);
 	 glUseProgram(0); // TODO: put in api func file !
       }
@@ -635,6 +647,12 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	 eir_gfx_api_build_vertex_batch(gfx_env, &gfx_env->line_batch);
       }
       glUseProgram(gfx_env->line_batch.program); // TODO: put in the api func file !
+      glUniformMatrix4fv(
+	    glGetUniformLocation(gfx_env->line_batch.program, "default_pmat"),
+	    1,
+	    GL_FALSE,
+	    &gfx_env->projection.values[0][0]
+	    );
       eir_gfx_api_draw_vertex_batch(&gfx_env->line_batch);
       glUseProgram(0); // TODO: put in api func file !
    }
@@ -645,6 +663,12 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	 eir_gfx_api_build_vertex_batch(gfx_env, &gfx_env->quad_batch);
       }
       glUseProgram(gfx_env->quad_batch.program); // TODO: put in the api func file !
+      glUniformMatrix4fv(
+	    glGetUniformLocation(gfx_env->quad_batch.program, "default_pmat"),
+	    1,
+	    GL_FALSE,
+	    &gfx_env->projection.values[0][0]
+	    );
       eir_gfx_api_draw_vertex_batch(&gfx_env->quad_batch);
       glUseProgram(0); // TODO: put in api func file !
    }
@@ -662,6 +686,12 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	 glBindVertexArray(0);
       }
       glUseProgram(gfx_env->rect_batch.program); // TODO: put in the api func file !
+      glUniformMatrix4fv(
+	    glGetUniformLocation(batch->program, "default_pmat"),
+	    1,
+	    GL_FALSE,
+	    &gfx_env->projection.values[0][0]
+	    );
       eir_gfx_api_draw_rect_batch(&gfx_env->rect_batch); // TODO: to declare/implement
       glUseProgram(0); // TODO: put in api func file !
    }
