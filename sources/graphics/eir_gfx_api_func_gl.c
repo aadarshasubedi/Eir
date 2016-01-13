@@ -261,7 +261,7 @@ void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_
 
    EIR_KER_LOG_MESSAGE("load and use atlas texture");
 
-   bool result = eir_gfx_api_load_image(DEFAULT_FONT_IMAGE_PATH, true, &gfx_env->text_image);
+   bool result = eir_gfx_api_load_image(DEFAULT_FONT_IMAGE_PATH, false, &gfx_env->text_image);
 
    if (result)
    {
