@@ -162,8 +162,8 @@ void eir_run(eir_env_t * env)
    eir_gfx_color_t color;
    eir_handle_t frame_rate_text_handle;
 
-   position.x = -18.0f;
-   position.y = 9.0f;
+   position.x = 0.0f;
+   position.y = 0.0f;
    color.r = 0.0f;
    color.g = 1.0f;
    color.b = 0.0f;

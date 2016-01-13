@@ -347,7 +347,7 @@ eir_handle_t eir_gfx_add_text(
       uv_size.y = MAX_TEXTURE_HEIGHT / MAX_TEXTURE_ROW;
       c = text[index];
       x_offset = (int)c % (int)MAX_TEXTURE_COL;
-      y_offset = MAX_TEXTURE_ROW - ((int)c / (int)MAX_TEXTURE_ROW) - 1;  
+      y_offset = (int)c / (int)MAX_TEXTURE_ROW;  
       uv_offset.x = x_offset * (MAX_TEXTURE_WIDTH / MAX_TEXTURE_COL);
       uv_offset.y = y_offset * (MAX_TEXTURE_HEIGHT / MAX_TEXTURE_ROW);
 
@@ -758,7 +758,7 @@ void eir_gfx_update_text(eir_gfx_env_t * gfx_env, eir_handle_t text_handle, cons
       uv_size.y = MAX_TEXTURE_HEIGHT / MAX_TEXTURE_ROW;
       c = text[index];
       x_offset = (int)c % (int)MAX_TEXTURE_COL;
-      y_offset = MAX_TEXTURE_ROW - ((int)c / (int)MAX_TEXTURE_ROW) - 1;  
+      y_offset = (int)c / (int)MAX_TEXTURE_ROW;  
       uv_offset.x = x_offset * (MAX_TEXTURE_WIDTH / MAX_TEXTURE_COL);
       uv_offset.y = y_offset * (MAX_TEXTURE_HEIGHT / MAX_TEXTURE_ROW);
 
