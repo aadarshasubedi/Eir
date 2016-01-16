@@ -1,5 +1,14 @@
 #pragma once
 
+/******************************************************************
+ * TODO:
+ *
+ * - BUGS
+ *   - fix rect display
+ *
+ *
+ *****************************************************************/
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -177,6 +186,12 @@ bool eir_gme_set_world_entity_acceleration(
    float speed_factor,
    float friction_factor
    );
+// WARNING: call eir_gme_set_world_entity_position before
+// eir_gme_set_world_entity_aabb if you want to use entity
+// relative position for aabb !
+// call eir_gme_set_world_entity_aabb before
+// eir_gme_set_world_position if you want absolute position
+// for aabb !
 bool eir_gme_set_world_entity_aabb(
    eir_env_t * env,
    eir_handle_t world_handle,

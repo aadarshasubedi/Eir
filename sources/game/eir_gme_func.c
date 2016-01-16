@@ -561,18 +561,26 @@ bool eir_gme_set_world_entity_aabb(
    eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
    eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
    eir_gme_entity_t * entity = 0;
+   eir_gme_position_component_t * position = 0;
    eir_gme_aabb_component_t * aabb = 0;
 
    if (world)
    {
       EIR_KER_GET_ARRAY_ITEM(world->entities, entity_handle, entity);
       EIR_KER_GET_ARRAY_ITEM(world->aabbs, entity_handle, aabb);
+      EIR_KER_GET_ARRAY_ITEM(world->positions, entity_handle, position);
    }
    if (entity && aabb)
    {
       (*entity) |= eir_gme_component_type_aabb;
       aabb->aabb.position.x = x;
       aabb->aabb.position.y = y;
+      if (position && ((*entity) & eir_gme_component_type_position))
+      {
+	 // TODO: remove comments when ortho fixed for rect
+	 //aabb->aabb.position.x += position->initial.x;
+	 //aabb->aabb.position.y += position->initial.y;
+      }
       aabb->aabb.size.x = width;
       aabb->aabb.size.y = height;
       result = true;

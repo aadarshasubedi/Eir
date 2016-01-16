@@ -559,3 +559,38 @@ void eir_gfx_api_unload_default_shaders(eir_gfx_env_t * gfx_env)
    glDeleteShader(gfx_env->default_frag_shader);
    glDeleteShader(gfx_env->default_vert_shader);
 }
+
+void eir_gfx_api_check_for_error()
+{
+   GLenum error_code = glGetError();
+
+   while (error_code != GL_NO_ERROR)
+   {
+      if (GL_INVALID_OPERATION == error_code)
+      {
+	 EIR_KER_LOG_ERROR("invalid operation");
+      }
+      else if (GL_INVALID_ENUM == error_code)
+      {
+	 EIR_KER_LOG_ERROR("invalid enum");
+      }
+      else if (GL_INVALID_VALUE == error_code)
+      {
+	 EIR_KER_LOG_ERROR("invalid value");
+      }
+      else if (GL_OUT_OF_MEMORY == error_code)
+      {
+	 EIR_KER_LOG_ERROR("out of memory");
+      }
+      else if (GL_INVALID_FRAMEBUFFER_OPERATION == error_code)
+      {
+	 EIR_KER_LOG_ERROR("invalid frame buffer");
+      }
+      else
+      {
+	 EIR_KER_LOG_ERROR("unknown error code %d", error_code);
+      }
+      error_code = glGetError();
+   }
+}
+

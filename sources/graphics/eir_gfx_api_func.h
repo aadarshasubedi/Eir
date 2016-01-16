@@ -36,3 +36,4 @@ void eir_gfx_api_release_vertex_batch(eir_gfx_vertex_batch_t * batch);
 void eir_gfx_api_unload_sprite_shaders(eir_gfx_env_t * gfx_env);
 void eir_gfx_api_unload_text_shaders(eir_gfx_env_t * gfx_env);
 void eir_gfx_api_unload_default_shaders(eir_gfx_env_t * gfx_env);
+void eir_gfx_api_check_for_error();

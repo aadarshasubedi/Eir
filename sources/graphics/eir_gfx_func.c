@@ -695,6 +695,7 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
       eir_gfx_api_draw_rect_batch(&gfx_env->rect_batch); // TODO: to declare/implement
       glUseProgram(0); // TODO: put in api func file !
    }
+   eir_gfx_api_check_for_error();
 }
 
 void eir_gfx_update_text(eir_gfx_env_t * gfx_env, eir_handle_t text_handle, const char * text)
@@ -1113,14 +1114,13 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	 }
       }
 
-      // TODO: add world active camera aabb rect here !
-
       eir_gme_camera_component_t * camera = world->curr_camera;
 
       if (camera)
       {
+/*
 	 eir_gfx_color_t color;
-	       
+
 	 color.r = 1.0f;
 	 color.g = 0.5f;
 	 color.b = 0.0f;
@@ -1131,6 +1131,15 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	    &camera->cam_win_aabb.size,
 	    &color
 	    );
+
+	 EIR_KER_LOG_MESSAGE(
+	    "camera found. add window debug rect (%f; %f; %f; %f)",
+	    camera->cam_win_aabb.position.x,
+	    camera->cam_win_aabb.position.y,
+	    camera->cam_win_aabb.size.x,
+	    camera->cam_win_aabb.size.y
+	    );
+*/
       }
 
       for (int entity_index = 0; entity_index < world->entities.used; ++entity_index)
@@ -1159,6 +1168,14 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 		  &aabb->aabb.position,
 		  &aabb->aabb.size,
 		  &color
+		  );
+
+	       EIR_KER_LOG_MESSAGE(
+		  "entity has aabb. add debug rect (%f; %f; %f; %f)",
+		  aabb->aabb.position.x,
+		  aabb->aabb.position.y,
+		  aabb->aabb.size.x,
+		  aabb->aabb.size.y
 		  );
 	    }
 	 }
