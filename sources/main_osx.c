@@ -220,7 +220,7 @@ int main()
    eir_gme_set_world_entity_sprite_ref(env, world, entity, ph_sprite_ref);
    eir_gme_set_world_entity_color(env, world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
    eir_gme_set_world_entity_acceleration(env, world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
-   eir_gme_set_world_entity_aabb(env, world, entity, 100.0f, 100.0f, 200.f, 200.f);
+   eir_gme_set_world_entity_aabb(env, world, entity, 0.0f, 0.0f, 128.0f, 128.0f);
    eir_gme_set_world_entity_following_camera(env, world, entity, 2.0f);
    eir_gme_set_world_entity_active_camera(env, world, entity);
 

@@ -43,12 +43,12 @@ static void eir_init_all_api(eir_ker_env_t * env, int width, int height)
    eir_snd_api_init();
    eir_gfx_api_load_sprite_shaders(&env->gfx_env);
    eir_gfx_api_load_text_shaders(&env->gfx_env);
-   eir_gfx_api_load_default_shaders(&env->gfx_env);
+   eir_gfx_api_load_rect_shaders(&env->gfx_env);
 }
 
 static void eir_stop(eir_ker_env_t * env)
 {
-   eir_gfx_api_unload_default_shaders(&env->gfx_env);
+   eir_gfx_api_unload_rect_shaders(&env->gfx_env);
    eir_gfx_api_unload_text_shaders(&env->gfx_env);
    eir_gfx_api_unload_sprite_shaders(&env->gfx_env);
    eir_snd_api_release();
@@ -152,9 +152,7 @@ void eir_run(eir_env_t * env)
    }
 
    eir_gfx_set_text_capacity(gfx_env, 1);
-   eir_gfx_set_line_capacity(gfx_env, 16);
    eir_gfx_set_rect_capacity(gfx_env, 2);
-   eir_gfx_set_quad_capacity(gfx_env, 1);
    //eir_snd_set_sound_capacity(snd_env, 2);
 
 #ifdef EIR_DEBUG

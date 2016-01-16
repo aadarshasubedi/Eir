@@ -2,9 +2,6 @@
 #include "eir_gfx_types.h"
 #include "eir_sprite.h"
 #include "eir_texture.h"
-#include "../kernel/eir_array_macro.h"
-
-EIR_KER_DEFINE_ARRAY_STRUCT(eir_gfx_sprite_t, eir_gfx_sprite_array_t);
 
 typedef struct
 {

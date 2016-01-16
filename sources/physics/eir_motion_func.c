@@ -44,12 +44,6 @@ void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
 	       if (aabb && aabb->curr_rect)
 	       {
 		  // TODO: update aabb position
-		  for (int v_index = 0; v_index < EIR_GFX_TOTAL_RECT_VERTEX_COUNT; ++v_index)
-		  {
-		     // TODO: remove when independant size resolution works (ie projection/camera/etc)
-		     //aabb->current_rect->vertices[v_index].position.x = position->x;
-		     //aabb->current_rect->vertices[v_index].position.y = position->y;
-		  }
 	       }
 	    }
 	 }

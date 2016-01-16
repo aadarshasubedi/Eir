@@ -577,9 +577,8 @@ bool eir_gme_set_world_entity_aabb(
       aabb->aabb.position.y = y;
       if (position && ((*entity) & eir_gme_component_type_position))
       {
-	 // TODO: remove comments when ortho fixed for rect
-	 //aabb->aabb.position.x += position->initial.x;
-	 //aabb->aabb.position.y += position->initial.y;
+	 aabb->aabb.position.x += position->initial.x;
+	 aabb->aabb.position.y += position->initial.y;
       }
       aabb->aabb.size.x = width;
       aabb->aabb.size.y = height;
