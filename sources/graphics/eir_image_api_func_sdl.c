@@ -1,5 +1,4 @@
 #include "eir_image_api_func.h"
-#include "eir_gfx_types.h" // TODO: replace by special include for image api when done
 #include "../system/eir_memory.h"
 
 eir_gfx_image_t * eir_gfx_api_create_image(const char * filename, bool invert_image)

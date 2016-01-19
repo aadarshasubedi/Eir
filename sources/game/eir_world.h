@@ -28,14 +28,12 @@ typedef enum
    eir_gme_component_type_camera = 1 << 6
 } eir_gme_component_type;
 
-// TODO: use component struct with batch linked variable for color and size
-// for batch update !
 typedef struct
 {
    eir_gme_entity_array_t entities;
    eir_gme_position_component_array_t positions;
-   eir_mth_vec2_array_t sizes;
-   eir_gfx_color_array_t colors;
+   eir_gme_size_component_array_t sizes;
+   eir_gme_color_component_array_t colors;
    eir_handle_array_t sprite_ref_handles;
    eir_phy_motion_param_array_t motion_params;
    eir_gme_aabb_component_array_t aabbs;

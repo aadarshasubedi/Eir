@@ -77,16 +77,17 @@ static void eir_gme_release_position(eir_gme_position_component_t * position)
    eir_gme_init_position(position);
 }
 
-static void eir_gme_init_size(eir_mth_vec2_t * size)
+static void eir_gme_init_size(eir_gme_size_component_t * size)
 {
    if (size)
    {
-      size->x = 0.0f;
-      size->y = 0.0f;
+      size->initial.x = 0.0f;
+      size->initial.y = 0.0f;
+      size->current = 0;
    }
 }
 
-static void eir_gme_release_size(eir_mth_vec2_t * size)
+static void eir_gme_release_size(eir_gme_size_component_t * size)
 {
    eir_gme_init_size(size);
 }
@@ -104,18 +105,19 @@ static void eir_gme_release_sprite_ref_handle(eir_handle_t * sprite_ref_handle)
    eir_gme_init_sprite_ref_handle(sprite_ref_handle);
 }
 
-static void eir_gme_init_color(eir_gfx_color_t * color)
+static void eir_gme_init_color(eir_gme_color_component_t * color)
 {
    if (color)
    {
-      color->r = 1.0f;
-      color->g = 1.0f;
-      color->b = 1.0f;
-      color->a = 1.0f;
+      color->initial.r = 1.0f;
+      color->initial.g = 1.0f;
+      color->initial.b = 1.0f;
+      color->initial.a = 1.0f;
+      color->current = 0;
    }
 }
 
-static void eir_gme_release_color(eir_gfx_color_t * color)
+static void eir_gme_release_color(eir_gme_color_component_t * color)
 {
    eir_gme_init_color(color);
 }
@@ -303,7 +305,7 @@ eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count)
 	 eir_gme_init_position
 	 );
       EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_mth_vec2_t,
+	 eir_gme_size_component_t,
 	 world->sizes,
 	 max_entity_count,
 	 eir_gme_init_size
@@ -315,7 +317,7 @@ eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count)
 	 eir_gme_init_sprite_ref_handle
 	 );
       EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_gfx_color_t,
+	 eir_gme_color_component_t,
 	 world->colors,
 	 max_entity_count,
 	 eir_gme_init_color
@@ -419,7 +421,7 @@ bool eir_gme_set_world_entity_size(
    eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
    eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
    eir_gme_entity_t * entity = 0;
-   eir_mth_vec2_t * size = 0;
+   eir_gme_size_component_t * size = 0;
 
    if (world)
    {
@@ -429,8 +431,8 @@ bool eir_gme_set_world_entity_size(
    if (entity && size)
    {
       (*entity) |= eir_gme_component_type_size;
-      size->x = (float)width;
-      size->y = (float)height;
+      size->initial.x = (float)width;
+      size->initial.y = (float)height;
       result = true;
    }
    else
@@ -487,7 +489,7 @@ bool eir_gme_set_world_entity_color(
    eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
    eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
    eir_gme_entity_t * entity = 0;
-   eir_gfx_color_t * color = 0;
+   eir_gme_color_component_t * color = 0;
 
    if (world)
    {
@@ -497,10 +499,10 @@ bool eir_gme_set_world_entity_color(
    if (entity && color)
    {
       (*entity) |= eir_gme_component_type_color;
-      color->r = r;
-      color->g = g;
-      color->b = b;
-      color->a = a;
+      color->initial.r = r;
+      color->initial.g = g;
+      color->initial.b = b;
+      color->initial.a = a;
       result = true;
    }
    else

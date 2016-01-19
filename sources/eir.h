@@ -10,9 +10,11 @@
  * - FEATURES
  *   - do in file todo
  *   - move camera following target
+ *   - use sprite size for entity when assigned sprite ref component
  *   - add physics component attribute for collision : like float weight
  *   - add aabb collision detection
  *   - resolve aabb collision using physics component
+ *   - add gravity
  *   - implement animated sprite
  *
  *****************************************************************/

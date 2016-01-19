@@ -880,8 +880,8 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	       batch->texture = sprite_ref->texture;
 
 	       eir_gme_position_component_t * position = 0;
-	       eir_mth_vec2_t * size = 0;
-	       eir_gfx_color_t * color = 0;
+	       eir_gme_size_component_t * size = 0;
+	       eir_gme_color_component_t * color = 0;
 
 	       EIR_KER_GET_ARRAY_ITEM(
 		  world->positions,
@@ -904,10 +904,10 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 		  eir_gfx_sprite_t * sprite = eir_gfx_add_sprite_to_batch(
 		     batch,
 		     &position->initial,
-		     size,
+		     &size->initial,
 		     &sprite_ref->uv_offset,
 		     &sprite_ref->uv_size,
-		     color
+		     &color->initial
 		     );
 		  position->current = &sprite->position;
 	       }
@@ -969,8 +969,8 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	       }
 	       if ((*entity) & eir_gme_component_type_size)
 	       {
-		  position.x -= (aabb->aabb.size.x - world->sizes.data[entity_index].x) * 0.5f;
-		  position.y -= (aabb->aabb.size.y - world->sizes.data[entity_index].y) * 0.5f;
+		  position.x -= (aabb->aabb.size.x - world->sizes.data[entity_index].initial.x) * 0.5f;
+		  position.y -= (aabb->aabb.size.y - world->sizes.data[entity_index].initial.y) * 0.5f;
 	       }
 
 	       color.r = 1.0f;
