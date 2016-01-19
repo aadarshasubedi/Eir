@@ -23,11 +23,6 @@ typedef unsigned int eir_gfx_api_shader_handle_t;
 #define EIR_GFX_INVALID_PROGRAM_HANDLE 0
 #endif
 
-#ifdef EIR_USE_SDL
-typedef SDL_Window * eir_gfx_window_handle_t;
-typedef SDL_GLContext eir_gfx_context_handle_t;
-#endif
-
 typedef enum
 {
    eir_gfx_primitive_type_unknown = 0,

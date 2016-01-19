@@ -957,22 +957,37 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	    if (aabb)
 	    {
 	       eir_gfx_color_t color;
-	       
+	       eir_mth_vec2_t position;
+
+	       position.x = aabb->aabb.position.x;
+	       position.y = aabb->aabb.position.y;
+
+	       if ((*entity) & eir_gme_component_type_position)
+	       {
+		  position.x += world->positions.data[entity_index].initial.x;
+		  position.y += world->positions.data[entity_index].initial.y;
+	       }
+	       if ((*entity) & eir_gme_component_type_size)
+	       {
+		  position.x -= (aabb->aabb.size.x - world->sizes.data[entity_index].x) * 0.5f;
+		  position.y -= (aabb->aabb.size.y - world->sizes.data[entity_index].y) * 0.5f;
+	       }
+
 	       color.r = 1.0f;
 	       color.g = 1.0f;
 	       color.b = 0.0f;
 	       color.a = 0.3f;
 	       aabb->curr_rect =  eir_gfx_add_rect(
 		  gfx_env,
-		  &aabb->aabb.position,
+		  &position,
 		  &aabb->aabb.size,
 		  &color
 		  );
 
 	       EIR_KER_LOG_MESSAGE(
 		  "entity has aabb. add debug rect (%f; %f; %f; %f)",
-		  aabb->aabb.position.x,
-		  aabb->aabb.position.y,
+		  position.x,
+		  position.y,
 		  aabb->aabb.size.x,
 		  aabb->aabb.size.y
 		  );

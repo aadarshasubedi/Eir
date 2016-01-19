@@ -9,14 +9,19 @@ static void eir_phy_proceed_euler_integration(
 {
    eir_mth_vec2_t acceleration;
 
-   acceleration.x = motion_param->acceleration.x * motion_param->speed_factor;
-   acceleration.y = motion_param->acceleration.y * motion_param->speed_factor;
-   acceleration.x += -motion_param->friction_factor * motion_param->velocity.x;
-   acceleration.y += -motion_param->friction_factor * motion_param->velocity.y;
-   position->x += 0.5f * acceleration.x * eir_mth_square_f(dtime) + motion_param->velocity.x * dtime;
-   position->y += 0.5f * acceleration.y * eir_mth_square_f(dtime) + motion_param->velocity.y * dtime;
-   motion_param->velocity.x += acceleration.x * dtime;
-   motion_param->velocity.y += acceleration.y * dtime;
+   if (motion_param && position)
+   {
+      acceleration.x = motion_param->acceleration.x * motion_param->speed_factor;
+      acceleration.y = motion_param->acceleration.y * motion_param->speed_factor;
+      acceleration.x += -motion_param->friction_factor * motion_param->velocity.x;
+      acceleration.y += -motion_param->friction_factor * motion_param->velocity.y;
+      position->x += 0.5f * acceleration.x * eir_mth_square_f(dtime) +
+	 motion_param->velocity.x * dtime;
+      position->y += 0.5f * acceleration.y * eir_mth_square_f(dtime) +
+	 motion_param->velocity.y * dtime;
+      motion_param->velocity.x += acceleration.x * dtime;
+      motion_param->velocity.y += acceleration.y * dtime;
+   }
 }
 
 void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
@@ -43,7 +48,8 @@ void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
 
 	       if (aabb && aabb->curr_rect)
 	       {
-		  // TODO: update aabb position
+		  //aabb->curr_rect->position.x = aabb->aabb.position.x + position->x;
+		  //aabb->curr_rect->position.y = aabb->aabb.position.y + position->y;
 	       }
 	    }
 	 }

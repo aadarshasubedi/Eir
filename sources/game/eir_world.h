@@ -8,6 +8,8 @@
 #include "eir_position_component.h"
 #include "eir_aabb_component.h"
 #include "eir_camera_component.h"
+#include "eir_color_component.h"
+#include "eir_size_component.h"
 
 typedef int eir_gme_entity_t;
 #define EIR_GME_INVALID_ENTITY 0

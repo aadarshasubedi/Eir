@@ -1,7 +1,9 @@
 #pragma once
+
 #include "eir_gfx_types.h"
 #include "eir_sprite.h"
 #include "eir_texture.h"
+#include "../kernel/eir_array_macro.h"
 
 typedef struct
 {
@@ -13,3 +15,5 @@ typedef struct
    bool built;
    bool modified;
 } eir_gfx_sprite_batch_t;
+
+EIR_KER_DEFINE_ARRAY_STRUCT(eir_gfx_sprite_batch_t, eir_gfx_sprite_batch_array_t);

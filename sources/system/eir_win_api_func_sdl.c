@@ -1,5 +1,4 @@
 #include "eir_win_api_func.h"
-#include "../graphics/eir_gfx_types.h" // TODO: use own include for api include when created
 #include "eir_sys_defines.h"
 
 #define EIR_SYS_PAD_MAX_ABS_VALUE 32767
@@ -76,11 +75,10 @@ void eir_sys_win_api_release()
    SDL_Quit();
 }
 
-// TODO: use window own env when created
-void eir_sys_win_api_create_window(eir_gfx_env_t * gfx_env, int width, int height)
+void eir_sys_win_api_create_window(eir_sys_env_t * sys_env, int width, int height)
 {
    EIR_KER_LOG_MESSAGE("create window");
-   gfx_env->window = SDL_CreateWindow(
+   sys_env->window = SDL_CreateWindow(
       "eir",
       SDL_WINDOWPOS_UNDEFINED,
       SDL_WINDOWPOS_UNDEFINED,
@@ -88,13 +86,12 @@ void eir_sys_win_api_create_window(eir_gfx_env_t * gfx_env, int width, int heigh
       height,
       SDL_WINDOW_OPENGL
       );
-   gfx_env->context = SDL_GL_CreateContext(gfx_env->window);
+   sys_env->context = SDL_GL_CreateContext(sys_env->window);
 }
 
-// TODO: use window own env when created
-void eir_sys_win_api_swap_buffer(eir_gfx_env_t * gfx_env)
+void eir_sys_win_api_swap_buffer(eir_sys_env_t * sys_env)
 {
-   SDL_GL_SwapWindow(gfx_env->window);
+   SDL_GL_SwapWindow(sys_env->window);
 }
 
 bool eir_sys_win_api_poll_all_events(eir_gme_env_t * gme_env, eir_sys_env_t * sys_env)
@@ -198,7 +195,7 @@ bool eir_sys_win_api_poll_all_events(eir_gme_env_t * gme_env, eir_sys_env_t * sy
    return true;
 }
 
-void eir_sys_win_api_destroy_window(eir_gfx_env_t * gfx_env)
+void eir_sys_win_api_destroy_window(eir_sys_env_t * sys_env)
 {
-   SDL_GL_DeleteContext(gfx_env->context);
+   SDL_GL_DeleteContext(sys_env->context);
 }

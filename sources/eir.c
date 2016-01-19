@@ -38,7 +38,7 @@
 static void eir_init_all_api(eir_ker_env_t * env, int width, int height)
 {
    eir_sys_win_api_init();
-   eir_sys_win_api_create_window(&env->gfx_env, width, height);
+   eir_sys_win_api_create_window(&env->sys_env, width, height);
    eir_gfx_api_init();
    eir_snd_api_init();
    eir_gfx_api_load_sprite_shaders(&env->gfx_env);
@@ -53,7 +53,7 @@ static void eir_stop(eir_ker_env_t * env)
    eir_gfx_api_unload_sprite_shaders(&env->gfx_env);
    eir_snd_api_release();
    eir_gfx_api_release();
-   eir_sys_win_api_destroy_window(&env->gfx_env);
+   eir_sys_win_api_destroy_window(&env->sys_env);
    eir_sys_win_api_release();
 }
 
@@ -186,6 +186,7 @@ void eir_run(eir_env_t * env)
 	 {
 	    return;
 	 }
+
 	 // UPDATE ALL SYSTEMS HERE EXCEPT RENDERING AND TIMER
 
 	 eir_fsm_update_state_machine(fsm_env);
@@ -201,7 +202,7 @@ void eir_run(eir_env_t * env)
       eir_gfx_api_set_clear_color();
       eir_gfx_api_clear_buffer();
       eir_gfx_render_all_batches(gfx_env);
-      eir_sys_win_api_swap_buffer(gfx_env);
+      eir_sys_win_api_swap_buffer(sys_env);
    }
 }
 
