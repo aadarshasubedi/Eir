@@ -1,6 +1,8 @@
 #include "maths/eir_mth_func.c"
 #include "physics/eir_motion_func.c"
 #include "game/eir_gme_func.c"
+#include "game/eir_aabb_system.c"
+#include "game/eir_camera_system.c"
 #include "kernel/eir_log_stdout.c"
 #include "fsm/eir_fsm_func.c"
 #include "system/eir_timer_func_osx.c"

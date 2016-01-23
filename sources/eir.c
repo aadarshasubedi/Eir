@@ -174,6 +174,7 @@ void eir_run(eir_env_t * env)
 
    eir_sys_start_timer(&sys_env->timer);
    eir_fsm_run_state_machine(fsm_env);
+   eir_gme_world_entity_update_linked_components(gme_env->curr_world);
    eir_gfx_generate_all_batches(gfx_env, gme_env->curr_world);
    for (;;)
    {

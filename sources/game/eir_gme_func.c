@@ -144,10 +144,10 @@ static void eir_gme_init_aabb(eir_gme_aabb_component_t * aabb)
 {
    if (aabb)
    {
-      aabb->aabb.position.x = 0.0f;
-      aabb->aabb.position.y = 0.0f;
-      aabb->aabb.size.x = 0.0f;
-      aabb->aabb.size.y = 0.0f;
+      aabb->initial.position.x = 0.0f;
+      aabb->initial.position.y = 0.0f;
+      aabb->initial.size.x = 0.0f;
+      aabb->initial.size.y = 0.0f;
       aabb->curr_rect = 0;
    }
 }
@@ -167,6 +167,7 @@ static void eir_gme_init_camera(eir_gme_camera_component_t * camera)
       eir_mth_set_vec2(&camera->cam_win_aabb.size, 0.0f, 0.0f);
       camera->target_aabb = 0;
       camera->cam_win_rect = 0;
+      camera->cam_win_scale = 1.0f;
    }
 }
 
@@ -247,6 +248,48 @@ void eir_gme_init_env(eir_gme_env_t * env)
       EIR_KER_INIT_ARRAY(env->worlds);
       env->curr_world = 0;
       eir_gme_init_all_input_controller_buffer(env);
+   }
+}
+
+void eir_gme_world_entity_update_linked_components(eir_gme_world_t * world)
+{
+   if (world)
+   {
+      for (int entity_index = 0; entity_index < world->entities.used; ++entity_index)
+      {
+	 eir_gme_entity_t * entity = &world->entities.data[entity_index];
+
+	 if (
+	    ((*entity) & eir_gme_component_type_aabb)
+	    && ((*entity) & eir_gme_component_type_position)
+	    )
+	 {
+	    eir_gme_aabb_component_t * aabb = &world->aabbs.data[entity_index];
+	    eir_gme_position_component_t * pos = &world->positions.data[entity_index];
+	    eir_gme_size_component_t * size = 0;
+	    eir_gme_camera_component_t * cam = 0;
+
+	    aabb->initial.position.x += pos->initial.x;
+	    aabb->initial.position.y += pos->initial.y;
+
+	    if ((*entity) & eir_gme_component_type_size)
+	    {
+	       size = &world->sizes.data[entity_index];
+	       aabb->initial.position.x -=
+		  (aabb->initial.size.x - size->initial.x) * 0.5f;
+	       aabb->initial.position.y -=
+		  (aabb->initial.size.y - size->initial.y) * 0.5f;
+	    }
+	    if ((*entity) & eir_gme_component_type_camera)
+	    {
+	       cam = &world->cameras.data[entity_index];
+	       cam->cam_win_aabb.position.x = aabb->initial.position.x;
+	       cam->cam_win_aabb.position.y = aabb->initial.position.y;
+	       cam->cam_win_aabb.size.x = aabb->initial.size.x * cam->cam_win_scale;
+	       cam->cam_win_aabb.size.y = aabb->initial.size.y * cam->cam_win_scale;
+	    }
+	 }
+      }
    }
 }
 
@@ -573,10 +616,10 @@ bool eir_gme_set_world_entity_aabb(
    if (entity && aabb)
    {
       (*entity) |= eir_gme_component_type_aabb;
-      aabb->aabb.position.x = x;
-      aabb->aabb.position.y = y;
-      aabb->aabb.size.x = width;
-      aabb->aabb.size.y = height;
+      aabb->initial.position.x = x;
+      aabb->initial.position.y = y;
+      aabb->initial.size.x = width;
+      aabb->initial.size.y = height;
       result = true;
    }
    else
@@ -615,14 +658,7 @@ bool eir_gme_set_world_entity_following_camera(
       camera->target_last_pos.y = position->initial.y;
       camera->cam_pos.x = position->initial.x;
       camera->cam_pos.y = position->initial.y;
-      if (aabb)
-      {
-	 camera->cam_win_aabb.position.x = aabb->aabb.position.x - aabb->aabb.size.x;
-	 camera->cam_win_aabb.position.y = aabb->aabb.position.y - aabb->aabb.size.y;
-	 camera->cam_win_aabb.size.x = aabb->aabb.size.x * cam_win_scale;
-	 camera->cam_win_aabb.size.y = aabb->aabb.size.y * cam_win_scale;
-	 camera->target_aabb = &aabb->aabb;
-      }
+      camera->cam_win_scale = cam_win_scale;
       result = true;
    }
    else

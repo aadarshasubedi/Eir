@@ -3,7 +3,7 @@
 
 #define PLACE_HOLDER_IMAGE_PATH "../resources/images/placeholder_atlas.png"
 #define PLAYER_FRICTION 10.0f
-#define PLAYER_SPEED 80.0f
+#define PLAYER_SPEED 1600.0f
 
 typedef struct
 {

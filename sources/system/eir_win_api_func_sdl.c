@@ -142,7 +142,7 @@ bool eir_sys_win_api_poll_all_events(eir_gme_env_t * gme_env, eir_sys_env_t * sy
 	    EIR_SYS_PAD_DEAD_ZONE_THRESHOLD
 	    );
       new_pad->left_stick_value_y =
-	 -eir_sys_process_stick_value(
+	 eir_sys_process_stick_value(
 	    SDL_JoystickGetAxis(pad_handle, 1),
 	    EIR_SYS_PAD_DEAD_ZONE_THRESHOLD
 	    );

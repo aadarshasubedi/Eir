@@ -42,14 +42,30 @@ void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
 	       motion_param,
 	       dtime
 	       );
+	    // TODO: move this part in eir_aabb_system.h and eir_aabb_system.c
 	    if (world->entities.data[index] & eir_gme_component_type_aabb)
 	    {
 	       eir_gme_aabb_component_t * aabb = &world->aabbs.data[index];
 
-	       if (aabb && aabb->curr_rect)
+	       if (aabb->curr_rect)
 	       {
-		  //aabb->curr_rect->position.x = aabb->aabb.position.x + position->x;
-		  //aabb->curr_rect->position.y = aabb->aabb.position.y + position->y;
+/*
+		  aabb->curr_rect->position.x = aabb->aabb.position.x + position->x;
+		  aabb->curr_rect->position.y = aabb->aabb.position.y + position->y;
+
+		  if (world->entities.data[index] & eir_gme_component_type_size)
+		  {
+		     eir_gme_size_component_t * size = &world->sizes.data[index];
+
+		     if (size->current)
+		     {
+			aabb->curr_rect->position.x -=
+			   (aabb->curr_rect->size.x - size->current->x) * 0.5f;
+			aabb->curr_rect->position.y -=
+			   (aabb->curr_rect->size.y - size->current->y) * 0.5f;
+		     }
+		  }
+*/
 	       }
 	    }
 	 }

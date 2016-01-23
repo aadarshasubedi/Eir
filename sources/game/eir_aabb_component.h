@@ -6,7 +6,7 @@
 
 typedef struct
 {
-   eir_phy_aabb_t aabb;
+   eir_phy_aabb_t initial;
    eir_gfx_rect_t * curr_rect;
 } eir_gme_aabb_component_t;
 

@@ -11,6 +11,7 @@ typedef struct
    eir_phy_aabb_t cam_win_aabb;
    eir_phy_aabb_t * target_aabb;
    eir_gfx_rect_t * cam_win_rect;
+   float cam_win_scale;
 } eir_gme_camera_component_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_gme_camera_component_t, eir_gme_camera_component_array_t)

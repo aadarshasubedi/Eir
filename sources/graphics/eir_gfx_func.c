@@ -266,9 +266,8 @@ static eir_gfx_sprite_t * eir_gfx_add_sprite_to_batch(
    {
       EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(batch->sprites, sprite);
    }
-   if (sprite)
+   if (sprite && position && size && uv_offset && uv_size && color)
    {
-      // TODO: check all pointers, set default value for null pointer
       sprite->position.x = position->x;
       sprite->position.y = position->y;
       sprite->size.x = size->x;
@@ -910,6 +909,7 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 		     &color->initial
 		     );
 		  position->current = &sprite->position;
+		  size->current = &sprite->size;
 	       }
 	    }
 	 }
@@ -944,6 +944,7 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
       for (int entity_index = 0; entity_index < world->entities.used; ++entity_index)
       {
 	 EIR_KER_GET_ARRAY_ITEM(world->entities, entity_index, entity);
+
 	 if (entity && ((*entity) & eir_gme_component_type_aabb))
 	 {
 	    eir_gme_aabb_component_t * aabb = 0;
@@ -957,21 +958,6 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	    if (aabb)
 	    {
 	       eir_gfx_color_t color;
-	       eir_mth_vec2_t position;
-
-	       position.x = aabb->aabb.position.x;
-	       position.y = aabb->aabb.position.y;
-
-	       if ((*entity) & eir_gme_component_type_position)
-	       {
-		  position.x += world->positions.data[entity_index].initial.x;
-		  position.y += world->positions.data[entity_index].initial.y;
-	       }
-	       if ((*entity) & eir_gme_component_type_size)
-	       {
-		  position.x -= (aabb->aabb.size.x - world->sizes.data[entity_index].initial.x) * 0.5f;
-		  position.y -= (aabb->aabb.size.y - world->sizes.data[entity_index].initial.y) * 0.5f;
-	       }
 
 	       color.r = 1.0f;
 	       color.g = 1.0f;
@@ -979,17 +965,17 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	       color.a = 0.3f;
 	       aabb->curr_rect =  eir_gfx_add_rect(
 		  gfx_env,
-		  &position,
-		  &aabb->aabb.size,
+		  &aabb->initial.position,
+		  &aabb->initial.size,
 		  &color
 		  );
 
 	       EIR_KER_LOG_MESSAGE(
 		  "entity has aabb. add debug rect (%f; %f; %f; %f)",
-		  position.x,
-		  position.y,
-		  aabb->aabb.size.x,
-		  aabb->aabb.size.y
+		  aabb->initial.position.x,
+		  aabb->initial.position.y,
+		  aabb->initial.size.x,
+		  aabb->initial.size.y
 		  );
 	    }
 	 }

@@ -3,19 +3,17 @@
 /******************************************************************
  * TODO:
  *
- * - BUGS
- *   - fix rect display
- *   - increase player speed factor
- *
- * - FEATURES
- *   - do in file todo
- *   - move camera following target
- *   - use sprite size for entity when assigned sprite ref component
- *   - add physics component attribute for collision : like float weight
- *   - add aabb collision detection
- *   - resolve aabb collision using physics component
- *   - add gravity
- *   - implement animated sprite
+ *   - (BUG) modify aabb creation because same operations are done in different places
+ *     - process aabb position operation only during creation, update if another
+ *       component are modified too an can change aabb position and size values
+ *   - (BUG) camera target attribute must be an aabb component, not an aabb only
+ *     to follow aabb moves
+ *   - (BUG) move camera following target
+ *   - (FEAT) use sprite size for entity when assigned sprite ref component
+ *   - (FEAT) add physics component attribute for collision : like float weight
+ *   - (FEAT) add aabb collision detection
+ *   - (FEAT) resolve aabb collision using physics component
+ *   - (FEAT) implement animated sprite
  *
  *****************************************************************/
 
