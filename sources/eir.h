@@ -3,12 +3,8 @@
 /******************************************************************
  * TODO:
  *
- *   - (BUG) modify aabb creation because same operations are done in different places
- *     - process aabb position operation only during creation, update if another
- *       component are modified too an can change aabb position and size values
- *   - (BUG) camera target attribute must be an aabb component, not an aabb only
- *     to follow aabb moves
- *   - (BUG) move camera following target
+ *   - (FIX) set linked component if needed
+ *   - (FIX) move camera following target
  *   - (FEAT) use sprite size for entity when assigned sprite ref component
  *   - (FEAT) add physics component attribute for collision : like float weight
  *   - (FEAT) add aabb collision detection
@@ -198,12 +194,12 @@ bool eir_gme_set_world_entity_aabb(
    eir_env_t * env,
    eir_handle_t world_handle,
    eir_handle_t entity_handle,
-   float x,
-   float y,
+   float x_offset,
+   float y_offset,
    float width,
    float height
    );
-bool eir_gme_set_world_entity_following_camera(
+bool eir_gme_set_world_entity_camera(
    eir_env_t * env,
    eir_handle_t world_handle,
    eir_handle_t entity_handle,

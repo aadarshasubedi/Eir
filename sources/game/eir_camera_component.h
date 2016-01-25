@@ -3,15 +3,15 @@
 #include "../physics/eir_aabb.h"
 #include "../graphics/eir_rect.h"
 #include "../kernel/eir_array_macro.h"
+#include "eir_aabb_component.h"
 
 typedef struct
 {
-   eir_mth_vec2_t target_last_pos;
-   eir_mth_vec2_t cam_pos;
-   eir_phy_aabb_t cam_win_aabb;
-   eir_phy_aabb_t * target_aabb;
-   eir_gfx_rect_t * cam_win_rect;
-   float cam_win_scale;
+   eir_mth_vec2_t position;
+   eir_mth_vec2_t prev_position;
+   eir_gme_aabb_component_t * target;
+   eir_gfx_rect_t * win_rect;
+   float win_scale;
 } eir_gme_camera_component_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_gme_camera_component_t, eir_gme_camera_component_array_t)

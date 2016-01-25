@@ -915,32 +915,6 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	 }
       }
 
-      eir_gme_camera_component_t * camera = world->curr_camera;
-
-      if (camera)
-      {
-	 eir_gfx_color_t color;
-
-	 color.r = 1.0f;
-	 color.g = 0.5f;
-	 color.b = 0.0f;
-	 color.a = 0.3f;
-	 camera->cam_win_rect =  eir_gfx_add_rect(
-	    gfx_env,
-	    &camera->cam_win_aabb.position,
-	    &camera->cam_win_aabb.size,
-	    &color
-	    );
-
-	 EIR_KER_LOG_MESSAGE(
-	    "camera found. add window debug rect (%f; %f; %f; %f)",
-	    camera->cam_win_aabb.position.x,
-	    camera->cam_win_aabb.position.y,
-	    camera->cam_win_aabb.size.x,
-	    camera->cam_win_aabb.size.y
-	    );
-      }
-
       for (int entity_index = 0; entity_index < world->entities.used; ++entity_index)
       {
 	 EIR_KER_GET_ARRAY_ITEM(world->entities, entity_index, entity);
@@ -948,36 +922,64 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	 if (entity && ((*entity) & eir_gme_component_type_aabb))
 	 {
 	    eir_gme_aabb_component_t * aabb = 0;
-
-	    EIR_KER_GET_ARRAY_ITEM(
-		  world->aabbs,
-		  entity_index,
-		  aabb
-		  );
+            EIR_KER_GET_ARRAY_ITEM(world->aabbs, entity_index, aabb);
 
 	    if (aabb)
 	    {
 	       eir_gfx_color_t color;
+	       eir_mth_vec2_t position;
+	       eir_mth_vec2_t size;
 
 	       color.r = 1.0f;
 	       color.g = 1.0f;
 	       color.b = 0.0f;
 	       color.a = 0.3f;
-	       aabb->curr_rect =  eir_gfx_add_rect(
-		  gfx_env,
-		  &aabb->initial.position,
-		  &aabb->initial.size,
-		  &color
-		  );
+	       position.x = aabb->x_offset;
+	       position.y = aabb->y_offset;
+	       size.x = aabb->width;
+	       size.y = aabb->height;
+
+	       aabb->rect =  eir_gfx_add_rect(gfx_env, &position, &size, &color);
 
 	       EIR_KER_LOG_MESSAGE(
 		  "entity has aabb. add debug rect (%f; %f; %f; %f)",
-		  aabb->initial.position.x,
-		  aabb->initial.position.y,
-		  aabb->initial.size.x,
-		  aabb->initial.size.y
+		  aabb->x_offset,
+		  aabb->y_offset,
+		  aabb->width,
+		  aabb->height
 		  );
 	    }
+	 }
+	 if (entity && ((*entity) & eir_gme_component_type_camera))
+	 {
+            eir_gme_camera_component_t * camera = 0;;
+            EIR_KER_GET_ARRAY_ITEM(world->cameras, entity_index, camera);
+
+            if (camera && camera->target)
+            {
+               eir_gfx_color_t color;
+               eir_mth_vec2_t position;
+               eir_mth_vec2_t size;
+               
+               color.r = 1.0f;
+               color.g = 0.5f;
+               color.b = 0.0f;
+               color.a = 0.3f;
+               size.x = camera->target->width * camera->win_scale;
+               size.y = camera->target->height * camera->win_scale;
+               position.x = camera->target->x_offset - (size.x - camera->target->width) * 0.5f;
+               position.y = camera->target->y_offset - (size.y - camera->target->height) * 0.5f;
+               
+               camera->win_rect =  eir_gfx_add_rect(gfx_env, &position, &size, &color);
+               
+               EIR_KER_LOG_MESSAGE(
+                     "camera found. add window debug rect (%f; %f; %f; %f)",
+                     camera->win_rect->position.x,
+                     camera->win_rect->position.y,
+                     camera->win_rect->size.x,
+                     camera->win_rect->size.y
+                     );
+            }
 	 }
       }
    }
@@ -986,3 +988,4 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
       EIR_KER_LOG_ERROR("cannot generate all batches : gfx env or world are empty");
    }
 }
+   

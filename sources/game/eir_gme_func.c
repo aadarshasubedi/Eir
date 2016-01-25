@@ -144,11 +144,11 @@ static void eir_gme_init_aabb(eir_gme_aabb_component_t * aabb)
 {
    if (aabb)
    {
-      aabb->initial.position.x = 0.0f;
-      aabb->initial.position.y = 0.0f;
-      aabb->initial.size.x = 0.0f;
-      aabb->initial.size.y = 0.0f;
-      aabb->curr_rect = 0;
+      aabb->x_offset = 0.0f;
+      aabb->y_offset = 0.0f;
+      aabb->width = 0.0f;
+      aabb->height = 0.0f;
+      aabb->rect = 0;
    }
 }
 
@@ -161,13 +161,11 @@ static void eir_gme_init_camera(eir_gme_camera_component_t * camera)
 {
    if (camera)
    {
-      eir_mth_set_vec2(&camera->target_last_pos, 0.0f, 0.0f);
-      eir_mth_set_vec2(&camera->cam_pos, 0.0f, 0.0f);
-      eir_mth_set_vec2(&camera->cam_win_aabb.position, 0.0f, 0.0f);
-      eir_mth_set_vec2(&camera->cam_win_aabb.size, 0.0f, 0.0f);
-      camera->target_aabb = 0;
-      camera->cam_win_rect = 0;
-      camera->cam_win_scale = 1.0f;
+      eir_mth_set_vec2(&camera->position, 0.0f, 0.0f);
+      eir_mth_set_vec2(&camera->prev_position, 0.0f, 0.0f);
+      camera->target = 0;
+      camera->win_rect = 0;
+      camera->win_scale = 1.0f;
    }
 }
 
@@ -269,24 +267,23 @@ void eir_gme_world_entity_update_linked_components(eir_gme_world_t * world)
 	    eir_gme_size_component_t * size = 0;
 	    eir_gme_camera_component_t * cam = 0;
 
-	    aabb->initial.position.x += pos->initial.x;
-	    aabb->initial.position.y += pos->initial.y;
+	    aabb->x_offset += pos->initial.x;
+	    aabb->y_offset += pos->initial.y;
 
-	    if ((*entity) & eir_gme_component_type_size)
-	    {
-	       size = &world->sizes.data[entity_index];
-	       aabb->initial.position.x -=
-		  (aabb->initial.size.x - size->initial.x) * 0.5f;
-	       aabb->initial.position.y -=
-		  (aabb->initial.size.y - size->initial.y) * 0.5f;
-	    }
 	    if ((*entity) & eir_gme_component_type_camera)
 	    {
 	       cam = &world->cameras.data[entity_index];
-	       cam->cam_win_aabb.position.x = aabb->initial.position.x;
-	       cam->cam_win_aabb.position.y = aabb->initial.position.y;
-	       cam->cam_win_aabb.size.x = aabb->initial.size.x * cam->cam_win_scale;
-	       cam->cam_win_aabb.size.y = aabb->initial.size.y * cam->cam_win_scale;
+
+	       float size_x = aabb->width * cam->win_scale;
+	       float size_y = aabb->height * cam->win_scale;
+	       float position_x = aabb->x_offset + (aabb->width - size_x) * 0.5f;
+	       float position_y = aabb->y_offset + (aabb->height - size_y) * 0.5f;
+
+	       cam->position.x = position_x;
+	       cam->position.y = position_y;
+	       cam->prev_position.x = cam->position.x;
+	       cam->prev_position.y = cam->position.y;
+	       cam->target = aabb;
 	    }
 	 }
       }
@@ -596,8 +593,8 @@ bool eir_gme_set_world_entity_aabb(
    eir_env_t * env,
    eir_handle_t world_handle,
    eir_handle_t entity_handle,
-   float x,
-   float y,
+   float x_offset,
+   float y_offset,
    float width,
    float height
    )
@@ -616,10 +613,10 @@ bool eir_gme_set_world_entity_aabb(
    if (entity && aabb)
    {
       (*entity) |= eir_gme_component_type_aabb;
-      aabb->initial.position.x = x;
-      aabb->initial.position.y = y;
-      aabb->initial.size.x = width;
-      aabb->initial.size.y = height;
+      aabb->x_offset = x_offset;
+      aabb->y_offset = y_offset;
+      aabb->width = width;
+      aabb->height = height;
       result = true;
    }
    else
@@ -629,7 +626,7 @@ bool eir_gme_set_world_entity_aabb(
    return result;
 }
 
-bool eir_gme_set_world_entity_following_camera(
+bool eir_gme_set_world_entity_camera(
    eir_env_t * env,
    eir_handle_t world_handle,
    eir_handle_t entity_handle,
@@ -640,25 +637,17 @@ bool eir_gme_set_world_entity_following_camera(
    eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
    eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
    eir_gme_entity_t * entity = 0;
-   eir_gme_position_component_t * position = 0;
-   eir_gme_aabb_component_t * aabb = 0;
    eir_gme_camera_component_t * camera = 0;
 
    if (world)
    {
       EIR_KER_GET_ARRAY_ITEM(world->entities, entity_handle, entity);
-      EIR_KER_GET_ARRAY_ITEM(world->positions, entity_handle, position);
-      EIR_KER_GET_ARRAY_ITEM(world->aabbs, entity_handle, aabb);
       EIR_KER_GET_ARRAY_ITEM(world->cameras, entity_handle, camera);
    }
-   if (entity && camera && position)
+   if (entity && camera)
    {
       (*entity) |= eir_gme_component_type_camera;
-      camera->target_last_pos.x = position->initial.x;
-      camera->target_last_pos.y = position->initial.y;
-      camera->cam_pos.x = position->initial.x;
-      camera->cam_pos.y = position->initial.y;
-      camera->cam_win_scale = cam_win_scale;
+      camera->win_scale = cam_win_scale;
       result = true;
    }
    else
