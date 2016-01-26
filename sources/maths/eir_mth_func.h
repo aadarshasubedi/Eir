@@ -6,7 +6,10 @@
 float eir_mth_square_f(float value);
 double eir_mth_square_d(double value);
 float eir_mth_abs(float value);
+float eir_mth_min(float a, float b);
+float eir_mth_max(float a, float b);
 void eir_mth_set_vec2(eir_mth_vec2_t * v, float x, float y);
+void eir_mth_set_vec3(eir_mth_vec3_t * v, float x, float y, float z);
 void eir_mth_set_vec4(eir_mth_vec4_t * v, float x, float y, float z, float w);
 void eir_mth_scale_vec4(eir_mth_vec4_t * v, float s);
 void eir_mth_add_vec4(eir_mth_vec4_t * a, const eir_mth_vec4_t * b);

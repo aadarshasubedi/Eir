@@ -436,6 +436,13 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	    GL_FALSE,
 	    &gfx_env->projection.values[0][0]
 	    );
+         glUniformMatrix4fv(
+	    glGetUniformLocation(batch->program, "vmat"),
+	    1,
+	    GL_FALSE,
+	    &gfx_env->view.values[0][0]
+	    );
+
 	 eir_gfx_api_draw_sprite_batch(batch);
 	 glUseProgram(0); // TODO: put in api func file !
       }
@@ -464,6 +471,12 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	    GL_FALSE,
 	    &gfx_env->projection.values[0][0]
 	    );
+         glUniformMatrix4fv(
+	    glGetUniformLocation(batch->program, "vmat"),
+	    1,
+	    GL_FALSE,
+	    &gfx_env->view.values[0][0]
+	    );
 	 eir_gfx_api_draw_sprite_batch(batch);
 	 glUseProgram(0); // TODO: put in api func file !
       }
@@ -488,6 +501,13 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	    GL_FALSE,
 	    &gfx_env->projection.values[0][0]
 	    );
+      glUniformMatrix4fv(
+	    glGetUniformLocation(gfx_env->rect_batch.program, "rect_vmat"),
+	    1,
+	    GL_FALSE,
+	    &gfx_env->view.values[0][0]
+	    );
+
       eir_gfx_api_draw_rect_batch(&gfx_env->rect_batch); // TODO: to declare/implement
       glUseProgram(0); // TODO: put in api func file !
    }
@@ -989,3 +1009,15 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
    }
 }
    
+void eir_gfx_update_camera_view(eir_gfx_env_t * gfx_env, const eir_mth_vec2_t * cam_pos)
+{
+   if (gfx_env && cam_pos)
+   {
+      eir_mth_mat4_t * view = &gfx_env->view;
+      eir_mth_vec3_t v;
+
+      eir_mth_set_vec3(&v, cam_pos->x, cam_pos->y, 1.0f);
+      eir_mth_set_translation_mat4(view, &v);
+   }
+}
+

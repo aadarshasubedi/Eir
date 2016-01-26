@@ -18,12 +18,34 @@ float eir_mth_abs(float value)
    return result;
 }
 
+float eir_mth_min(float a, float b)
+{
+   float result = a < b ? a : b;
+   return result;
+}
+
+float eir_mth_max(float a, float b)
+{
+   float result = a > b ? a : b;
+   return result;
+}
+
 void eir_mth_set_vec2(eir_mth_vec2_t * v, float x, float y)
 {
    if (v)
    {
       v->x = x;
       v->y = y;
+   }
+}
+
+void eir_mth_set_vec3(eir_mth_vec3_t * v, float x, float y, float z)
+{
+   if (v)
+   {
+      v->x = x;
+      v->y = y;
+      v->z = z;
    }
 }
 

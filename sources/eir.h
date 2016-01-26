@@ -3,8 +3,8 @@
 /******************************************************************
  * TODO:
  *
- *   - (FIX) set linked component if needed
- *   - (FIX) move camera following target
+ *   - (FIX) camera is moving even if the entity aabb is still included into camera window
+ *   - (FIX) remove hard coded value in camera position code
  *   - (FEAT) use sprite size for entity when assigned sprite ref component
  *   - (FEAT) add physics component attribute for collision : like float weight
  *   - (FEAT) add aabb collision detection

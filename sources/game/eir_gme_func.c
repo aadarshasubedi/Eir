@@ -279,10 +279,10 @@ void eir_gme_world_entity_update_linked_components(eir_gme_world_t * world)
 	       float position_x = aabb->x_offset + (aabb->width - size_x) * 0.5f;
 	       float position_y = aabb->y_offset + (aabb->height - size_y) * 0.5f;
 
-	       cam->position.x = position_x;
-	       cam->position.y = position_y;
-	       cam->prev_position.x = cam->position.x;
-	       cam->prev_position.y = cam->position.y;
+	       cam->position.x = -aabb->x_offset - aabb->width * 0.5f + 400; // TODO: remove hard coded value. use screen width / 2 instead
+	       cam->position.y = -aabb->y_offset - aabb->height * 0.5f + 300; // TODO: remove hard coded value. use screen height / 2 instead
+	       cam->prev_position.x = aabb->x_offset;
+	       cam->prev_position.y = aabb->y_offset;
 	       cam->target = aabb;
 	    }
 	 }

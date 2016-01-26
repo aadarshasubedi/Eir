@@ -195,6 +195,10 @@ void eir_run(eir_env_t * env)
 	 eir_gme_proceed_aabb_system_update(gme_env->curr_world);
 	 eir_gme_proceed_camera_system_update(gme_env->curr_world);
 
+         if (gme_env->curr_world && gme_env->curr_world->curr_camera)
+         {
+            eir_gfx_update_camera_view(gfx_env, &gme_env->curr_world->curr_camera->position);
+         }
 	 eir_gfx_force_update_all_batches(gfx_env); // TODO: update only real modified batch
       }
 

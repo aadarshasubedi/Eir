@@ -15,3 +15,4 @@ typedef struct
 } eir_gme_camera_component_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_gme_camera_component_t, eir_gme_camera_component_array_t)
+
