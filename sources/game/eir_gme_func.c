@@ -20,6 +20,7 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->motion_params);
       EIR_KER_INIT_ARRAY(world->aabbs);
       EIR_KER_INIT_ARRAY(world->cameras);
+      EIR_KER_INIT_ARRAY(world->physics);
    }
 }
 
@@ -35,6 +36,7 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->motion_params);
       EIR_KER_FREE_ARRAY(world->aabbs);
       EIR_KER_FREE_ARRAY(world->cameras);
+      EIR_KER_FREE_ARRAY(world->physics);
    }
 }
 
@@ -172,6 +174,19 @@ static void eir_gme_init_camera(eir_gme_camera_component_t * camera)
 static void eir_gme_release_camera(eir_gme_camera_component_t * camera)
 {
    eir_gme_init_camera(camera);
+}
+
+static void eir_gme_init_physic(eir_gme_physic_component_t * physic)
+{
+   if (physic)
+   {
+      physic->weight = 0.0f;
+   }
+}
+
+static void eir_gme_release_weight(eir_gme_physic_component_t * physic)
+{
+   eir_gme_init_physic(physic);
 }
 
 static eir_gme_world_t * eir_gme_get_world(eir_gme_env_t * env, eir_handle_t world_handle)
@@ -380,6 +395,13 @@ eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count)
 	 max_entity_count,
 	 eir_gme_init_camera
 	 );
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+            eir_gme_physic_component_t,
+            world->physics,
+            max_entity_count,
+            eir_gme_init_physic
+            );
+
       world->curr_camera = 0;
    }
    return world_handle;
@@ -412,6 +434,7 @@ eir_handle_t eir_gme_create_world_entity(eir_env_t * env, eir_handle_t world_han
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->motion_params, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->aabbs, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->cameras, entity_handle);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->physics, entity_handle);
    }
    return entity_handle;
 }
@@ -683,3 +706,36 @@ bool eir_gme_set_world_entity_active_camera(
    }
    return result;
 }
+
+bool eir_gme_set_world_entity_physic(
+      eir_env_t * env,
+      eir_handle_t world_handle,
+      eir_handle_t entity_handle,
+      float weight
+      )
+{
+   bool result = false;
+   eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
+   eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
+   eir_gme_entity_t * entity = 0;
+   eir_gme_physic_component_t * physic = 0;
+
+   if (world)
+   {
+      EIR_KER_GET_ARRAY_ITEM(world->physics, entity_handle, physic);
+      EIR_KER_GET_ARRAY_ITEM(world->entities, entity_handle, entity);
+   }
+   if (entity && physic)
+   {
+      (*entity) |= eir_gme_component_type_physic;
+      physic->weight = weight;
+      result = true;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or components in array", entity_handle);
+   }
+
+   return result;
+}
+

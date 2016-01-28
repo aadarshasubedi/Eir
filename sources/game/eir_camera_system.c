@@ -41,9 +41,9 @@ void eir_gme_proceed_camera_system_update(eir_gme_world_t * world)
 
       // UPDATE CAM POSITION
 
-      cam->position.x -= target_pos->x - cam->prev_position.x;
-      cam->position.y -= target_pos->y - cam->prev_position.y;
-      cam->prev_position.x = target_pos->x;
-      cam->prev_position.y = target_pos->y;
+      cam->position.x -= cam_pos->x - cam->prev_position.x;
+      cam->position.y -= cam_pos->y - cam->prev_position.y;
+      cam->prev_position.x = cam_pos->x;
+      cam->prev_position.y = cam_pos->y;
    }
 }

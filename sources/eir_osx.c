@@ -1,4 +1,5 @@
 #include "maths/eir_mth_func.c"
+#include "physics/eir_phy_func.c"
 #include "physics/eir_motion_func.c"
 #include "game/eir_gme_func.c"
 #include "game/eir_aabb_system.c"

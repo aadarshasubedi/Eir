@@ -10,6 +10,7 @@
 #include "eir_camera_component.h"
 #include "eir_color_component.h"
 #include "eir_size_component.h"
+#include "eir_physic_component.h"
 
 typedef int eir_gme_entity_t;
 #define EIR_GME_INVALID_ENTITY 0
@@ -25,7 +26,8 @@ typedef enum
    eir_gme_component_type_color = 1 << 3,
    eir_gme_component_type_motion_param = 1 << 4,
    eir_gme_component_type_aabb = 1 << 5,
-   eir_gme_component_type_camera = 1 << 6
+   eir_gme_component_type_camera = 1 << 6,
+   eir_gme_component_type_physic = 1 << 7
 } eir_gme_component_type;
 
 typedef struct
@@ -38,5 +40,7 @@ typedef struct
    eir_phy_motion_param_array_t motion_params;
    eir_gme_aabb_component_array_t aabbs;
    eir_gme_camera_component_array_t cameras;
+   eir_gme_physic_component_array_t physics;
+
    eir_gme_camera_component_t * curr_camera;
 } eir_gme_world_t;

@@ -3,13 +3,14 @@
 /******************************************************************
  * TODO:
  *
- *   - (FIX) camera is moving even if the entity aabb is still included into camera window
- *   - (FIX) remove hard coded value in camera position code
- *   - (FEAT) use sprite size for entity when assigned sprite ref component
- *   - (FEAT) add physics component attribute for collision : like float weight
  *   - (FEAT) add aabb collision detection
  *   - (FEAT) resolve aabb collision using physics component
+ *   - (FEAT) add gravity (depends of choosen game design)
  *   - (FEAT) implement animated sprite
+ *   - (FEAT) use sprite size for entity when assigned sprite ref component
+ *
+ *   - (FIX) resolve TODO in code
+ *   - (FIX) remove hard coded value in camera position code
  *
  *****************************************************************/
 
@@ -210,6 +211,12 @@ bool eir_gme_set_world_entity_active_camera(
    eir_handle_t world_handle,
    eir_handle_t entity_handle
    );
+bool eir_gme_set_world_entity_physic(
+      eir_env_t * env,
+      eir_handle_t world_handle,
+      eir_handle_t entity_handle,
+      float weight
+      );
 
 /* ACCESSORS ---------------------------------- */
 
