@@ -153,7 +153,7 @@ void eir_run(eir_env_t * env)
    }
 
    eir_gfx_set_text_capacity(gfx_env, 1);
-   eir_gfx_set_rect_capacity(gfx_env, 2);
+   eir_gfx_set_rect_capacity(gfx_env, 10);
    //eir_snd_set_sound_capacity(snd_env, 2);
 
 #ifdef EIR_DEBUG
