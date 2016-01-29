@@ -223,6 +223,7 @@ int main()
    eir_gme_set_world_entity_aabb(env, world, entity, 0.0f, 0.0f, 128.0f, 128.0f);
    eir_gme_set_world_entity_camera(env, world, entity, 2.0f);
    eir_gme_set_world_entity_active_camera(env, world, entity);
+   eir_gme_set_world_entity_physic(env, world, entity, 1.0f);
    
    eir_handle_t entity2 = eir_gme_create_world_entity(env, world);
 
@@ -231,6 +232,7 @@ int main()
    eir_gme_set_world_entity_sprite_ref(env, world, entity2, ph_sprite_ref);
    eir_gme_set_world_entity_color(env, world, entity2, 0.0f, 1.0f, 0.0f, 0.5f);
    eir_gme_set_world_entity_aabb(env, world, entity2, 0.0f, 0.0f, 128.0f, 128.0f);
+   eir_gme_set_world_entity_physic(env, world, entity2, 1.0f);
 
    // INIT PLAYER USER DATA
 

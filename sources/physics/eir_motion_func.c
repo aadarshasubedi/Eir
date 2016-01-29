@@ -75,7 +75,10 @@ void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
                   aabb_1.size.x = aabb_comp_1->rect->size.x;
                   aabb_1.size.y = aabb_comp_1->rect->size.y;
                   
-                  if (index != index2 && world->entities.data[index] & eir_gme_component_type_aabb)
+                  if (
+                        index != index2
+                        && world->entities.data[index2] & eir_gme_component_type_aabb
+                     )
                   {
                      eir_gme_aabb_component_t * aabb_comp_2 = &world->aabbs.data[index2];
                      eir_phy_aabb_t aabb_2;
@@ -87,16 +90,25 @@ void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
 
                      if (eir_phy_check_aabb_intersection(&aabb_1, &aabb_2))
                      {
-                        float x_depth = eir_phy_get_x_aabb_intersection_depth(&aabb_1, &aabb_2);
-                        float y_depth = eir_phy_get_y_aabb_intersection_depth(&aabb_1, &aabb_2);
+                        if (
+                              world->entities.data[index2] & eir_gme_component_type_physic
+                              && world->entities.data[index] & eir_gme_component_type_physic
+                              && world->physics.data[index2].weight > 0.0f
+                              && world->physics.data[index].weight > 0.0f
 
-                        if (eir_mth_abs(x_depth) < eir_mth_abs(y_depth))
+                           )
                         {
-                           position->x += x_depth;
-                        }
-                        else
-                        {
-                           position->y += y_depth;
+                           float x_depth = eir_phy_get_x_aabb_intersection_depth(&aabb_1, &aabb_2);
+                           float y_depth = eir_phy_get_y_aabb_intersection_depth(&aabb_1, &aabb_2);
+                           
+                           if (eir_mth_abs(x_depth) < eir_mth_abs(y_depth))
+                           {
+                              position->x += x_depth;
+                           }
+                           else
+                           {
+                              position->y += y_depth;
+                           }
                         }
                      }
                   }
