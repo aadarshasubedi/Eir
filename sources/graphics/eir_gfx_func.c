@@ -411,7 +411,9 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
    }
 
    eir_gfx_sprite_batch_t * batch = 0;
+   eir_mth_mat4_t id_mat;
 
+   eir_mth_set_identity_mat4(&id_mat);
    for (int index = 0; index < gfx_env->sprite_batches.used; ++index)
    {
       EIR_KER_GET_ARRAY_ITEM(gfx_env->sprite_batches, index, batch);
@@ -475,7 +477,7 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	    glGetUniformLocation(batch->program, "vmat"),
 	    1,
 	    GL_FALSE,
-	    &gfx_env->view.values[0][0]
+	    &id_mat.values[0][0]
 	    );
 	 eir_gfx_api_draw_sprite_batch(batch);
 	 glUseProgram(0); // TODO: put in api func file !

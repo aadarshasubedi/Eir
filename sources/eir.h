@@ -3,11 +3,6 @@
 /******************************************************************
  * TODO:
  *
- *   - move all motion and collision code in one part
- *      - process x move
- *      - parse all entity and check x collision
- *      - resolve x collision
- *      - repeat step 1-3 with y
  *   - add screen fixed coordinate for text and UI
  *   - implement animated sprite
  *   - use sprite size for entity when assigned sprite ref component
