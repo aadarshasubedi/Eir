@@ -2,7 +2,6 @@
 #include "physics/eir_phy_func.c"
 #include "physics/eir_motion_func.c"
 #include "game/eir_gme_func.c"
-#include "game/eir_aabb_system.c"
 #include "game/eir_camera_system.c"
 #include "kernel/eir_log_stdout.c"
 #include "fsm/eir_fsm_func.c"

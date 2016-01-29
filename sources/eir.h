@@ -3,14 +3,16 @@
 /******************************************************************
  * TODO:
  *
- *   - (FEAT) add aabb collision detection
- *   - (FEAT) resolve aabb collision using physics component
- *   - (FEAT) add gravity (depends of choosen game design)
- *   - (FEAT) implement animated sprite
- *   - (FEAT) use sprite size for entity when assigned sprite ref component
- *
- *   - (FIX) resolve TODO in code
- *   - (FIX) remove hard coded value in camera position code
+ *   - move all motion and collision code in one part
+ *      - process x move
+ *      - parse all entity and check x collision
+ *      - resolve x collision
+ *      - repeat step 1-3 with y
+ *   - add screen fixed coordinate for text and UI
+ *   - implement animated sprite
+ *   - use sprite size for entity when assigned sprite ref component
+ *   - resolve TODO in code
+ *   - remove hard coded value in camera position code
  *
  *****************************************************************/
 
