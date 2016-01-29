@@ -4,6 +4,7 @@
 #define PLACE_HOLDER_IMAGE_PATH "../resources/images/placeholder_atlas.png"
 #define PLAYER_FRICTION 10.0f
 #define PLAYER_SPEED 1600.0f
+#define PLAYER_GRAVITY 1.0f
 
 typedef struct
 {
@@ -30,8 +31,8 @@ static bool validate_idle_state(void * user_data)
 	    && !player->pad_buffer->controllers[1].is_connected
 	    && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
 	    && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
-	    && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
-	    && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    //&& !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    //&& !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
 	    )
 	 {
 	    result = true;
@@ -41,8 +42,8 @@ static bool validate_idle_state(void * user_data)
 	    && player->pad_buffer->controllers[1].is_connected
 	    && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
 	    && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
-	    && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
-	    && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    //&& !player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    //&& !player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
 	    )
 	 {
 	    result = true;
@@ -67,8 +68,8 @@ static bool validate_move_state(void * user_data)
 	 && (
 	    player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
 	    || player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
-	    || player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
-	    || player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    //|| player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    //|| player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
 	    )
 	 )
       {
@@ -81,8 +82,8 @@ static bool validate_move_state(void * user_data)
 	 && (
 	    player->pad_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
 	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
-	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
-	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    //|| player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    //|| player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
 	    )
 	 )
       {
@@ -94,7 +95,7 @@ static bool validate_move_state(void * user_data)
 	 && player->pad_buffer->controllers[1].is_analog
 	 && (
 	    player->pad_buffer->controllers[1].left_stick_value_x
-	    || player->pad_buffer->controllers[1].left_stick_value_y
+	    //|| player->pad_buffer->controllers[1].left_stick_value_y
 	    )
 	 )
       {
@@ -115,7 +116,7 @@ static void update_idle_state(void * user_data)
 	 player->world_handle,
 	 player->entity_handle,
 	 0.0f,
-	 0.0f,
+	 PLAYER_GRAVITY, 
 	 PLAYER_SPEED,
 	 PLAYER_FRICTION
 	 );
@@ -129,12 +130,11 @@ static void update_move_state(void * user_data)
       player_t * player = (player_t *)user_data;
 
       float x_velocity = 0.0f;
-      float y_velocity = 0.0f;
 
       if (player->pad_buffer->controllers[1].is_analog)
       {
 	 x_velocity = player->pad_buffer->controllers[1].left_stick_value_x;
-	 y_velocity = player->pad_buffer->controllers[1].left_stick_value_y;
+	 //y_velocity = player->pad_buffer->controllers[1].left_stick_value_y;
       }
       else
       {
@@ -152,6 +152,7 @@ static void update_move_state(void * user_data)
 	 {
 	    x_velocity = -1.0f;
 	 }
+         /*
 	 if (
 	    player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
 	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
@@ -166,20 +167,23 @@ static void update_move_state(void * user_data)
 	 {
 	    y_velocity = -1.0f;
 	 }
+         */
       }
 
+      /*
       if (eir_mth_abs(x_velocity) > 0.0f && eir_mth_abs(y_velocity) > 0.0f)
       {
 	 x_velocity *= 0.707107f;
 	 y_velocity *= 0.707107f;
       }
+      */
 
       eir_gme_set_world_entity_acceleration(
 	 player->env,
 	 player->world_handle,
 	 player->entity_handle,
 	 x_velocity,
-	 y_velocity,
+	 PLAYER_GRAVITY,
 	 PLAYER_SPEED,
 	 PLAYER_FRICTION
 	 );
@@ -209,7 +213,7 @@ int main()
 
    eir_gme_set_max_world_count(env, 1);
 
-   eir_handle_t world = eir_gme_create_world(env, 2);
+   eir_handle_t world = eir_gme_create_world(env, 10);
    
    eir_gme_set_curr_world(env, world);
 
@@ -220,7 +224,7 @@ int main()
    eir_gme_set_world_entity_sprite_ref(env, world, entity, ph_sprite_ref);
    eir_gme_set_world_entity_color(env, world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
    eir_gme_set_world_entity_acceleration(env, world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
-   eir_gme_set_world_entity_aabb(env, world, entity, 0.0f, 0.0f, 128.0f, 128.0f);
+   eir_gme_set_world_entity_aabb(env, world, entity, 0.0f, 0.0f, 64.0f, 64.0f);
    eir_gme_set_world_entity_camera(env, world, entity, 2.0f);
    eir_gme_set_world_entity_active_camera(env, world, entity);
    eir_gme_set_world_entity_physic(env, world, entity, 1.0f);
@@ -233,6 +237,15 @@ int main()
    eir_gme_set_world_entity_color(env, world, entity2, 0.0f, 1.0f, 0.0f, 0.5f);
    eir_gme_set_world_entity_aabb(env, world, entity2, 0.0f, 0.0f, 128.0f, 128.0f);
    eir_gme_set_world_entity_physic(env, world, entity2, 1.0f);
+   
+   eir_handle_t ground = eir_gme_create_world_entity(env, world);
+
+   eir_gme_set_world_entity_position(env, world, ground, 0, 500);
+   eir_gme_set_world_entity_size(env, world, ground, 1800, 32);
+   eir_gme_set_world_entity_sprite_ref(env, world, ground, ph_sprite_ref);
+   eir_gme_set_world_entity_color(env, world, ground, 1.0f, 1.0f, 1.0f, 0.5f);
+   eir_gme_set_world_entity_aabb(env, world, ground, 0.0f, 0.0f, 1800.0f, 32.0f);
+   eir_gme_set_world_entity_physic(env, world, ground, 1.0f);
 
    // INIT PLAYER USER DATA
 
