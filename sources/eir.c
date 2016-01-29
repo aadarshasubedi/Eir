@@ -28,7 +28,6 @@
 
 #include "game/eir_gme_env.h"
 #include "game/eir_gme_func.h"
-#include "game/eir_aabb_system.h"
 
 #include "kernel/eir_ker_env.h"
 
@@ -192,7 +191,6 @@ void eir_run(eir_env_t * env)
 	 // UPDATE ALL SYSTEMS HERE EXCEPT RENDERING AND TIMER
 	 eir_fsm_update_state_machine(fsm_env);
 	 eir_phy_proceed_motion_entity_update(gme_env->curr_world, time_per_frame);
-	 eir_gme_proceed_aabb_system_update(gme_env->curr_world);
 	 eir_gme_proceed_camera_system_update(gme_env->curr_world);
 
          if (gme_env->curr_world && gme_env->curr_world->curr_camera)
