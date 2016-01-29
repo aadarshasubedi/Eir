@@ -1,4 +1,5 @@
 #include "eir_motion_func.h"
+#include "eir_phy_func.h"
 #include "../maths/eir_mth_func.h"
 
 static void eir_phy_proceed_euler_integration(
@@ -20,6 +21,18 @@ static void eir_phy_proceed_euler_integration(
       new_position->y = old_position->y + 0.5f * acceleration.y * eir_mth_square_f(dtime) + motion_param->velocity.y * dtime;
       motion_param->velocity.x += acceleration.x * dtime;
       motion_param->velocity.y += acceleration.y * dtime;
+   }
+}
+
+static void eir_phy_update_aabb_component(eir_gme_aabb_component_t * aabb, const eir_gme_position_component_t * position)
+{
+   if (aabb && position)
+   {
+      float x_offset = position->initial.x - aabb->x_offset;
+      float y_offset = position->initial.y - aabb->y_offset;
+      
+      aabb->rect->position.x = position->current->x + x_offset;
+      aabb->rect->position.y = position->current->y + y_offset;
    }
 }
 
@@ -46,56 +59,50 @@ void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
 
             position->x = new_position.x;
             position->y = new_position.y;
-	 }
-      }
-      for (int index = 0; index < world->entities.used; ++index)
-      {
-	 if (world->entities.data[index] & eir_gme_component_type_aabb)
-	 {
-	    eir_gme_aabb_component_t * aabb = &world->aabbs.data[index];
-	    eir_gme_position_component_t * position = &world->positions.data[index];
-
-	    float x_offset = position->initial.x - aabb->x_offset;
-	    float y_offset = position->initial.y - aabb->y_offset;
-
-	    aabb->rect->position.x = position->current->x + x_offset;
-	    aabb->rect->position.y = position->current->y + y_offset;
-	 }
-      }
-
-      // PROCESS AABB INTERSECTION DETECTION
-
-      for (int index = 0; index < world->entities.used; ++index)
-      {
-         if (world->entities.data[index] & eir_gme_component_type_aabb)
-         {
-            eir_gme_aabb_component_t * aabb_comp_1 = &world->aabbs.data[index];
-            eir_phy_aabb_t aabb_1;
-
-            aabb_1.position.x = aabb_comp_1->rect->position.x;
-            aabb_1.position.y = aabb_comp_1->rect->position.y;
-            aabb_1.size.x = aabb_comp_1->rect->size.x;
-            aabb_1.size.y = aabb_comp_1->rect->size.y;
-
-            for (int index2 = index + 1; index2 < world->entities.used; ++index2)
+            if (world->entities.data[index] & eir_gme_component_type_aabb)
             {
-               if (world->entities.data[index] & eir_gme_component_type_aabb)
+               eir_gme_aabb_component_t * aabb_comp_1 = &world->aabbs.data[index];
+               eir_gme_position_component_t * position_comp_1 = &world->positions.data[index];
+               
+               for (int index2 = 0; index2 < world->entities.used; ++index2)
                {
-                  eir_gme_aabb_component_t * aabb_comp_2 = &world->aabbs.data[index2];
-                  eir_phy_aabb_t aabb_2;
+                  eir_phy_update_aabb_component(aabb_comp_1, position_comp_1);
                   
-                  aabb_2.position.x = aabb_comp_2->rect->position.x;
-                  aabb_2.position.y = aabb_comp_2->rect->position.y;
-                  aabb_2.size.x = aabb_comp_2->rect->size.x;
-                  aabb_2.size.y = aabb_comp_2->rect->size.y;
-
-                  if (eir_phy_check_aabb_intersection(&aabb_1, &aabb_2))
+                  eir_phy_aabb_t aabb_1;
+                  
+                  aabb_1.position.x = aabb_comp_1->rect->position.x;
+                  aabb_1.position.y = aabb_comp_1->rect->position.y;
+                  aabb_1.size.x = aabb_comp_1->rect->size.x;
+                  aabb_1.size.y = aabb_comp_1->rect->size.y;
+                  
+                  if (index != index2 && world->entities.data[index] & eir_gme_component_type_aabb)
                   {
-                     //EIR_KER_LOG_MESSAGE("aabb intersection found between entities %d and %d", index, index2);
+                     eir_gme_aabb_component_t * aabb_comp_2 = &world->aabbs.data[index2];
+                     eir_phy_aabb_t aabb_2;
+                     
+                     aabb_2.position.x = aabb_comp_2->rect->position.x;
+                     aabb_2.position.y = aabb_comp_2->rect->position.y;
+                     aabb_2.size.x = aabb_comp_2->rect->size.x;
+                     aabb_2.size.y = aabb_comp_2->rect->size.y;
+
+                     if (eir_phy_check_aabb_intersection(&aabb_1, &aabb_2))
+                     {
+                        float x_depth = eir_phy_get_x_aabb_intersection_depth(&aabb_1, &aabb_2);
+                        float y_depth = eir_phy_get_y_aabb_intersection_depth(&aabb_1, &aabb_2);
+
+                        if (eir_mth_abs(x_depth) < eir_mth_abs(y_depth))
+                        {
+                           position->x += x_depth;
+                        }
+                        else
+                        {
+                           position->y += y_depth;
+                        }
+                     }
                   }
                }
             }
-         }
+	 }
       }
    }
 }

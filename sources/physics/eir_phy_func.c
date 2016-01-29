@@ -44,7 +44,7 @@ float eir_phy_get_y_aabb_intersection_depth(const eir_phy_aabb_t * a, const eir_
 
    if (a->position.y < b->position.y)
    {
-      result = b->position.y - (a->position.y + a->size.y);
+      result = -((a->position.y + a->size.y) - b->position.y);
    }
    else
    {
