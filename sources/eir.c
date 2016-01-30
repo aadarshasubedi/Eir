@@ -122,6 +122,18 @@ eir_input_controller_buffer_t * eir_get_input_controller_buffer(eir_env_t * env,
    return input_controller_buffer;
 }
 
+double eir_get_current_time(eir_env_t * env)
+{
+   double result = 0.0;
+
+   if (env)
+   {
+      eir_sys_env_t * sys_env = &((eir_ker_env_t *)(env->private))->sys_env;
+      result = sys_env->timer.last_time;
+   }
+   return result;
+}
+
 void eir_run(eir_env_t * env)
 {
    if (!env)

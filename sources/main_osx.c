@@ -5,6 +5,7 @@
 #define PLAYER_FRICTION 10.0f
 #define PLAYER_SPEED 1600.0f
 #define PLAYER_GRAVITY 1.0f
+#define PLAYER_JUMP_SPEED -2.0f
 
 typedef struct
 {
@@ -105,6 +106,25 @@ static bool validate_move_state(void * user_data)
    return result;
 }
 
+static bool validate_jump_up_state(void * user_data)
+{
+   bool result = false;
+
+   if (user_data)
+   {
+      player_t * player = (player_t *)user_data;
+
+      if (
+            player->keyboard_buffer
+            && player->keyboard_buffer->controllers[1].buttons[EIR_JUMP_BUTTON_INDEX].pressed
+         )
+      {
+         result = true;
+      }
+   }
+   return result;
+}
+
 static void update_idle_state(void * user_data)
 {
    if (user_data)
@@ -190,6 +210,24 @@ static void update_move_state(void * user_data)
    }
 }
 
+static void update_jump_up_state(void * user_data)
+{
+   if (user_data)
+   {
+      player_t * player = (player_t *)user_data;
+
+      eir_gme_set_world_entity_acceleration(
+	 player->env,
+	 player->world_handle,
+	 player->entity_handle,
+	 0.0f,
+	 PLAYER_JUMP_SPEED, 
+	 PLAYER_SPEED,
+	 PLAYER_FRICTION
+	 );
+   }
+}
+
 int main()
 {
    // CREATE ENV
@@ -261,10 +299,11 @@ int main()
 
    eir_fsm_set_max_state_machine_count(env, 1);
 
-   eir_handle_t fsm = eir_fsm_create_state_machine(env, 3, &player);
+   eir_handle_t fsm = eir_fsm_create_state_machine(env, 4, &player);
    eir_handle_t idle_state = eir_fsm_create_state(env, fsm);
    eir_handle_t move_state = eir_fsm_create_state(env, fsm);
    eir_handle_t end_state = eir_fsm_create_state(env, fsm);
+   eir_handle_t jump_up_state = eir_fsm_create_state(env, fsm);
 
    eir_fsm_set_begin_state(env, fsm, idle_state);
    eir_fsm_set_end_state(env, fsm, end_state);
@@ -272,12 +311,18 @@ int main()
    
    eir_fsm_set_state_validate_func(env, fsm, idle_state, validate_idle_state);
    eir_fsm_set_state_validate_func(env, fsm, move_state, validate_move_state);
+   eir_fsm_set_state_validate_func(env, fsm, jump_up_state, validate_jump_up_state);
 
    eir_fsm_set_state_update_func(env, fsm, idle_state, update_idle_state);
    eir_fsm_set_state_update_func(env, fsm, move_state, update_move_state);
+   eir_fsm_set_state_update_func(env, fsm, jump_up_state, update_jump_up_state);
 
    eir_fsm_add_state_transition(env, fsm, idle_state, move_state);
+   eir_fsm_add_state_transition(env, fsm, idle_state, jump_up_state);
    eir_fsm_add_state_transition(env, fsm, move_state, idle_state);
+   eir_fsm_add_state_transition(env, fsm, move_state, jump_up_state);
+   eir_fsm_add_state_transition(env, fsm, jump_up_state, idle_state);
+   eir_fsm_add_state_transition(env, fsm, jump_up_state, move_state);
 
    // RUN EIR ENGINE
 

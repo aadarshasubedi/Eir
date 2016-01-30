@@ -32,6 +32,10 @@ static void eir_sys_process_keyboard_event(eir_input_controller_t * controller, 
       {
 	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_DOWN_BUTTON_INDEX], pressed);
       }
+      if (sdl_event->key.keysym.sym == SDLK_SPACE)
+      {
+	 eir_sys_process_button_state(&controller->buttons[EIR_JUMP_BUTTON_INDEX], pressed);
+      }
    }
 }
 

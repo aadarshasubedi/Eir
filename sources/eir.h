@@ -3,11 +3,11 @@
 /******************************************************************
  * TODO:
  *
- *   - add screen fixed coordinate for text and UI
- *   - implement animated sprite
- *   - use sprite size for entity when assigned sprite ref component
- *   - resolve TODO in code
- *   - remove hard coded value in camera position code
+ *      - add simple jump
+ *      - implement animated sprite
+ *      - use sprite size for entity when assigned sprite ref component
+ *      - resolve TODO in code
+ *      - remove hard coded value in camera position code
  *
  *****************************************************************/
 
@@ -34,7 +34,8 @@ typedef struct
 #define EIR_MOVE_LEFT_BUTTON_INDEX 1
 #define EIR_MOVE_DOWN_BUTTON_INDEX 2
 #define EIR_MOVE_UP_BUTTON_INDEX 3
-#define EIR_TOTAL_INPUT_BUTTON_COUNT 4
+#define EIR_JUMP_BUTTON_INDEX 4
+#define EIR_TOTAL_INPUT_BUTTON_COUNT 5
 
 typedef struct
 {
@@ -218,6 +219,7 @@ bool eir_gme_set_world_entity_physic(
 /* ACCESSORS ---------------------------------- */
 
 eir_input_controller_buffer_t * eir_get_input_controller_buffer(eir_env_t * env, int controller_index);
+double eir_get_current_time(eir_env_t * env);
 
 /* RUN EIR ENGINE ----------------------------- */
 
