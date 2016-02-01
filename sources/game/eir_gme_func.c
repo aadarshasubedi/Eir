@@ -40,17 +40,6 @@ static void eir_gme_release_world(eir_gme_world_t * world)
    }
 }
 
-static eir_gme_env_t * eir_gme_get_gme_env(eir_env_t * env)
-{
-   eir_gme_env_t * gme_env = 0;
-   
-   if (env)
-   {
-      gme_env = &(((eir_ker_env_t *)env->private)->gme_env);
-   }
-   return gme_env;
-}
-
 static void eir_gme_init_entity(eir_gme_entity_t * entity)
 {
    if (entity)
@@ -189,17 +178,6 @@ static void eir_gme_release_weight(eir_gme_physic_component_t * physic)
    eir_gme_init_physic(physic);
 }
 
-static eir_gme_world_t * eir_gme_get_world(eir_gme_env_t * env, eir_handle_t world_handle)
-{
-   eir_gme_world_t * world = 0;
-
-   if (env)
-   {
-      EIR_KER_GET_ARRAY_ITEM(env->worlds, world_handle, world);
-   }
-   return world;
-}
-
 static void eir_gme_init_button_state(eir_button_state_t * button_state)
 {
    if (button_state)
@@ -250,7 +228,7 @@ static void eir_gme_init_all_input_controller_buffer(eir_gme_env_t * env)
 }
 
 /*******************************************
- * INTERNAL FUNCTIONS
+ * GLOBAL FUNCTIONS
  *****************************************/
 
 void eir_gme_init_env(eir_gme_env_t * env)
@@ -310,113 +288,72 @@ void eir_gme_release_env(eir_gme_env_t * env)
    EIR_KER_LOG_MESSAGE("release game env");
    if (env)
    {
-      EIR_KER_LOG_MESSAGE("release game env");
       EIR_KER_FREE_ARRAY_BIS(env->worlds, eir_gme_release_world);
       env->curr_world = 0;
    }
 }
 
-/*******************************************
- * EXTERNAL FUNCTIONS
- *****************************************/
-
-void eir_gme_set_max_world_count(eir_env_t * env, size_t max_count)
+void eir_gme_set_max_world_count(eir_gme_env_t * env, size_t max_count)
 {
-   eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
-
-   if (gme_env)
+   if (env)
    {
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_gme_world_t,
-	 gme_env->worlds,
-	 max_count,
-	 eir_gme_init_world
-	 );
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_world_t, env->worlds, max_count, eir_gme_init_world);
    }
 }
 
-eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count)
+eir_gme_world_t * eir_gme_create_world(eir_gme_env_t * env, size_t max_entity_count)
 {
-   eir_handle_t world_handle = EIR_INVALID_HANDLE;
-   eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
    eir_gme_world_t * world = 0;
 
-   if (gme_env)
+   if (env)
    {
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gme_env->worlds, world, world_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(env->worlds, world);
    }
    if (world)
    {  
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_gme_entity_t,
-	 world->entities,
-	 max_entity_count,
-	 eir_gme_init_entity
-	 );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_gme_position_component_t,
-	 world->positions,
-	 max_entity_count,
-	 eir_gme_init_position
-	 );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_gme_size_component_t,
-	 world->sizes,
-	 max_entity_count,
-	 eir_gme_init_size
-	 );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_handle_t,
-	 world->sprite_ref_handles,
-	 max_entity_count,
-	 eir_gme_init_sprite_ref_handle
-	 );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_gme_color_component_t,
-	 world->colors,
-	 max_entity_count,
-	 eir_gme_init_color
-	 );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_phy_motion_param_t,
-	 world->motion_params,
-	 max_entity_count,
-	 eir_gme_init_motion_param
-	 );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_gme_aabb_component_t,
-	 world->aabbs,
-	 max_entity_count,
-	 eir_gme_init_aabb
-	 );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-	 eir_gme_camera_component_t,
-	 world->cameras,
-	 max_entity_count,
-	 eir_gme_init_camera
-	 );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-            eir_gme_physic_component_t,
-            world->physics,
-            max_entity_count,
-            eir_gme_init_physic
-            );
-
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_entity_t, world->entities, max_entity_count, eir_gme_init_entity);
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_position_component_t, world->positions, max_entity_count, eir_gme_init_position);
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_size_component_t, world->sizes, max_entity_count, eir_gme_init_size);
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_handle_t, world->sprite_ref_handles, max_entity_count, eir_gme_init_sprite_ref_handle);
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_color_component_t, world->colors, max_entity_count, eir_gme_init_color);
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_phy_motion_param_t, world->motion_params, max_entity_count, eir_gme_init_motion_param);
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_aabb_component_t, world->aabbs, max_entity_count, eir_gme_init_aabb);
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_camera_component_t, world->cameras, max_entity_count, eir_gme_init_camera);
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_physic_component_t, world->physics, max_entity_count, eir_gme_init_physic);
       world->curr_camera = 0;
    }
-   return world_handle;
+   return world;
 }
 
-void eir_gme_set_curr_world(eir_env_t * env, eir_handle_t world_handle)
+void eir_gme_set_curr_world(eir_gme_env_t * env, eir_gme_world_t * world)
 {
-   eir_gme_env_t * gme_env = eir_gme_get_gme_env(env);
-   eir_gme_world_t * world = eir_gme_get_world(gme_env, world_handle);
-
-   if (gme_env && world)
+   if (env && world)
    {
-      gme_env->curr_world = world;
+      env->curr_world = world;
    }
 }
+
+eir_gme_entity_t eir_gme_create_world_entity(eir_gme_world_t * world);
+
+bool eir_gme_set_entity_position(eir_gme_world_t * world, eir_gme_entity_t entity, int x, int y);
+bool eir_gme_set_entity_size(eir_gme_world_t * world, eir_gme_entity_t entity, int width, int height);
+bool eir_gme_set_entity_sprite_ref(eir_gme_world_t * world, eir_gme_entity_t entity, eir_gfx_sprite_ref_t * sprite_ref);
+bool eir_gme_set_entity_color(eir_gme_world_t * world, eir_gme_entity_t entity, float r, float g, float b, float a);
+bool eir_gme_set_entity_acceleration(eir_gme_world_t * world, eir_gme_entity_t entity, float ax, float ay, float speed, float friction);
+bool eir_gme_set_entity_aabb(eir_gme_world_t * world, eir_gme_entity_t entity, float x, float y, float width, float height);
+bool eir_gme_set_world_entity_camera(eir_gme_world_t * world, eir_gme_entity_t entity, float win_scale);
+bool eir_gme_set_world_entity_active_camera(eir_gme_world_t * world, eir_gme_entity_t entity);
+bool eir_gme_set_world_entity_physic(eir_gme_world_t * world, eir_gme_entity_t entity, float weight);
+
+eir_mth_vec2_t * eir_gme_get_world_entity_position(eir_gme_env_t * env, eir_handle_t world_handle, eir_handle_t entity_handle)
+{
+   eir_mth_vec2_t * position = 0;
+   return position;
+}
+
+/*******************************************
+ * EXTERNAL FUNCTIONS
+ *****************************************/
 
 eir_handle_t eir_gme_create_world_entity(eir_env_t * env, eir_handle_t world_handle)
 {

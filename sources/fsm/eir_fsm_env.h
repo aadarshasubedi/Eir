@@ -8,5 +8,4 @@ EIR_KER_DEFINE_ARRAY_STRUCT(eir_fsm_state_machine_t, eir_fsm_state_machine_array
 typedef struct
 {
    eir_fsm_state_machine_array_t state_machines;
-   eir_fsm_state_machine_t * curr_state_machine;
 } eir_fsm_env_t;

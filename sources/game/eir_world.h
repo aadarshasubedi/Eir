@@ -2,7 +2,7 @@
 
 #include "../kernel/eir_array_macro.h"
 #include "../maths/eir_vector.h"
-#include "../eir_internal.h"
+#include "../eir.h"
 #include "../graphics/eir_color.h"
 #include "../physics/eir_motion_param.h"
 #include "eir_position_component.h"

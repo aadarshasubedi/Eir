@@ -126,7 +126,7 @@ double eir_get_current_time(eir_env_t * env)
 {
    double result = 0.0;
 
-   if (env)
+   if (env && env->private)
    {
       eir_sys_env_t * sys_env = &((eir_ker_env_t *)(env->private))->sys_env;
       result = sys_env->timer.last_time;
@@ -185,7 +185,7 @@ void eir_run(eir_env_t * env)
    float time_since_last_update = 0.0f;
 
    eir_sys_start_timer(&sys_env->timer);
-   eir_fsm_run_state_machine(fsm_env);
+   eir_fsm_run_state_machine(&fsm_env->state_machines.data[0]); // TODO: use returned pointer of create fsm function
    eir_gme_world_entity_update_linked_components(gme_env->curr_world);
    eir_gfx_generate_all_batches(gfx_env, gme_env->curr_world);
    for (;;)
@@ -201,7 +201,7 @@ void eir_run(eir_env_t * env)
 	 }
 
 	 // UPDATE ALL SYSTEMS HERE EXCEPT RENDERING AND TIMER
-	 eir_fsm_update_state_machine(fsm_env);
+	 eir_fsm_update_state_machine(&fsm_env->state_machines.data[0]); // TODO: use returned pointer of create fsm function
 	 eir_phy_proceed_motion_entity_update(gme_env->curr_world, time_per_frame);
 	 eir_gme_proceed_camera_system_update(gme_env->curr_world);
 
@@ -250,4 +250,344 @@ void eir_display_mem_leaks()
 #ifdef EIR_DEBUG
    EIR_SYS_LOG_ALLOCATED_ELEM;
 #endif
+}
+
+#include <stdio.h>
+#include "eir.h"
+
+#define PLACE_HOLDER_IMAGE_PATH "../resources/images/placeholder_atlas.png"
+#define PLAYER_FRICTION 10.0f
+#define PLAYER_SPEED 1600.0f
+#define PLAYER_GRAVITY 1.0f
+#define PLAYER_JUMP_SPEED -2.0f
+
+typedef struct
+{
+   eir_env_t * env;
+   eir_handle_t world_handle;
+   eir_handle_t entity_handle;
+   eir_input_controller_buffer_t * keyboard_buffer;
+   eir_input_controller_buffer_t * pad_buffer;
+} player_t;
+
+static bool validate_idle_state(void * user_data)
+{
+   bool result = false;
+   
+   if (user_data)
+   {
+      player_t * player = (player_t *)user_data;
+
+      if (!player->pad_buffer->controllers[1].is_analog)
+      {
+	 if (
+	    player->keyboard_buffer
+	    && player->pad_buffer
+	    && !player->pad_buffer->controllers[1].is_connected
+	    && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
+	    && !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
+	    //&& !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    //&& !player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    )
+	 {
+	    result = true;
+	 }
+	 else if (
+	    player->pad_buffer
+	    && player->pad_buffer->controllers[1].is_connected
+	    && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
+	    && !player->pad_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
+	    //&& !player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    //&& !player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    )
+	 {
+	    result = true;
+	 }
+      }
+   }
+   return result;
+}
+
+static bool validate_move_state(void * user_data)
+{
+   bool result = false;
+
+   if (user_data)
+   {
+      player_t * player = (player_t *)user_data;
+
+      if (
+	 player->keyboard_buffer
+	 && player->pad_buffer
+	 && !player->pad_buffer->controllers[1].is_connected
+	 && (
+	    player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
+	    || player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
+	    //|| player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    //|| player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    )
+	 )
+      {
+	 result = true;
+      }
+      else if (
+	 player->pad_buffer
+	 && player->pad_buffer->controllers[1].is_connected
+	 && !player->pad_buffer->controllers[1].is_analog
+	 && (
+	    player->pad_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
+	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
+	    //|| player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    //|| player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    )
+	 )
+      {
+	 result = true;
+      }
+      else if (
+	 player->pad_buffer
+	 && player->pad_buffer->controllers[1].is_connected
+	 && player->pad_buffer->controllers[1].is_analog
+	 && (
+	    player->pad_buffer->controllers[1].left_stick_value_x
+	    //|| player->pad_buffer->controllers[1].left_stick_value_y
+	    )
+	 )
+      {
+	 result = true;
+      }
+   }
+   return result;
+}
+
+static bool validate_jump_up_state(void * user_data)
+{
+   bool result = false;
+
+   if (user_data)
+   {
+      player_t * player = (player_t *)user_data;
+
+      if (
+            player->keyboard_buffer
+            && player->keyboard_buffer->controllers[1].buttons[EIR_JUMP_BUTTON_INDEX].pressed
+         )
+      {
+         result = true;
+      }
+   }
+   return result;
+}
+
+static void update_idle_state(void * user_data)
+{
+   if (user_data)
+   {
+      player_t * player = (player_t *)user_data;
+
+      eir_gme_set_world_entity_acceleration(
+	 player->env,
+	 player->world_handle,
+	 player->entity_handle,
+	 0.0f,
+	 PLAYER_GRAVITY, 
+	 PLAYER_SPEED,
+	 PLAYER_FRICTION
+	 );
+   }
+}
+
+static void update_move_state(void * user_data)
+{
+   if (user_data)
+   {
+      player_t * player = (player_t *)user_data;
+
+      float x_velocity = 0.0f;
+
+      if (player->pad_buffer->controllers[1].is_analog)
+      {
+	 x_velocity = player->pad_buffer->controllers[1].left_stick_value_x;
+	 //y_velocity = player->pad_buffer->controllers[1].left_stick_value_y;
+      }
+      else
+      {
+	 if (
+	    player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
+	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_RIGHT_BUTTON_INDEX].pressed
+	    )
+	 {
+	    x_velocity = 1.0f;
+	 }
+	 if (
+	    player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
+	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_LEFT_BUTTON_INDEX].pressed
+	    )
+	 {
+	    x_velocity = -1.0f;
+	 }
+         /*
+	 if (
+	    player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_DOWN_BUTTON_INDEX].pressed
+	    )
+	 {
+	    y_velocity = 1.0f;
+	 }
+	 if (
+	    player->keyboard_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    || player->pad_buffer->controllers[1].buttons[EIR_MOVE_UP_BUTTON_INDEX].pressed
+	    )
+	 {
+	    y_velocity = -1.0f;
+	 }
+         */
+      }
+
+      /*
+      if (eir_mth_abs(x_velocity) > 0.0f && eir_mth_abs(y_velocity) > 0.0f)
+      {
+	 x_velocity *= 0.707107f;
+	 y_velocity *= 0.707107f;
+      }
+      */
+
+      eir_gme_set_world_entity_acceleration(
+	 player->env,
+	 player->world_handle,
+	 player->entity_handle,
+	 x_velocity,
+	 PLAYER_GRAVITY,
+	 PLAYER_SPEED,
+	 PLAYER_FRICTION
+	 );
+   }
+}
+
+static void update_jump_up_state(void * user_data)
+{
+   if (user_data)
+   {
+      player_t * player = (player_t *)user_data;
+
+      eir_gme_set_world_entity_acceleration(
+	 player->env,
+	 player->world_handle,
+	 player->entity_handle,
+	 0.0f,
+	 PLAYER_JUMP_SPEED, 
+	 PLAYER_SPEED,
+	 PLAYER_FRICTION
+	 );
+   }
+}
+
+int main()
+{
+   // CREATE ENV
+
+   eir_env_t * env = 0;
+   env = eir_create_env(800, 600);
+   
+   eir_ker_env_t * all_env = (eir_ker_env_t *)(env->private);
+   eir_fsm_env_t * fsm_env = &all_env->fsm_env;
+
+   // INIT GFX ITEMS CAPACITY
+
+   eir_gfx_set_max_image_count(env, 1);
+   eir_gfx_set_max_sprite_ref_count(env, 1);
+   eir_gfx_set_max_texture_count(env, 1);
+
+   // LOAD SPRITE
+
+   eir_handle_t ph_atlas_image = eir_gfx_load_image(env, PLACE_HOLDER_IMAGE_PATH, false);
+   eir_handle_t ph_texture = eir_gfx_create_texture(env, ph_atlas_image);
+   eir_handle_t ph_sprite_ref = eir_gfx_create_sprite_ref(env, ph_texture, 0, 0, 64, 64);
+
+   // INIT WORLD ENTITIES
+
+   eir_gme_set_max_world_count(env, 1);
+
+   eir_handle_t world = eir_gme_create_world(env, 10);
+   
+   eir_gme_set_curr_world(env, world);
+
+   eir_handle_t entity = eir_gme_create_world_entity(env, world);
+
+   eir_gme_set_world_entity_position(env, world, entity, 400, 300);
+   eir_gme_set_world_entity_size(env, world, entity, 64, 64);
+   eir_gme_set_world_entity_sprite_ref(env, world, entity, ph_sprite_ref);
+   eir_gme_set_world_entity_color(env, world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
+   eir_gme_set_world_entity_acceleration(env, world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
+   eir_gme_set_world_entity_aabb(env, world, entity, 0.0f, 0.0f, 64.0f, 64.0f);
+   eir_gme_set_world_entity_camera(env, world, entity, 2.0f);
+   eir_gme_set_world_entity_active_camera(env, world, entity);
+   eir_gme_set_world_entity_physic(env, world, entity, 1.0f);
+   
+   eir_handle_t entity2 = eir_gme_create_world_entity(env, world);
+
+   eir_gme_set_world_entity_position(env, world, entity2, 100, 100);
+   eir_gme_set_world_entity_size(env, world, entity2, 64, 64);
+   eir_gme_set_world_entity_sprite_ref(env, world, entity2, ph_sprite_ref);
+   eir_gme_set_world_entity_color(env, world, entity2, 0.0f, 1.0f, 0.0f, 0.5f);
+   eir_gme_set_world_entity_aabb(env, world, entity2, 0.0f, 0.0f, 128.0f, 128.0f);
+   eir_gme_set_world_entity_physic(env, world, entity2, 1.0f);
+   
+   eir_handle_t ground = eir_gme_create_world_entity(env, world);
+
+   eir_gme_set_world_entity_position(env, world, ground, 0, 500);
+   eir_gme_set_world_entity_size(env, world, ground, 1800, 32);
+   eir_gme_set_world_entity_sprite_ref(env, world, ground, ph_sprite_ref);
+   eir_gme_set_world_entity_color(env, world, ground, 1.0f, 1.0f, 1.0f, 0.5f);
+   eir_gme_set_world_entity_aabb(env, world, ground, 0.0f, 0.0f, 1800.0f, 32.0f);
+   eir_gme_set_world_entity_physic(env, world, ground, 1.0f);
+
+   // INIT PLAYER USER DATA
+
+   player_t player;
+
+   player.env = env;
+   player.world_handle = world;
+   player.entity_handle = entity;
+   player.keyboard_buffer = eir_get_input_controller_buffer(env, 0);
+   player.pad_buffer = eir_get_input_controller_buffer(env, 1);
+
+   // INIT STATE MACHINE
+
+   eir_fsm_set_max_state_machine_count(fsm_env, 1);
+
+   eir_fsm_state_machine_t *    fsm             = eir_fsm_create_state_machine(fsm_env, 4, &player);
+   eir_fsm_state_t *            idle_state      = eir_fsm_create_state(fsm);
+   eir_fsm_state_t *            move_state      = eir_fsm_create_state(fsm);
+   eir_fsm_state_t *            end_state       = eir_fsm_create_state(fsm);
+   eir_fsm_state_t *            jump_up_state   = eir_fsm_create_state(fsm);
+
+   eir_fsm_set_begin_state(fsm, idle_state);
+   eir_fsm_set_end_state(fsm, end_state);
+   
+   eir_fsm_set_state_validate_func(idle_state, validate_idle_state);
+   eir_fsm_set_state_validate_func(move_state, validate_move_state);
+   eir_fsm_set_state_validate_func(jump_up_state, validate_jump_up_state);
+
+   eir_fsm_set_state_update_func(idle_state, update_idle_state);
+   eir_fsm_set_state_update_func(move_state, update_move_state);
+   eir_fsm_set_state_update_func(jump_up_state, update_jump_up_state);
+
+   eir_fsm_add_state_transition(idle_state, move_state);
+   eir_fsm_add_state_transition(idle_state, jump_up_state);
+   eir_fsm_add_state_transition( move_state, idle_state);
+   eir_fsm_add_state_transition(move_state, jump_up_state);
+   eir_fsm_add_state_transition(jump_up_state, idle_state);
+   eir_fsm_add_state_transition(jump_up_state, move_state);
+
+   // RUN EIR ENGINE
+
+   eir_run(env);
+
+   // DESTROY ENV
+
+   eir_destroy_env(env);
+   eir_display_mem_leaks();
+
+   return 0;
 }

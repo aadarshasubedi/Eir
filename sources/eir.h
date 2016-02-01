@@ -13,6 +13,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "kernel/eir_array_macro.h"
 
 /**
  * This is how we deal with engine created object in user code section
@@ -20,6 +21,7 @@
 
 typedef int eir_handle_t;
 #define EIR_INVALID_HANDLE -1
+EIR_KER_DEFINE_ARRAY_STRUCT(eir_handle_t, eir_handle_array_t);
 
 /**
  * input controller info
@@ -68,13 +70,6 @@ typedef struct
 } eir_env_t;
 
 /**
- * allocation function definition for overriding
- */
-
-typedef void * (*eir_allocate_t)(size_t item_size, size_t item_count);
-typedef void (*eir_free_t)(void * ptr);
-
-/**
  * Eir interfaces functions
  */
 
@@ -87,44 +82,6 @@ void eir_set_free_func(eir_free_t free_func);
 /* ENV CREATION ------------------------------- */
 
 eir_env_t * eir_create_env(int width, int height);
-
-/* FINITE STATE MACHINE CREATION -------------- */
-
-typedef bool (*eir_fsm_validate_state_t)(void * user_data);
-typedef void (*eir_fsm_update_state_t)(void * user_data);
-
-void eir_fsm_set_max_state_machine_count(eir_env_t * env, size_t max_state_machine_count);
-eir_handle_t eir_fsm_create_state_machine(eir_env_t * env, size_t max_state_count, void * user_data);
-eir_handle_t eir_fsm_create_state(eir_env_t * env, eir_handle_t state_machine_handle);
-bool eir_fsm_set_state_validate_func(
-   eir_env_t * env,
-   eir_handle_t state_machine_handle,
-   eir_handle_t state_handle,
-   eir_fsm_validate_state_t validate_func
-   );
-bool eir_fsm_set_state_update_func(
-   eir_env_t * env,
-   eir_handle_t state_machine_handle,
-   eir_handle_t state_handle,
-   eir_fsm_update_state_t update_func
-   );
-bool eir_fsm_add_state_transition(
-   eir_env_t * env,
-   eir_handle_t state_machine_handle,
-   eir_handle_t in_state_handle,
-   eir_handle_t out_state_handle
-   );
-bool eir_fsm_set_begin_state(
-   eir_env_t * env,
-   eir_handle_t state_machine_handle,
-   eir_handle_t state_handle
-   );
-bool eir_fsm_set_end_state(
-   eir_env_t * env,
-   eir_handle_t state_machine_handle,
-   eir_handle_t state_handle
-   );
-bool eir_fsm_set_active_state_machine(eir_env_t * env, eir_handle_t state_machine_handle);
 
 /* IMAGE MANAGEMENT --------------------------- */
 
@@ -147,74 +104,15 @@ eir_handle_t eir_gfx_create_sprite_ref(
 
 /* WORLD AND ENTITY MANAGEMENT ---------------- */
 
-void eir_gme_set_max_world_count(eir_env_t * env, size_t max_count);
-eir_handle_t eir_gme_create_world(eir_env_t * env, size_t max_entity_count);
-void eir_gme_set_curr_world(eir_env_t * env, eir_handle_t world_handle);
-eir_handle_t eir_gme_create_world_entity(eir_env_t * env, eir_handle_t world_handle);
-bool eir_gme_set_world_entity_position(
-   eir_env_t * env,
-   eir_handle_t world_handle,
-   eir_handle_t entity_handle,
-   int x,
-   int y
-   );
-bool eir_gme_set_world_entity_size(
-   eir_env_t * env,
-   eir_handle_t world_handle,
-   eir_handle_t entity_handle,
-   int width,
-   int height
-   );
-bool eir_gme_set_world_entity_sprite_ref(
-   eir_env_t * env,
-   eir_handle_t world_handle,
-   eir_handle_t entity_handle,
-   eir_handle_t sprite_ref_handle
-   );
-bool eir_gme_set_world_entity_color(
-   eir_env_t * env,
-   eir_handle_t world_handle,
-   eir_handle_t entity_handle,
-   float r,
-   float g,
-   float b,
-   float a
-   );
-bool eir_gme_set_world_entity_acceleration(
-   eir_env_t * env,
-   eir_handle_t world_handle,
-   eir_handle_t entity_handle,
-   float x_acceleration,
-   float y_acceleration,
-   float speed_factor,
-   float friction_factor
-   );
-bool eir_gme_set_world_entity_aabb(
-   eir_env_t * env,
-   eir_handle_t world_handle,
-   eir_handle_t entity_handle,
-   float x_offset,
-   float y_offset,
-   float width,
-   float height
-   );
-bool eir_gme_set_world_entity_camera(
-   eir_env_t * env,
-   eir_handle_t world_handle,
-   eir_handle_t entity_handle,
-   float cam_win_scale
-   );
-bool eir_gme_set_world_entity_active_camera(
-   eir_env_t * env,
-   eir_handle_t world_handle,
-   eir_handle_t entity_handle
-   );
-bool eir_gme_set_world_entity_physic(
-      eir_env_t * env,
-      eir_handle_t world_handle,
-      eir_handle_t entity_handle,
-      float weight
-      );
+bool eir_gme_set_entity_position(eir_gme_world_t * world, eir_gme_entity_t entity, int x, int y);
+bool eir_gme_set_entity_size(eir_gme_world_t * world, eir_gme_entity_t entity, int width, int height);
+bool eir_gme_set_entity_sprite_ref(eir_gme_world_t * world, eir_gme_entity_t entity, eir_gfx_sprite_ref_t * sprite_ref);
+bool eir_gme_set_entity_color(eir_gme_world_t * world, eir_gme_entity_t entity, float r, float g, float b, float a);
+bool eir_gme_set_entity_acceleration(eir_gme_world_t * world, eir_gme_entity_t entity, float ax, float ay, float speed, float friction);
+bool eir_gme_set_entity_aabb(eir_gme_world_t * world, eir_gme_entity_t entity, float x, float y, float width, float height);
+bool eir_gme_set_world_entity_camera(eir_gme_world_t * world, eir_gme_entity_t entity, float win_scale);
+bool eir_gme_set_world_entity_active_camera(eir_gme_world_t * world, eir_gme_entity_t entity);
+bool eir_gme_set_world_entity_physic(eir_gme_world_t * world, eir_gme_entity_t entity, float weight);
 
 /* ACCESSORS ---------------------------------- */
 

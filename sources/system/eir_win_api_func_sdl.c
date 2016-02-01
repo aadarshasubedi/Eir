@@ -195,6 +195,14 @@ bool eir_sys_win_api_poll_all_events(eir_gme_env_t * gme_env, eir_sys_env_t * sy
       {
 	 eir_sys_process_button_state(&new_pad->buttons[EIR_MOVE_DOWN_BUTTON_INDEX], false);
       }
+      if (SDL_JoystickGetButton(pad_handle, 0))
+      {
+         eir_sys_process_button_state(&new_pad->buttons[EIR_JUMP_BUTTON_INDEX], true);
+      }
+      else
+      {
+         eir_sys_process_button_state(&new_pad->buttons[EIR_JUMP_BUTTON_INDEX], false);
+      }
    }
    return true;
 }

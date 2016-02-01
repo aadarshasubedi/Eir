@@ -1,6 +1,9 @@
 #pragma once 
 
-#include "../eir.h"
+#include <stddef.h>
+
+typedef void * (*eir_allocate_t)(size_t item_size, size_t item_count);
+typedef void (*eir_free_t)(void * ptr);
 
 extern eir_allocate_t eir_sys_allocate;
 extern eir_free_t eir_sys_free;
