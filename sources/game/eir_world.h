@@ -1,21 +1,20 @@
 #pragma once
 
 #include "../kernel/eir_array_macro.h"
-#include "../maths/eir_vector.h"
-#include "../eir.h"
-#include "../graphics/eir_color.h"
-#include "../physics/eir_motion_param.h"
 #include "eir_position_component.h"
 #include "eir_aabb_component.h"
 #include "eir_camera_component.h"
 #include "eir_color_component.h"
 #include "eir_size_component.h"
 #include "eir_physic_component.h"
+#include "eir_sprite_ref_component.h"
+#include "eir_motion_param_component.h"
 
+typedef int eir_gme_entity_flags_t;
 typedef int eir_gme_entity_t;
-#define EIR_GME_INVALID_ENTITY 0
+#define EIR_GME_INVALID_ENTITY -1
 
-EIR_KER_DEFINE_ARRAY_STRUCT(eir_gme_entity_t, eir_gme_entity_array_t)
+EIR_KER_DEFINE_ARRAY_STRUCT(eir_gme_entity_flags_t, eir_gme_entity_flags_array_t)
 
 typedef enum
 {
@@ -32,12 +31,13 @@ typedef enum
 
 typedef struct
 {
-   eir_gme_entity_array_t entities;
+   eir_gme_entity_flags_array_t entities_flags;
+
    eir_gme_position_component_array_t positions;
    eir_gme_size_component_array_t sizes;
    eir_gme_color_component_array_t colors;
-   eir_handle_array_t sprite_ref_handles;
-   eir_phy_motion_param_array_t motion_params;
+   eir_gme_sprite_ref_component_array_t sprite_refs;
+   eir_gme_motion_param_component_array_t motion_params;
    eir_gme_aabb_component_array_t aabbs;
    eir_gme_camera_component_array_t cameras;
    eir_gme_physic_component_array_t physics;

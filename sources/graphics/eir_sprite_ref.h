@@ -8,7 +8,7 @@ typedef struct
 {
    eir_mth_vec2_t uv_offset;
    eir_mth_vec2_t uv_size;
-   eir_gfx_texture_t * texture;
+   const eir_gfx_texture_t * texture;
 } eir_gfx_sprite_ref_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_gfx_sprite_ref_t, eir_gfx_sprite_ref_array_t);

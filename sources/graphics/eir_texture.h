@@ -7,7 +7,7 @@
 typedef struct
 {
    eir_gfx_api_texture_handle_t id;
-   eir_gfx_image_t * image;
+   const eir_gfx_image_t * image;
 } eir_gfx_texture_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_gfx_texture_t, eir_gfx_texture_array_t);

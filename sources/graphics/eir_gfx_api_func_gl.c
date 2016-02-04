@@ -37,7 +37,7 @@ void eir_gfx_api_release()
 {
 }
 
-eir_gfx_api_texture_handle_t eir_gfx_api_create_texture(eir_gfx_image_t * image)
+eir_gfx_api_texture_handle_t eir_gfx_api_create_texture(const eir_gfx_image_t * image)
 {
    eir_gfx_api_texture_handle_t texture = EIR_GFX_INVALID_TEXTURE_HANDLE;
 

@@ -42,29 +42,29 @@ void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
    {
       eir_gme_entity_t * entity = 0;
 
-      for (int index = 0; index < world->entities.used; ++index)
+      for (int index = 0; index < world->entities_flags.used; ++index)
       {
-	 if (world->entities.data[index] & eir_gme_component_type_motion_param)
+	 if (world->entities_flags.data[index] & eir_gme_component_type_motion_param)
 	 {
-	    eir_phy_motion_param_t * motion_param = &world->motion_params.data[index];
+	    eir_gme_motion_param_component_t * motion_param = &world->motion_params.data[index];
 	    eir_mth_vec2_t * position = world->positions.data[index].current;
             eir_mth_vec2_t new_position;
 
 	    eir_phy_proceed_euler_integration(
 	       position,
                &new_position,
-	       motion_param,
+	       &motion_param->data,
 	       dtime
 	       );
 
             position->x = new_position.x;
             position->y = new_position.y;
-            if (world->entities.data[index] & eir_gme_component_type_aabb)
+            if (world->entities_flags.data[index] & eir_gme_component_type_aabb)
             {
                eir_gme_aabb_component_t * aabb_comp_1 = &world->aabbs.data[index];
                eir_gme_position_component_t * position_comp_1 = &world->positions.data[index];
                
-               for (int index2 = 0; index2 < world->entities.used; ++index2)
+               for (int index2 = 0; index2 < world->entities_flags.used; ++index2)
                {
                   eir_phy_update_aabb_component(aabb_comp_1, position_comp_1);
                   
@@ -77,7 +77,7 @@ void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
                   
                   if (
                         index != index2
-                        && world->entities.data[index2] & eir_gme_component_type_aabb
+                        && world->entities_flags.data[index2] & eir_gme_component_type_aabb
                      )
                   {
                      eir_gme_aabb_component_t * aabb_comp_2 = &world->aabbs.data[index2];
@@ -91,8 +91,8 @@ void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, float dtime)
                      if (eir_phy_check_aabb_intersection(&aabb_1, &aabb_2))
                      {
                         if (
-                              world->entities.data[index2] & eir_gme_component_type_physic
-                              && world->entities.data[index] & eir_gme_component_type_physic
+                              world->entities_flags.data[index2] & eir_gme_component_type_physic
+                              && world->entities_flags.data[index] & eir_gme_component_type_physic
                               && world->physics.data[index2].weight > 0.0f
                               && world->physics.data[index].weight > 0.0f
 

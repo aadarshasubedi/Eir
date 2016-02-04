@@ -8,7 +8,7 @@
 void eir_gfx_api_init();
 void eir_gfx_api_release();
 
-eir_gfx_api_texture_handle_t eir_gfx_api_create_texture(eir_gfx_image_t * image);
+eir_gfx_api_texture_handle_t eir_gfx_api_create_texture(const eir_gfx_image_t * image);
 void eir_gfx_api_load_sprite_shaders(eir_gfx_env_t * gfx_env);
 void eir_gfx_api_load_text_shaders(eir_gfx_env_t * gfx_env);
 void eir_gfx_api_load_rect_shaders(eir_gfx_env_t * gfx_env);

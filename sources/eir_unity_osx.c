@@ -1,5 +1,3 @@
-// TODO: rename this file in eir_unity_osx.c
-
 #include "maths/eir_mth_func.c"
 #include "physics/eir_phy_func.c"
 #include "physics/eir_motion_func.c"
@@ -20,5 +18,3 @@
 #include "sound/eir_snd_api_func_sdl.c"
 #include "sound/eir_snd_func.c"
 #include "eir.c"
-//#include "main_osx.c" TODO: remove when all compile
-

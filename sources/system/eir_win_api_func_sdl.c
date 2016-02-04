@@ -5,12 +5,12 @@
 #define EIR_SYS_PAD_MIN_ABS_VALUE 32768
 #define EIR_SYS_PAD_DEAD_ZONE_THRESHOLD 8000
 
-static void eir_sys_process_button_state(eir_button_state_t * button, bool pressed)
+static void eir_sys_process_button_state(eir_gme_button_state_t * button, bool pressed)
 {
    button->pressed = pressed;
 }
 
-static void eir_sys_process_keyboard_event(eir_input_controller_t * controller, SDL_Event * sdl_event)
+static void eir_sys_process_keyboard_event(eir_gme_input_controller_t * controller, SDL_Event * sdl_event)
 {
    if (controller)
    {
@@ -18,23 +18,23 @@ static void eir_sys_process_keyboard_event(eir_input_controller_t * controller, 
 
       if (sdl_event->key.keysym.sym == SDLK_LEFT)
       {
-	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_LEFT_BUTTON_INDEX], pressed);
+	 eir_sys_process_button_state(&controller->buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX], pressed);
       }
       if (sdl_event->key.keysym.sym == SDLK_RIGHT)
       {
-	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_RIGHT_BUTTON_INDEX], pressed);
+	 eir_sys_process_button_state(&controller->buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX], pressed);
       }
       if (sdl_event->key.keysym.sym == SDLK_UP)
       {
-	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_UP_BUTTON_INDEX], pressed);
+	 eir_sys_process_button_state(&controller->buttons[EIR_GME_MOVE_UP_BUTTON_INDEX], pressed);
       }
       if (sdl_event->key.keysym.sym == SDLK_DOWN)
       {
-	 eir_sys_process_button_state(&controller->buttons[EIR_MOVE_DOWN_BUTTON_INDEX], pressed);
+	 eir_sys_process_button_state(&controller->buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX], pressed);
       }
       if (sdl_event->key.keysym.sym == SDLK_SPACE)
       {
-	 eir_sys_process_button_state(&controller->buttons[EIR_JUMP_BUTTON_INDEX], pressed);
+	 eir_sys_process_button_state(&controller->buttons[EIR_GME_JUMP_BUTTON_INDEX], pressed);
       }
    }
 }
@@ -106,8 +106,8 @@ bool eir_sys_win_api_poll_all_events(eir_gme_env_t * gme_env, eir_sys_env_t * sy
    }
 
    SDL_Event sdl_event;
-   eir_input_controller_buffer_t * kbrd = &gme_env->input_controllers[EIR_KEYBOARD_CONTROLLER_INDEX];
-   eir_input_controller_t * new_kbrd = &kbrd->controllers[1];
+   eir_gme_input_controller_buffer_t * kbrd = &gme_env->input_controllers[EIR_GME_KEYBOARD_CONTROLLER_INDEX];
+   eir_gme_input_controller_t * new_kbrd = &kbrd->controllers[1];
 
    SDL_JoystickEventState(SDL_DISABLE);
 
@@ -128,10 +128,10 @@ bool eir_sys_win_api_poll_all_events(eir_gme_env_t * gme_env, eir_sys_env_t * sy
 
    SDL_JoystickUpdate();
 
-   for (int index = 0; index < EIR_TOTAL_INPUT_CONTROLLER; ++index)
+   for (int index = 0; index < EIR_GME_TOTAL_INPUT_CONTROLLER; ++index)
    {
-      eir_input_controller_buffer_t * pad = &gme_env->input_controllers[index + 1];
-      eir_input_controller_t * new_pad = &pad->controllers[1];
+      eir_gme_input_controller_buffer_t * pad = &gme_env->input_controllers[index + 1];
+      eir_gme_input_controller_t * new_pad = &pad->controllers[1];
       eir_sys_pad_handle_t pad_handle = sys_env->pad_handles[index];
 
       if (pad_handle == EIR_SYS_INVALID_PAD_HANDLE)
@@ -162,46 +162,46 @@ bool eir_sys_win_api_poll_all_events(eir_gme_env_t * gme_env, eir_sys_env_t * sy
       
       if (SDL_JoystickGetButton(pad_handle, 13))
       {
-	 eir_sys_process_button_state(&new_pad->buttons[EIR_MOVE_LEFT_BUTTON_INDEX], true);
+	 eir_sys_process_button_state(&new_pad->buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX], true);
       }
       else
       {
-	 eir_sys_process_button_state(&new_pad->buttons[EIR_MOVE_LEFT_BUTTON_INDEX], false);
+	 eir_sys_process_button_state(&new_pad->buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX], false);
       }
 
       if (SDL_JoystickGetButton(pad_handle, 14))
       {
-	 eir_sys_process_button_state(&new_pad->buttons[EIR_MOVE_RIGHT_BUTTON_INDEX], true);
+	 eir_sys_process_button_state(&new_pad->buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX], true);
       }
       else
       {
-	 eir_sys_process_button_state(&new_pad->buttons[EIR_MOVE_RIGHT_BUTTON_INDEX], false);
+	 eir_sys_process_button_state(&new_pad->buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX], false);
       }
 
       if (SDL_JoystickGetButton(pad_handle, 11))
       {
-	 eir_sys_process_button_state(&new_pad->buttons[EIR_MOVE_UP_BUTTON_INDEX], true);
+	 eir_sys_process_button_state(&new_pad->buttons[EIR_GME_MOVE_UP_BUTTON_INDEX], true);
       }
       else
       {
-	 eir_sys_process_button_state(&new_pad->buttons[EIR_MOVE_UP_BUTTON_INDEX], false);
+	 eir_sys_process_button_state(&new_pad->buttons[EIR_GME_MOVE_UP_BUTTON_INDEX], false);
       }
 
       if (SDL_JoystickGetButton(pad_handle, 12))
       {
-	 eir_sys_process_button_state(&new_pad->buttons[EIR_MOVE_DOWN_BUTTON_INDEX], true);
+	 eir_sys_process_button_state(&new_pad->buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX], true);
       }
       else
       {
-	 eir_sys_process_button_state(&new_pad->buttons[EIR_MOVE_DOWN_BUTTON_INDEX], false);
+	 eir_sys_process_button_state(&new_pad->buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX], false);
       }
       if (SDL_JoystickGetButton(pad_handle, 0))
       {
-         eir_sys_process_button_state(&new_pad->buttons[EIR_JUMP_BUTTON_INDEX], true);
+         eir_sys_process_button_state(&new_pad->buttons[EIR_GME_JUMP_BUTTON_INDEX], true);
       }
       else
       {
-         eir_sys_process_button_state(&new_pad->buttons[EIR_JUMP_BUTTON_INDEX], false);
+         eir_sys_process_button_state(&new_pad->buttons[EIR_GME_JUMP_BUTTON_INDEX], false);
       }
    }
    return true;

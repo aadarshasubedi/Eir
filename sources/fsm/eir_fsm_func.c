@@ -1,5 +1,4 @@
-#include "../eir.h"
-#include "../kernel/eir_ker_env.h"
+#include "eir_fsm_func.h"
 
 /********************************************************
  *
@@ -72,7 +71,7 @@ void eir_fsm_release_env(eir_fsm_env_t * env)
    }
 }
 
-void eir_fsm_set_max_state_machine_count(eir_fsm_env_t * env, size_t max_state_machine_count)
+void eir_fsm_set_state_machine_capacity(eir_fsm_env_t * env, size_t max_state_machine_count)
 {
    if (env)
    {

@@ -286,7 +286,7 @@ static eir_gfx_sprite_t * eir_gfx_add_sprite_to_batch(
    return sprite;
 }
 
-eir_handle_t eir_gfx_add_text(
+int eir_gfx_add_text(
    eir_gfx_env_t * gfx_env,
    const char * text,
    eir_mth_vec2_t * position,
@@ -296,17 +296,16 @@ eir_handle_t eir_gfx_add_text(
 {
    if (!gfx_env || !text || !position || !color)
    {
-      return EIR_INVALID_HANDLE;
+      return -1;
    }
 
-   // TODO: move this anywhere else !
    const float MAX_TEXTURE_WIDTH = 320;
    const float MAX_TEXTURE_HEIGHT = 320;
    const float MAX_TEXTURE_COL = 16;
    const float MAX_TEXTURE_ROW = 16;
 
    int text_len = strlen(text);
-   eir_handle_t batch_handle = EIR_INVALID_HANDLE;
+   int batch_handle = -1;
    eir_gfx_sprite_batch_t * batch = 0;
 
    EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->text_batches, batch, batch_handle);
@@ -369,11 +368,10 @@ static eir_gfx_rect_t * eir_gfx_add_rect(
    )
 {
    eir_gfx_rect_t * rect = 0;
-   eir_handle_t handle = EIR_INVALID_HANDLE;
 
    if (gfx_env && size && position && color)
    {
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->rect_batch.rects, rect, handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(gfx_env->rect_batch.rects, rect);
    }
    if (rect)
    {
@@ -518,17 +516,17 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 
 void eir_gfx_update_text(
    eir_gfx_env_t * gfx_env,
-   eir_handle_t text_handle,
+   int text_index,
    const char * text
    )
 {
-   if (!gfx_env || EIR_INVALID_HANDLE == text_handle || !text)
+   if (!gfx_env || 0 > text_index || !text)
    {
       return;
    }
 
    eir_gfx_sprite_batch_t * batch = 0;
-   EIR_KER_GET_ARRAY_ITEM(gfx_env->text_batches, text_handle, batch);
+   EIR_KER_GET_ARRAY_ITEM(gfx_env->text_batches, text_index, batch);
 
    if (!batch)
    {
@@ -606,32 +604,23 @@ void eir_gfx_update_text(
    }
 }
 
-void eir_gfx_set_max_image_count(eir_env_t * env, size_t max_count)
+void eir_gfx_set_image_capacity(eir_gfx_env_t * env, size_t max_count)
 {
    eir_gfx_env_t * gfx_env = 0;
 
    if (env)
    {
-      gfx_env = &(((eir_ker_env_t *)env->private)->gfx_env);
-      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gfx_image_t, gfx_env->images, max_count, eir_gfx_init_image);
+      EIR_KER_ALLOCATE_ARRAY_BIS(eir_gfx_image_t, env->images, max_count, eir_gfx_init_image);
    }
 }
 
-eir_handle_t eir_gfx_load_image(eir_env_t * env, const char * img_filename, bool must_invert_img)
+eir_gfx_image_t * eir_gfx_load_image(eir_gfx_env_t * env, const char * img_filename, bool must_invert_img)
 {
-   eir_gfx_env_t * gfx_env = 0;
+   eir_gfx_image_t * image = 0;
 
    if (env)
    {
-      gfx_env = &(((eir_ker_env_t *)env->private)->gfx_env);
-   }
-
-   eir_handle_t image_handle = EIR_INVALID_HANDLE;
-   eir_gfx_image_t * image = 0;
-
-   if (gfx_env)
-   {
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->images, image, image_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(env->images, image);
    }
    if (image)
    {
@@ -639,131 +628,84 @@ eir_handle_t eir_gfx_load_image(eir_env_t * env, const char * img_filename, bool
 
       if (!result)
       {
-	 EIR_KER_LOG_ERROR("cannot load image from file %d", img_filename);
+	 EIR_KER_LOG_ERROR("cannot load image from file %s", img_filename);
 	 eir_gfx_release_image(image);
-	 EIR_KER_FREE_ARRAY_LAST_RESERVED_SLOT(gfx_env->images);
-	 image_handle = EIR_INVALID_HANDLE;
+	 EIR_KER_FREE_ARRAY_LAST_RESERVED_SLOT(env->images);
+         image = 0;
       }
       else
       {
 	 EIR_KER_LOG_MESSAGE("%s has been loaded", img_filename);
       }
    }
-   return image_handle;
+   return image;
 }
 
-void eir_gfx_set_max_texture_count(eir_env_t * env, size_t max_count)
+void eir_gfx_set_texture_capacity(eir_gfx_env_t * env, size_t max_count)
 {
-   eir_gfx_env_t * gfx_env = 0;
-
    if (env)
    {
-      gfx_env = &(((eir_ker_env_t *)env->private)->gfx_env);
       EIR_KER_ALLOCATE_ARRAY_BIS(
 	 eir_gfx_texture_t,
-	 gfx_env->textures,
+	 env->textures,
 	 max_count,
 	 eir_gfx_init_texture
 	 );
    }
 }
 
-eir_handle_t eir_gfx_create_texture(eir_env_t * env, eir_handle_t img_handle)
+eir_gfx_texture_t * eir_gfx_create_texture(eir_gfx_env_t * env, const eir_gfx_image_t * image)
 {
-   eir_gfx_env_t * gfx_env = 0;
-
-   if (env)
-   {
-      gfx_env = &(((eir_ker_env_t *)env->private)->gfx_env);
-   }
-
-   eir_gfx_image_t * image = 0;
    eir_gfx_texture_t * texture = 0;
-   eir_handle_t texture_handle = EIR_INVALID_HANDLE;
 
-   if (gfx_env)
+   if (env && image)
    {
-      EIR_KER_GET_ARRAY_ITEM(gfx_env->images, img_handle, image);
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->textures, texture, texture_handle);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(env->textures, texture);
    }
    if (texture)
    {
-      if (image)
+      texture->id = eir_gfx_api_create_texture(image);
+      texture->image = image;
+      if (texture->id == EIR_GFX_INVALID_TEXTURE_HANDLE)
       {
-	 texture->id = eir_gfx_api_create_texture(image);
-	 texture->image = image;
-      }
-      if (!image || texture->id == EIR_GFX_INVALID_TEXTURE_HANDLE)
-      {
-	 if (!image)
-	 {
-	    EIR_KER_LOG_ERROR("cannot find image from handle %d", img_handle);
-	 }
-	 else if (texture->id == EIR_GFX_INVALID_TEXTURE_HANDLE)
-	 {
-	    EIR_KER_LOG_ERROR("cannot create texture from image handle %d", img_handle);
-	 }
-	 EIR_KER_LOG_ERROR("create texture from image %d has failed: release texture slot", img_handle);
+	 EIR_KER_LOG_ERROR("create texture from image has failed: release texture slot");
 	 eir_gfx_release_texture(texture);
-	 EIR_KER_FREE_ARRAY_LAST_RESERVED_SLOT(gfx_env->textures);
-	 texture_handle = EIR_INVALID_HANDLE;
+	 EIR_KER_FREE_ARRAY_LAST_RESERVED_SLOT(env->textures);
       }
    }
-   return texture_handle;
+   return texture;
 }
 
-void eir_gfx_set_max_sprite_ref_count(eir_env_t * env, size_t max_count)
+void eir_gfx_set_sprite_ref_capacity(eir_gfx_env_t * env, size_t max_count)
 {
    if (env)
    {
-      eir_gfx_env_t * gfx_env = &(((eir_ker_env_t *)env->private)->gfx_env);
-
       EIR_KER_ALLOCATE_ARRAY_BIS(
 	 eir_gfx_sprite_ref_t,
-	 gfx_env->sprites_ref,
+	 env->sprites_ref,
 	 max_count,
 	 eir_gfx_init_sprite_ref
 	 );
    } 
 }
 
-eir_handle_t eir_gfx_create_sprite_ref(
-   eir_env_t * env,
-   eir_handle_t texture_handle,
-   int img_x_offset,
-   int img_y_offset,
-   int img_width_offset,
-   int img_height_offset
-   )
+eir_gfx_sprite_ref_t * eir_gfx_create_sprite_ref(eir_gfx_env_t * env, const eir_gfx_texture_t * texture, int img_x_offset, int img_y_offset, int img_width_offset, int img_height_offset)
 {
-   eir_handle_t sprite_ref_handle = EIR_INVALID_HANDLE;
    eir_gfx_sprite_ref_t * sprite_ref = 0;
-   eir_gfx_texture_t * texture = 0;
-   eir_gfx_env_t * gfx_env = 0;
       
    if (env)
    {
-      gfx_env = &(((eir_ker_env_t *)env->private)->gfx_env);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(env->sprites_ref, sprite_ref);
    }
-   if (gfx_env)
+   if (sprite_ref && texture)
    {
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(gfx_env->sprites_ref, sprite_ref, sprite_ref_handle);
-   }
-   if (sprite_ref)
-   {
-      EIR_KER_LOG_MESSAGE("create sprite ref with texture %d", texture_handle)
       sprite_ref->uv_offset.x = (float)img_x_offset;
       sprite_ref->uv_offset.y = (float)img_y_offset;
       sprite_ref->uv_size.x = (float)img_width_offset;
       sprite_ref->uv_size.y = (float)img_height_offset;
-      EIR_KER_GET_ARRAY_ITEM(gfx_env->textures, texture_handle, texture);
-      if (!texture)
-      {
-	 EIR_KER_LOG_ERROR("cannot find texture %d in textures array", texture_handle);
-      }
       sprite_ref->texture = texture;
    }
-   return sprite_ref_handle;
+   return sprite_ref;
 }
 
 void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t * world)
@@ -772,14 +714,14 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
    if (gfx_env && world)
    {
       size_t needed_batch_count = 0;
-      eir_gme_entity_t * entity = 0;
+      eir_gme_entity_flags_t * entity = 0;
 
-      EIR_KER_LOG_MESSAGE("%d entities found", world->entities.used);
+      EIR_KER_LOG_MESSAGE("%d entities found", world->entities_flags.used);
 
-      for (int i = 0; i < world->entities.used; ++i)
+      for (int i = 0; i < world->entities_flags.used; ++i)
       {
-	 EIR_KER_LOG_MESSAGE("entity %d flags = %d", i, world->entities.data[i]);
-	 if ((world->entities.data[i] & eir_gme_component_type_sprite) == eir_gme_component_type_sprite)
+	 EIR_KER_LOG_MESSAGE("entity %d flags = %d", i, world->entities_flags.data[i]);
+	 if (world->entities_flags.data[i] & eir_gme_component_type_sprite)
 	 {
 	    EIR_KER_LOG_MESSAGE("entity %d has sprite", i);
 
@@ -787,7 +729,7 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 
 	    for (j = 0; j < i; ++j)
 	    {
-	       if (world->sprite_ref_handles.data[i] == world->sprite_ref_handles.data[j])
+	       if (world->sprite_refs.data[i].ptr == world->sprite_refs.data[j].ptr)
 	       {
 		  break;
 	       }
@@ -812,34 +754,22 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	 eir_gfx_init_sprite_batch
 	 );
 
-      for (int entity_index = 0; entity_index < world->entities.used; ++entity_index)
+      for (int entity_index = 0; entity_index < world->entities_flags.used; ++entity_index)
       {
-	 EIR_KER_GET_ARRAY_ITEM(world->entities, entity_index, entity);
+	 EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity_index, entity);
 	 if (entity && ((*entity) & eir_gme_component_type_sprite))
 	 {
 	    int batch_item_count = 1;
-	    eir_handle_t * sprite_ref_handle_ptr = 0;
-	    eir_handle_t sprite_ref_handle = EIR_INVALID_HANDLE;
+	    eir_gme_sprite_ref_component_t * sprite_ref_component = 0;
 
-	    EIR_KER_GET_ARRAY_ITEM(world->sprite_ref_handles, entity_index, sprite_ref_handle_ptr);
-
-	    if (sprite_ref_handle_ptr)
+	    EIR_KER_GET_ARRAY_ITEM(world->sprite_refs, entity_index, sprite_ref_component);
+	    if (sprite_ref_component)
 	    {
-	       sprite_ref_handle = *sprite_ref_handle_ptr;
-	    }
-	    if (sprite_ref_handle != EIR_INVALID_HANDLE)
-	    {
-	       eir_gfx_sprite_ref_t * sprite_ref = 0;
+	       eir_gfx_sprite_ref_t * sprite_ref = sprite_ref_component->ptr;
 	       
-	       EIR_KER_GET_ARRAY_ITEM(
-		  gfx_env->sprites_ref,
-		  sprite_ref_handle,
-		  sprite_ref
-		  );
-
 	       if (!sprite_ref)
 	       {
-		  EIR_KER_LOG_ERROR("cannot get sprite ref %d", sprite_ref_handle);
+		  EIR_KER_LOG_ERROR("cannot get sprite from entity %d", entity_index);
 		  continue;
 	       }
 
@@ -864,23 +794,24 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	       if (!batch)
 	       {
 		  int sibling_entity_index = entity_index + 1;
-		  eir_handle_t * sibling_sprite_ref_handle_ptr = 0;
+		  eir_gme_sprite_ref_component_t * sibling_sprite_ref_component = 0;
+
 		  EIR_KER_GET_ARRAY_ITEM(
-		     world->sprite_ref_handles,
+		     world->sprite_refs,
 		     sibling_entity_index,
-		     sibling_sprite_ref_handle_ptr
+		     sibling_sprite_ref_component
 		     );
 		  
-		  while (sibling_sprite_ref_handle_ptr)
+		  while (sibling_sprite_ref_component)
 		  {
-		     if (*sibling_sprite_ref_handle_ptr == sprite_ref_handle)
+		     if (sibling_sprite_ref_component->ptr != 0 && sprite_ref_component->ptr == sprite_ref)
 		     {
 			++batch_item_count;
 		     }
 		     EIR_KER_GET_ARRAY_ITEM(
-			world->sprite_ref_handles,
+			world->sprite_refs,
 			++sibling_entity_index,
-			sibling_sprite_ref_handle_ptr
+			sibling_sprite_ref_component
 			);
 		  }
 		  batch = eir_gfx_create_sprite_batch(gfx_env, batch_item_count);
@@ -937,15 +868,14 @@ void eir_gfx_generate_all_batches(eir_gfx_env_t * gfx_env, const eir_gme_world_t
 	 }
       }
 
-      for (int entity_index = 0; entity_index < world->entities.used; ++entity_index)
+      for (int entity_index = 0; entity_index < world->entities_flags.used; ++entity_index)
       {
-	 EIR_KER_GET_ARRAY_ITEM(world->entities, entity_index, entity);
-
+	 EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity_index, entity);
 	 if (entity && ((*entity) & eir_gme_component_type_aabb))
 	 {
 	    eir_gme_aabb_component_t * aabb = 0;
-            EIR_KER_GET_ARRAY_ITEM(world->aabbs, entity_index, aabb);
 
+            EIR_KER_GET_ARRAY_ITEM(world->aabbs, entity_index, aabb);
 	    if (aabb)
 	    {
 	       eir_gfx_color_t color;

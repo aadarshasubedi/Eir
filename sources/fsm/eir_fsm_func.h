@@ -5,7 +5,7 @@
 
 void eir_fsm_init_env(eir_fsm_env_t * env);
 void eir_fsm_release_env(eir_fsm_env_t * env);
-void eir_fsm_set_max_state_machine_count(eir_fsm_env_t * env, size_t max_state_machine_count);
+void eir_fsm_set_state_machine_capacity(eir_fsm_env_t * env, size_t max_state_machine_count);
 eir_fsm_state_machine_t * eir_fsm_create_state_machine(eir_fsm_env_t * env, size_t max_state_count, void * user_data);
 eir_fsm_state_t * eir_fsm_create_state(eir_fsm_state_machine_t * fsm);
 void eir_fsm_set_state_validate_func(eir_fsm_state_t * state, eir_fsm_validate_state_t validate_func);

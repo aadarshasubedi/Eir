@@ -12,6 +12,8 @@ typedef struct
    eir_gme_aabb_component_t * target;
    eir_gfx_rect_t * win_rect;
    float win_scale;
+   int viewport_w;
+   int viewport_h;
 } eir_gme_camera_component_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_gme_camera_component_t, eir_gme_camera_component_array_t)
