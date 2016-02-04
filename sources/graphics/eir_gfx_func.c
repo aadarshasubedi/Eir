@@ -423,28 +423,17 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	 }
 	 else if (batch->modified)
 	 {
-	    glBindVertexArray(batch->vao);
-	    glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
+	    eir_gfx_api_bind_vertex_array(batch->vao);
+	    eir_gfx_api_bind_array_buffer(batch->vbo);
 	    eir_gfx_api_set_sprite_buffer_data(batch);
-	    glBindVertexArray(0);
+	    eir_gfx_api_unbind_vertex_array();
 	 }
-	 glBindTexture(GL_TEXTURE_2D, batch->texture->id); // TODO: put in api func file !
-	 glUseProgram(batch->program); // TODO: put in the api func file !
-	 glUniformMatrix4fv(
-	    glGetUniformLocation(batch->program, "pmat"),
-	    1,
-	    GL_FALSE,
-	    &gfx_env->projection.values[0][0]
-	    );
-         glUniformMatrix4fv(
-	    glGetUniformLocation(batch->program, "vmat"),
-	    1,
-	    GL_FALSE,
-	    &gfx_env->view.values[0][0]
-	    );
-
+	 eir_gfx_api_bind_texture(batch->texture->id);
+	 eir_gfx_api_use_program(batch->program);
+         eir_gfx_api_set_program_mat4("pmat", batch->program, &gfx_env->projection);
+         eir_gfx_api_set_program_mat4("vmat", batch->program, &gfx_env->view);
 	 eir_gfx_api_draw_sprite_batch(batch);
-	 glUseProgram(0); // TODO: put in api func file !
+         eir_gfx_api_unuse_program();
       }
    }
    for (int index = 0; index < gfx_env->text_batches.used; ++index)
@@ -457,59 +446,38 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 	    eir_gfx_api_build_text_batch(gfx_env, batch);
 	 }
 	 else if (batch->modified)
-	 {
-	    glBindVertexArray(batch->vao);
-	    glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
+         {
+            eir_gfx_api_bind_vertex_array(batch->vao);
+            eir_gfx_api_bind_array_buffer(batch->vbo);
 	    eir_gfx_api_set_sprite_buffer_data(batch);
-	    glBindVertexArray(0);
+            eir_gfx_api_unbind_vertex_array();
 	 }
-	 glBindTexture(GL_TEXTURE_2D, batch->texture->id); // TODO: put in api func file !
-	 glUseProgram(batch->program); // TODO: put in the api func file !
-	 glUniformMatrix4fv(
-	    glGetUniformLocation(batch->program, "pmat"),
-	    1,
-	    GL_FALSE,
-	    &gfx_env->projection.values[0][0]
-	    );
-         glUniformMatrix4fv(
-	    glGetUniformLocation(batch->program, "vmat"),
-	    1,
-	    GL_FALSE,
-	    &id_mat.values[0][0]
-	    );
+	 eir_gfx_api_bind_texture(batch->texture->id);
+	 eir_gfx_api_use_program(batch->program);
+         eir_gfx_api_set_program_mat4("pmat", batch->program, &gfx_env->projection);
+         eir_gfx_api_set_program_mat4("vmat", batch->program, &id_mat);
 	 eir_gfx_api_draw_sprite_batch(batch);
-	 glUseProgram(0); // TODO: put in api func file !
+         eir_gfx_api_unuse_program();
       }
    }
    if (0 < gfx_env->rect_batch.rects.used)
    {
       if (!gfx_env->rect_batch.built)
       {
-	 eir_gfx_api_build_rect_batch(gfx_env, &gfx_env->rect_batch); // TODO: to declare/implement
+	 eir_gfx_api_build_rect_batch(gfx_env, &gfx_env->rect_batch);
       }
       else if (gfx_env->rect_batch.modified)
       {
-	 glBindVertexArray(gfx_env->rect_batch.vao);
-	 glBindBuffer(GL_ARRAY_BUFFER, gfx_env->rect_batch.vbo);
-	 eir_gfx_api_set_rect_buffer_data(&gfx_env->rect_batch); // TODO: to declare/implement
-	 glBindVertexArray(0);
+         eir_gfx_api_bind_vertex_array(gfx_env->rect_batch.vao);
+         eir_gfx_api_bind_array_buffer(gfx_env->rect_batch.vbo);
+	 eir_gfx_api_set_rect_buffer_data(&gfx_env->rect_batch);
+         eir_gfx_api_unbind_vertex_array();
       }
-      glUseProgram(gfx_env->rect_batch.program); // TODO: put in the api func file !
-      glUniformMatrix4fv(
-	    glGetUniformLocation(gfx_env->rect_batch.program, "rect_pmat"),
-	    1,
-	    GL_FALSE,
-	    &gfx_env->projection.values[0][0]
-	    );
-      glUniformMatrix4fv(
-	    glGetUniformLocation(gfx_env->rect_batch.program, "rect_vmat"),
-	    1,
-	    GL_FALSE,
-	    &gfx_env->view.values[0][0]
-	    );
-
-      eir_gfx_api_draw_rect_batch(&gfx_env->rect_batch); // TODO: to declare/implement
-      glUseProgram(0); // TODO: put in api func file !
+      eir_gfx_api_use_program(gfx_env->rect_batch.program);
+      eir_gfx_api_set_program_mat4("rect_pmat", gfx_env->rect_batch.program, &gfx_env->projection);
+      eir_gfx_api_set_program_mat4("rect_vmat", gfx_env->rect_batch.program, &gfx_env->view);
+      eir_gfx_api_draw_rect_batch(&gfx_env->rect_batch);
+      eir_gfx_api_unuse_program();
    }
    eir_gfx_api_check_for_error();
 }

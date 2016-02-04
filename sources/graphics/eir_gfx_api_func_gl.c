@@ -69,6 +69,41 @@ eir_gfx_api_texture_handle_t eir_gfx_api_create_texture(const eir_gfx_image_t * 
    return texture;
 }
 
+void eir_gfx_api_bind_texture(eir_gfx_api_texture_handle_t texture_handle)
+{
+   glBindTexture(GL_TEXTURE_2D, texture_handle);
+}
+
+void eir_gfx_api_bind_vertex_array(eir_gfx_api_vao_handle_t vao_handle)
+{
+   glBindVertexArray(vao_handle);
+}
+
+void eir_gfx_api_bind_array_buffer(eir_gfx_api_vbo_handle_t vbo_handle)
+{
+   glBindBuffer(GL_ARRAY_BUFFER, vbo_handle);
+}
+
+void eir_gfx_api_unbind_vertex_array()
+{
+   glBindVertexArray(0);
+}
+
+void eir_gfx_api_use_program(eir_gfx_api_program_handle_t program_handle)
+{
+   glUseProgram(program_handle);
+}
+
+void eir_gfx_api_unuse_program()
+{
+   glUseProgram(0);
+}
+
+void eir_gfx_api_set_program_mat4(const char * var_name, eir_gfx_api_program_handle_t program_handle, const eir_mth_mat4_t * m)
+{
+   glUniformMatrix4fv(glGetUniformLocation(program_handle, var_name), 1, GL_FALSE, &m->values[0][0]);
+}
+
 void eir_gfx_api_load_sprite_shaders(eir_gfx_env_t * gfx_env)
 {
    if (!gfx_env)

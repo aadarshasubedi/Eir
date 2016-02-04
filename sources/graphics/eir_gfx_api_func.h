@@ -9,6 +9,15 @@ void eir_gfx_api_init();
 void eir_gfx_api_release();
 
 eir_gfx_api_texture_handle_t eir_gfx_api_create_texture(const eir_gfx_image_t * image);
+
+void eir_gfx_api_bind_texture(eir_gfx_api_texture_handle_t texture_handle);
+void eir_gfx_api_bind_vertex_array(eir_gfx_api_vao_handle_t vao_handle);
+void eir_gfx_api_bind_array_buffer(eir_gfx_api_vbo_handle_t vbo_handle);
+void eir_gfx_api_unbind_vertex_array();
+void eir_gfx_api_use_program(eir_gfx_api_program_handle_t program_handle);
+void eir_gfx_api_unuse_program();
+void eir_gfx_api_set_program_mat4(const char * var_name, eir_gfx_api_program_handle_t program_handle, const eir_mth_mat4_t * m);
+
 void eir_gfx_api_load_sprite_shaders(eir_gfx_env_t * gfx_env);
 void eir_gfx_api_load_text_shaders(eir_gfx_env_t * gfx_env);
 void eir_gfx_api_load_rect_shaders(eir_gfx_env_t * gfx_env);

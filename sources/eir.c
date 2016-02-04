@@ -2,10 +2,10 @@
  *
  * TASKS:
  *
- *      - fix all TODO flags in code
- *      - fix jump
- *      - increase performance by update only modified batch (currently all batch are updated)
- *      - add real texture font manager to stock texture size and cell size anywhere else than in the add_text function 
+ *    - fix jump
+ *    - increase performance by update only modified batch (currently all batch are updated)
+ *    - add real texture font manager to stock texture size and cell size anywhere else than in the add_text function
+ *		- change add_text return type and update_text parameter type to manipulate created text
  */
 
 
