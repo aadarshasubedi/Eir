@@ -507,8 +507,6 @@ void eir_gfx_update_text(
    eir_mth_vec2_t size;
    eir_gfx_color_t color;
 
-   // TODO get attributes values from first text sprite element
-
    position.x = batch->sprites.data[0].position.x;
    position.y = batch->sprites.data[0].position.y;
    size.x = batch->sprites.data[0].size.x;
