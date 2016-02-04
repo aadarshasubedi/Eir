@@ -2,7 +2,9 @@
  *
  * TASKS:
  *
- *    - fix jump
+ *    - set a max height for jump
+ *		- create state jump_down triggered when player reached max height or collide with another physical object
+ *
  *    - increase performance by update only modified batch (currently all batch are updated)
  *    - add real texture font manager to stock texture size and cell size anywhere else than in the add_text function
  *		- change add_text return type and update_text parameter type to manipulate created text
