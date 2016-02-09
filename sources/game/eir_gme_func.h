@@ -18,6 +18,7 @@ eir_gme_motion_param_component_t * eir_gme_set_entity_acceleration(eir_gme_world
 eir_gme_aabb_component_t * eir_gme_set_entity_aabb(eir_gme_world_t * world, eir_gme_entity_t entity, float x, float y, float width, float height);
 eir_gme_camera_component_t * eir_gme_set_entity_camera(eir_gme_world_t * world, eir_gme_entity_t entity, float win_scale, int viewport_w, int viewport_h);
 eir_gme_physic_component_t * eir_gme_set_entity_physic(eir_gme_world_t * world, eir_gme_entity_t entity, float weight);
+eir_gme_direction_component_t * eir_gme_set_entity_direction(eir_gme_world_t * world, eir_gme_entity_t entity, eir_gme_direction_t direction);
 
 void eir_gme_set_active_camera(eir_gme_world_t * world, eir_gme_entity_t entity);
 void eir_gme_set_active_world(eir_gme_env_t * env, eir_gme_world_t * world);

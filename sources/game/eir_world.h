@@ -9,6 +9,7 @@
 #include "eir_physic_component.h"
 #include "eir_sprite_ref_component.h"
 #include "eir_motion_param_component.h"
+#include "eir_direction_component.h"
 
 typedef int eir_gme_entity_flags_t;
 typedef int eir_gme_entity_t;
@@ -26,7 +27,8 @@ typedef enum
    eir_gme_component_type_motion_param = 1 << 4,
    eir_gme_component_type_aabb = 1 << 5,
    eir_gme_component_type_camera = 1 << 6,
-   eir_gme_component_type_physic = 1 << 7
+   eir_gme_component_type_physic = 1 << 7,
+	eir_gme_component_type_direction = 1 << 8
 } eir_gme_component_type;
 
 typedef struct
@@ -41,6 +43,7 @@ typedef struct
    eir_gme_aabb_component_array_t aabbs;
    eir_gme_camera_component_array_t cameras;
    eir_gme_physic_component_array_t physics;
+	eir_gme_direction_component_array_t directions;
 
    eir_gme_camera_component_t * curr_camera;
 } eir_gme_world_t;

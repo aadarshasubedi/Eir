@@ -21,6 +21,7 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->aabbs);
       EIR_KER_INIT_ARRAY(world->cameras);
       EIR_KER_INIT_ARRAY(world->physics);
+		EIR_KER_INIT_ARRAY(world->directions);
    }
 }
 
@@ -37,6 +38,7 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->aabbs);
       EIR_KER_FREE_ARRAY(world->cameras);
       EIR_KER_FREE_ARRAY(world->physics);
+		EIR_KER_FREE_ARRAY(world->directions);
    }
 }
 
@@ -175,9 +177,22 @@ static void eir_gme_init_physic(eir_gme_physic_component_t * physic)
    }
 }
 
-static void eir_gme_release_weight(eir_gme_physic_component_t * physic)
+static void eir_gme_release_physic(eir_gme_physic_component_t * physic)
 {
    eir_gme_init_physic(physic);
+}
+
+static void eir_gme_init_direction(eir_gme_direction_component_t * direction)
+{
+	if (direction)
+	{
+		direction->value = EIR_GME_DIRECTION_UNKNOWN;
+	}
+}
+
+static void eir_gme_release_direction(eir_gme_direction_component_t * direction)
+{
+	eir_gme_init_direction(direction);
 }
 
 static void eir_gme_init_button_state(eir_gme_button_state_t * button_state)
@@ -322,6 +337,7 @@ eir_gme_world_t * eir_gme_create_world(eir_gme_env_t * env, size_t max_entity_co
       EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_aabb_component_t, world->aabbs, max_entity_count, eir_gme_init_aabb);
       EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_camera_component_t, world->cameras, max_entity_count, eir_gme_init_camera);
       EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_physic_component_t, world->physics, max_entity_count, eir_gme_init_physic);
+		EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_direction_component_t, world->directions, max_entity_count, eir_gme_init_direction);
       world->curr_camera = 0;
    }
    return world;
@@ -342,6 +358,7 @@ eir_gme_entity_t eir_gme_create_world_entity(eir_gme_world_t * world)
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->aabbs, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->cameras, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->physics, entity_handle);
+		EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->directions, entity_handle);
    }
    return entity_handle;
 }
@@ -539,6 +556,28 @@ eir_gme_physic_component_t * eir_gme_set_entity_physic(eir_gme_world_t * world, 
       EIR_KER_LOG_ERROR("cannot find entity %d or components in array", entity);
    }
    return physic_component;
+}
+
+eir_gme_direction_component_t * eir_gme_set_entity_direction(eir_gme_world_t * world, eir_gme_entity_t entity, eir_gme_direction_t direction)
+{
+	eir_gme_entity_flags_t * entity_flags = 0;
+	eir_gme_direction_component_t * direction_component = 0;
+
+	if (world)
+	{
+		EIR_KER_GET_ARRAY_ITEM(world->directions, entity, direction_component);
+		EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
+	}
+	if (entity_flags && direction_component)
+	{
+		(*entity_flags) |= eir_gme_component_type_direction;
+		direction_component->value = direction;
+	}
+	else
+	{
+      EIR_KER_LOG_ERROR("cannot find entity %d or components in array", entity);
+	}
+	return direction_component;
 }
 
 void eir_gme_set_active_camera(eir_gme_world_t * world, eir_gme_entity_t entity)
