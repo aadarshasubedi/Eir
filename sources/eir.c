@@ -2,16 +2,21 @@
  *
  * TASKS:
  *
- *		- implement based phyisical attack with global cooldown
- *		- implement navigation zone
+ *		- re design object rendering passing by push and pull function to add renderable object :
+ *			- add static batch type for all entity without state component (like background and other non modifiable and movable object)
+ *			- add dynamic batch type for state component entity
+ *			- add batch group (only logical) creation (by user)
+ *			- add shorcut to display / hide group
+ *			- add push to group function
+ *			- add pull from group function (only available for dynamic object)
+ *    - finish based melee attack implementation
+ *		- increase epsilon direction value
  *		- do not load and create texture for each new text batch : init once and use it many times !
- *		- fix indentation in eir.c
- *		- display player velocity in rendering text to check left stick values compare to dpad and keyboard
+ *		- fix files indentation
  *    - increase performance by update only modified batch (currently all batch are updated)
  *    - add real texture font manager to stock texture size and cell size anywhere else than in the add_text function
  *		- change add_text return type and update_text parameter type to manipulate created text
  */
-
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -64,6 +69,7 @@ typedef struct
    eir_fsm_state_machine_t * fsm;
 	eir_gme_direction_component_t * direction_component;
 	eir_gme_motion_param_component_t * motion_param_component;
+	eir_gme_based_melee_attack_component_t * based_melee_attack_component;
 } player_t;
 
 typedef struct
@@ -326,6 +332,7 @@ static bool validate_idle_state(void * user_data)
 	    && !player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
 		 && !player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
 	    && !player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
+	    && !player->keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
 	    )
 	 {
 	    result = true;
@@ -337,6 +344,7 @@ static bool validate_idle_state(void * user_data)
 	    && !player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
 	    && !player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
 	    && !player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
+	    && !player->pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
 	    )
 	 {
 	    result = true;
@@ -396,6 +404,64 @@ static bool validate_move_state(void * user_data)
       }
    }
    return result;
+}
+
+static bool validate_prepare_based_melee_attack_state(void * user_data)
+{
+	bool result = false;
+
+	if (user_data)
+	{
+		player_t * player = (player_t *)user_data;
+
+		if (
+			player->keyboard_buffer
+			&& player->pad_buffer
+			&& !player->pad_buffer->controllers[1].is_connected
+			&& player->keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
+			)
+		{
+			result = true;
+		}
+		else if (
+			player->pad_buffer
+			&& player->pad_buffer->controllers[1].is_connected
+			&& player->pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
+			)
+		{
+			result = true;
+		}
+	}
+	return result;
+}
+
+static bool validate_release_based_melee_attack_state(void * user_data)
+{
+	bool result = false;
+
+	if (user_data)
+	{
+		player_t * player = (player_t *)user_data;
+
+		if (
+			player->keyboard_buffer
+			&& player->pad_buffer
+			&& !player->pad_buffer->controllers[1].is_connected
+			&& !player->keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
+			)
+		{
+			result = true;
+		}
+		else if (
+			player->pad_buffer
+			&& player->pad_buffer->controllers[1].is_connected
+			&& !player->pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
+			)
+		{
+			result = true;
+		}
+	}
+	return result;
 }
 
 static void update_idle_state(void * user_data)
@@ -479,6 +545,39 @@ static void update_move_state(void * user_data)
    }
 }
 
+static void update_prepare_based_melee_attack_state(void * user_data)
+{
+   if (user_data)
+   {
+      player_t * player = (player_t *)user_data;
+
+      eir_gme_set_entity_acceleration(
+			player->owner,
+			player->entity,
+			0.0f,
+			0.0f, 
+			PLAYER_SPEED,
+			PLAYER_FRICTION
+			);
+
+		// TODO: store current time in player for global cooldown and channel energy
+   }
+}
+
+static void update_release_based_melee_attack_state(void * user_data)
+{
+	if (user_data)
+	{
+		player_t * player = (player_t *)user_data;
+
+		// TODO: update AABB values using entity current position and orientation
+
+
+
+		// TODO: display AABB
+	}
+}
+
 int main()
 {
    // INIT ENV
@@ -519,6 +618,7 @@ int main()
    eir_gme_set_entity_camera(world, entity, 2.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
    eir_gme_set_entity_physic(world, entity, 1.0f);
 	eir_gme_direction_component_t * direction_cpt = eir_gme_set_entity_direction(world, entity, EIR_GME_DIRECTION_BOTTOM);
+	eir_gme_based_melee_attack_component_t * based_melee_att_cpt = eir_gme_set_entity_based_melee_attack(world, entity, 10, 0, 0, 64, 64, false);
    
    eir_gme_entity_t entity2 = eir_gme_create_world_entity(world);
 
@@ -558,27 +658,39 @@ int main()
    game.player.pad_buffer = eir_get_input_controller_buffer(gme_env, 1);
 	game.player.direction_component = direction_cpt;
 	game.player.motion_param_component = motion_cpt;
+	game.player.based_melee_attack_component = based_melee_att_cpt;
 
    // INIT STATE MACHINE
 
    eir_fsm_set_state_machine_capacity(fsm_env, 1);
 
-   eir_fsm_state_machine_t * fsm = eir_fsm_create_state_machine(fsm_env, 3, &game.player);
+   eir_fsm_state_machine_t * fsm = eir_fsm_create_state_machine(fsm_env, 10, &game.player);
    eir_fsm_state_t * idle_state = eir_fsm_create_state(fsm);
    eir_fsm_state_t * move_state = eir_fsm_create_state(fsm);
    eir_fsm_state_t * end_state = eir_fsm_create_state(fsm);
+	eir_fsm_state_t * prepare_based_melee_attack_state = eir_fsm_create_state(fsm);
+	eir_fsm_state_t * release_based_melee_attack_state = eir_fsm_create_state(fsm);
 
    eir_fsm_set_begin_state(fsm, idle_state);
    eir_fsm_set_end_state(fsm, end_state);
    
    eir_fsm_set_state_validate_func(idle_state, validate_idle_state);
    eir_fsm_set_state_validate_func(move_state, validate_move_state);
+	eir_fsm_set_state_validate_func(prepare_based_melee_attack_state, validate_prepare_based_melee_attack_state);
+	eir_fsm_set_state_validate_func(release_based_melee_attack_state, validate_release_based_melee_attack_state);
 
    eir_fsm_set_state_update_func(idle_state, update_idle_state);
    eir_fsm_set_state_update_func(move_state, update_move_state);
+	eir_fsm_set_state_update_func(prepare_based_melee_attack_state, update_prepare_based_melee_attack_state);
+	eir_fsm_set_state_update_func(release_based_melee_attack_state, update_release_based_melee_attack_state);
 
    eir_fsm_add_state_transition(idle_state, move_state);
    eir_fsm_add_state_transition(move_state, idle_state);
+	eir_fsm_add_state_transition(idle_state, prepare_based_melee_attack_state);
+	eir_fsm_add_state_transition(move_state, prepare_based_melee_attack_state);
+	eir_fsm_add_state_transition(prepare_based_melee_attack_state, release_based_melee_attack_state);
+	eir_fsm_add_state_transition(release_based_melee_attack_state, idle_state);
+	eir_fsm_add_state_transition(release_based_melee_attack_state, move_state);
 
    game.player.fsm = fsm;
 

@@ -22,6 +22,8 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->cameras);
       EIR_KER_INIT_ARRAY(world->physics);
 		EIR_KER_INIT_ARRAY(world->directions);
+		EIR_KER_INIT_ARRAY(world->based_melee_attacks);
+		EIR_KER_INIT_ARRAY(world->states);
    }
 }
 
@@ -39,6 +41,8 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->cameras);
       EIR_KER_FREE_ARRAY(world->physics);
 		EIR_KER_FREE_ARRAY(world->directions);
+		EIR_KER_FREE_ARRAY(world->based_melee_attacks);
+		EIR_KER_FREE_ARRAY(world->states);
    }
 }
 
@@ -195,6 +199,38 @@ static void eir_gme_release_direction(eir_gme_direction_component_t * direction)
 	eir_gme_init_direction(direction);
 }
 
+static void eir_gme_init_based_melee_attack(eir_gme_based_melee_attack_component_t * based_melee_attack)
+{
+	if (based_melee_attack)
+	{
+		based_melee_attack->damage_zone.position.x = 0.0f;
+		based_melee_attack->damage_zone.position.y = 0.0f;
+		based_melee_attack->damage_zone.size.x = 0.0f;
+		based_melee_attack->damage_zone.size.y = 0.0f;
+		based_melee_attack->damage = 0.0f;
+		based_melee_attack->active = false;
+	}
+}
+
+static void eir_gme_release_based_melee_attack(eir_gme_based_melee_attack_component_t * based_melee_attack)
+{
+	eir_gme_init_based_melee_attack(based_melee_attack);
+}
+
+static void eir_gme_init_state(eir_gme_state_component_t * state)
+{
+	if (state)
+	{
+		state->visible = true;
+		state->alive = true;
+	}
+}
+
+static void eir_gme_release_state(eir_gme_state_component_t * state)
+{
+	eir_gme_init_state(state);
+}
+
 static void eir_gme_init_button_state(eir_gme_button_state_t * button_state)
 {
    if (button_state)
@@ -213,7 +249,7 @@ static void eir_gme_init_input_controller(eir_gme_input_controller_t * input_con
       input_controller->left_stick_value_y = 0.0f;
       for (int button_index = 0; button_index < EIR_GME_TOTAL_INPUT_BUTTON_COUNT; ++button_index)
       {
-	 eir_gme_init_button_state(&input_controller->buttons[button_index]);
+			eir_gme_init_button_state(&input_controller->buttons[button_index]);
       }
    }
 }
@@ -227,7 +263,7 @@ static void eir_gme_init_input_controller_buffer(
    {
       for (int index = 0; index < EIR_GME_TOTAL_INPUT_CONTROLLER_BUFFER_COUNT; ++index)
       {
-	 eir_gme_init_input_controller(&controller_buffer->controllers[index], is_connected);
+			eir_gme_init_input_controller(&controller_buffer->controllers[index], is_connected);
       }
    }
 }
@@ -238,8 +274,8 @@ static void eir_gme_init_all_input_controller_buffer(eir_gme_env_t * env)
    {
       for (int index = 0; index < EIR_GME_TOTAL_INPUT_CONTROLLER; ++index)
       {
-	 bool is_connected = (index == 0 || index <= eir_sys_get_pad_count());
-	 eir_gme_init_input_controller_buffer(&env->input_controllers[index], is_connected);
+			bool is_connected = (index == 0 || index <= eir_sys_get_pad_count());
+			eir_gme_init_input_controller_buffer(&env->input_controllers[index], is_connected);
       }
    }
 }
@@ -265,37 +301,37 @@ void eir_gme_world_entity_update_linked_components(eir_gme_world_t * world)
    {
       for (int entity_index = 0; entity_index < world->entities_flags.used; ++entity_index)
       {
-	 eir_gme_entity_flags_t * entity_flags = &world->entities_flags.data[entity_index];
+			eir_gme_entity_flags_t * entity_flags = &world->entities_flags.data[entity_index];
 
-	 if (
-	    ((*entity_flags) & eir_gme_component_type_aabb)
-	    && ((*entity_flags) & eir_gme_component_type_position)
-	    )
-	 {
-	    eir_gme_aabb_component_t * aabb = &world->aabbs.data[entity_index];
-	    eir_gme_position_component_t * pos = &world->positions.data[entity_index];
-	    eir_gme_size_component_t * size = 0;
-	    eir_gme_camera_component_t * cam = 0;
+			if (
+				((*entity_flags) & eir_gme_component_type_aabb)
+				&& ((*entity_flags) & eir_gme_component_type_position)
+				)
+			{
+				eir_gme_aabb_component_t * aabb = &world->aabbs.data[entity_index];
+				eir_gme_position_component_t * pos = &world->positions.data[entity_index];
+				eir_gme_size_component_t * size = 0;
+				eir_gme_camera_component_t * cam = 0;
 
-	    aabb->x_offset += pos->initial.x;
-	    aabb->y_offset += pos->initial.y;
+				aabb->x_offset += pos->initial.x;
+				aabb->y_offset += pos->initial.y;
 
-	    if ((*entity_flags) & eir_gme_component_type_camera)
-	    {
-	       cam = &world->cameras.data[entity_index];
+				if ((*entity_flags) & eir_gme_component_type_camera)
+				{
+					cam = &world->cameras.data[entity_index];
 
-	       float size_x = aabb->width * cam->win_scale;
-	       float size_y = aabb->height * cam->win_scale;
-	       float position_x = aabb->x_offset + (aabb->width - size_x) * 0.5f;
-	       float position_y = aabb->y_offset + (aabb->height - size_y) * 0.5f;
+					float size_x = aabb->width * cam->win_scale;
+					float size_y = aabb->height * cam->win_scale;
+					float position_x = aabb->x_offset + (aabb->width - size_x) * 0.5f;
+					float position_y = aabb->y_offset + (aabb->height - size_y) * 0.5f;
 
-	       cam->position.x = -aabb->x_offset - aabb->width * 0.5f + (float)cam->viewport_w * 0.5f;
-	       cam->position.y = -aabb->y_offset - aabb->height * 0.5f + (float)cam->viewport_h * 0.5f;
-	       cam->prev_position.x = aabb->x_offset;
-	       cam->prev_position.y = aabb->y_offset;
-	       cam->target = aabb;
-	    }
-	 }
+					cam->position.x = -aabb->x_offset - aabb->width * 0.5f + (float)cam->viewport_w * 0.5f;
+					cam->position.y = -aabb->y_offset - aabb->height * 0.5f + (float)cam->viewport_h * 0.5f;
+					cam->prev_position.x = aabb->x_offset;
+					cam->prev_position.y = aabb->y_offset;
+					cam->target = aabb;
+				}
+			}
       }
    }
 }
@@ -338,6 +374,8 @@ eir_gme_world_t * eir_gme_create_world(eir_gme_env_t * env, size_t max_entity_co
       EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_camera_component_t, world->cameras, max_entity_count, eir_gme_init_camera);
       EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_physic_component_t, world->physics, max_entity_count, eir_gme_init_physic);
 		EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_direction_component_t, world->directions, max_entity_count, eir_gme_init_direction);
+		EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_based_melee_attack_component_t, world->based_melee_attacks, max_entity_count, eir_gme_init_based_melee_attack);
+		EIR_KER_ALLOCATE_ARRAY_BIS(eir_gme_state_component_t, world->states, max_entity_count, eir_gme_init_state);
       world->curr_camera = 0;
    }
    return world;
@@ -359,6 +397,8 @@ eir_gme_entity_t eir_gme_create_world_entity(eir_gme_world_t * world)
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->cameras, entity_handle);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->physics, entity_handle);
 		EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->directions, entity_handle);
+		EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->based_melee_attacks, entity_handle);
+		EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->states, entity_handle);
    }
    return entity_handle;
 }
@@ -578,6 +618,70 @@ eir_gme_direction_component_t * eir_gme_set_entity_direction(eir_gme_world_t * w
       EIR_KER_LOG_ERROR("cannot find entity %d or components in array", entity);
 	}
 	return direction_component;
+}
+
+eir_gme_based_melee_attack_component_t * eir_gme_set_entity_based_melee_attack(
+	eir_gme_world_t * world,
+	eir_gme_entity_t entity,
+	float damage,
+	float damage_zone_x,
+	float damage_zone_y,
+	float damage_zone_width,
+	float damage_zone_height,
+	bool active
+	)
+{
+	eir_gme_entity_flags_t * entity_flags = 0;
+	eir_gme_based_melee_attack_component_t * based_melee_attack_component = 0;
+
+	if (world)
+	{
+		EIR_KER_GET_ARRAY_ITEM(world->based_melee_attacks, entity, based_melee_attack_component);
+		EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
+	}
+	if (entity_flags && based_melee_attack_component)
+	{
+		(*entity_flags) |= eir_gme_component_type_based_melee_attack;
+		based_melee_attack_component->damage_zone.position.x = damage_zone_x;
+		based_melee_attack_component->damage_zone.position.y = damage_zone_y;
+		based_melee_attack_component->damage_zone.size.x = damage_zone_width;
+		based_melee_attack_component->damage_zone.size.y = damage_zone_height;
+		based_melee_attack_component->damage = damage;
+		based_melee_attack_component->active = active;
+	}
+	else
+	{
+      EIR_KER_LOG_ERROR("cannot find entity %d or components in array", entity);
+	}
+	return based_melee_attack_component;
+}
+
+eir_gme_state_component_t * eir_gme_set_entity_state(
+	eir_gme_world_t * world,
+	eir_gme_entity_t entity,
+	bool visible,
+	bool alive
+	)
+{
+	eir_gme_entity_flags_t * entity_flags = 0;
+	eir_gme_state_component_t * state_component = 0;
+
+	if (world)
+	{
+		EIR_KER_GET_ARRAY_ITEM(world->states, entity, state_component);
+		EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
+	}
+	if (entity_flags && state_component)
+	{
+		(*entity_flags) |= eir_gme_component_type_state;
+		state_component->visible = visible;
+		state_component->alive = alive;
+	}
+	else
+	{
+      EIR_KER_LOG_ERROR("cannot find entity %d or components in array", entity);
+	}
+	return state_component;
 }
 
 void eir_gme_set_active_camera(eir_gme_world_t * world, eir_gme_entity_t entity)

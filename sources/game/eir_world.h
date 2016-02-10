@@ -10,10 +10,13 @@
 #include "eir_sprite_ref_component.h"
 #include "eir_motion_param_component.h"
 #include "eir_direction_component.h"
+#include "eir_based_melee_attack_component.h"
+#include "eir_state_component.h"
 
 typedef int eir_gme_entity_flags_t;
 typedef int eir_gme_entity_t;
-#define EIR_GME_INVALID_ENTITY -1
+
+const int EIR_GME_INVALID_ENTITY = -1;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_gme_entity_flags_t, eir_gme_entity_flags_array_t)
 
@@ -28,7 +31,9 @@ typedef enum
    eir_gme_component_type_aabb = 1 << 5,
    eir_gme_component_type_camera = 1 << 6,
    eir_gme_component_type_physic = 1 << 7,
-	eir_gme_component_type_direction = 1 << 8
+	eir_gme_component_type_direction = 1 << 8,
+	eir_gme_component_type_based_melee_attack = 1 << 9,
+	eir_gme_component_type_state = 1 << 10
 } eir_gme_component_type;
 
 typedef struct
@@ -44,6 +49,8 @@ typedef struct
    eir_gme_camera_component_array_t cameras;
    eir_gme_physic_component_array_t physics;
 	eir_gme_direction_component_array_t directions;
+	eir_gme_based_melee_attack_component_array_t based_melee_attacks;
+	eir_gme_state_component_array_t states;
 
    eir_gme_camera_component_t * curr_camera;
 } eir_gme_world_t;
