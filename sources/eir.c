@@ -9,6 +9,7 @@
  *			- add shorcut to display / hide group
  *			- add push to group function
  *			- add pull from group function (only available for dynamic object)
+ *			- no game code in gfx files ! no include to game/eir_* file or using other game struct and func
  *    - finish based melee attack implementation
  *		- increase epsilon direction value
  *		- do not load and create texture for each new text batch : init once and use it many times !

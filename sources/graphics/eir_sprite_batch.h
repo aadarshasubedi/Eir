@@ -13,6 +13,7 @@ typedef struct
    eir_gfx_api_program_handle_t program;
    eir_gfx_sprite_array_t sprites;
    bool built;
+	bool modifiable;
    bool modified;
 } eir_gfx_sprite_batch_t;
 

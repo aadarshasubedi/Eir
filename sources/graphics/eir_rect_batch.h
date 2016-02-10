@@ -8,5 +8,6 @@ typedef struct
    eir_gfx_api_program_handle_t program;
    eir_gfx_rect_array_t rects;
    bool built;
+	bool modifiable;
    bool modified;
 } eir_gfx_rect_batch_t;
