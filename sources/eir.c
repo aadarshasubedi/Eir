@@ -2,6 +2,7 @@
  *
  * TASKS:
  *
+ *		- do not pass struct type in array allocation macro use sizeof trick to get struct size instead !
  *		- re design object rendering passing by push and pull function to add renderable object :
  *			- add static batch type for all entity without state component (like background and other non modifiable and movable object)
  *			- add dynamic batch type for state component entity

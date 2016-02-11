@@ -23,9 +23,5 @@ typedef unsigned int eir_gfx_api_shader_handle_t;
 #define EIR_GFX_INVALID_PROGRAM_HANDLE 0
 #endif
 
-typedef enum
-{
-   eir_gfx_primitive_type_unknown = 0,
-   eir_gfx_primitive_type_lines = 1,
-   eir_gfx_primitive_type_quads = 2
-} eir_gfx_primitive_type_t;
+typedef int eir_gfx_handle_t;
+#define EIR_GFX_INVALID_HANDLE -1

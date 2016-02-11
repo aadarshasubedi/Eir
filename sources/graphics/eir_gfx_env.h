@@ -5,16 +5,17 @@
 #include "eir_rect_batch.h"
 #include "eir_image.h"
 #include "eir_texture.h"
-#include "eir_sprite_ref.h"
+//#include "eir_sprite_ref.h"
 #include "../maths/eir_matrix.h"
 #include "eir_viewport.h"
 #include "eir_gfx_group.h"
 
+
 typedef struct
 {
    eir_gfx_image_array_t images;
-   eir_gfx_sprite_ref_array_t sprites_ref;
    eir_gfx_texture_array_t textures;
+   //eir_gfx_sprite_ref_array_t sprites_ref;
    
    //eir_gfx_sprite_batch_array_t text_batches;
    eir_gfx_api_shader_handle_t text_vert_shader;
