@@ -13,8 +13,7 @@ typedef struct
    eir_mth_vec2_t uv_offset;
    eir_mth_vec2_t uv_size;
    eir_gfx_color_t color;
-	struct eir_gfx_sprite_batch_t * batch;
-	bool visible;
+   struct eir_gfx_sprite_batch_t * batch;
 } eir_gfx_sprite_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_gfx_sprite_t, eir_gfx_sprite_array_t);

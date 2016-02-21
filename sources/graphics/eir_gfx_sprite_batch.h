@@ -1,9 +1,9 @@
 #pragma once
 
 #include "eir_gfx_types.h"
-#include "eir_sprite.h"
-#include "eir_texture.h"
-#include "../kernel/eir_array_macro.h"
+#include "eir_gfx_sprite.h"
+#include "eir_gfx_texture.h"
+#include "../kernel/eir_ker_array_macro.h"
 
 typedef struct
 {
@@ -12,9 +12,10 @@ typedef struct
    const eir_gfx_texture_t * texture;
    eir_gfx_api_program_handle_t program;
    eir_gfx_sprite_array_t sprites;
-   bool built;
-	bool modifiable;
-   bool modified;
+   eir_gfx_item_info_t info;
 } eir_gfx_sprite_batch_t;
 
-EIR_KER_DEFINE_ARRAY_STRUCT(eir_gfx_sprite_batch_t, eir_gfx_sprite_batch_array_t);
+EIR_KER_DEFINE_ARRAY_STRUCT(
+   eir_gfx_sprite_batch_t,
+   eir_gfx_sprite_batch_array_t
+   );

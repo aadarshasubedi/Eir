@@ -23,5 +23,15 @@ typedef unsigned int eir_gfx_api_shader_handle_t;
 #define EIR_GFX_INVALID_PROGRAM_HANDLE 0
 #endif
 
-typedef int eir_gfx_handle_t;
-#define EIR_GFX_INVALID_HANDLE -1
+typedef enum
+{
+   eir_gfx_item_flag_default           = 0,
+   eir_gfx_item_flag_editable          = 1 << 0,
+   eir_gfx_item_flag_use_screen_coord  = 1 << 1,
+   eir_gfx_item_flag_built             = 1 << 2,
+   eir_gfx_item_flag_visible           = 1 << 3,
+   eir_gfx_item_flag_added             = 1 << 4,
+   eir_gfx_item_flag_modified          = 1 << 5
+} eir_gfx_item_info_flag_t;
+
+typedef int eir_gfx_item_info_t;
