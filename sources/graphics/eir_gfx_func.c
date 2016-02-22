@@ -1040,7 +1040,40 @@ static void eir_gfx_render_sprite_batch(
    eir_gfx_sprite_batch_t * batch
    )
 {
-   // TODO
+   eir_mth_mat4_t id_mat;
+   eir_mth_set_identity_mat4(&id_mat);
+
+   if (batch)
+   {
+      if (!(batch->info & eir_gfx_item_flag_built))
+      {
+         eir_gfx_api_build_sprite_batch(gfx_env, batch);
+      }
+      else if (batch->info & eir_gfx_item_flag_modified)
+      {
+         eir_gfx_api_bind_vertex_array(batch->vao);
+         eir_gfx_api_bind_array_buffer(batch->vbo);
+         eir_gfx_api_set_sprite_buffer_data(batch);
+         eir_gfx_api_unbind_vertex_array();
+      }
+      eir_gfx_api_bind_texture(batch->texture->id);
+      eir_gfx_api_use_program(batch->program);
+      eir_gfx_api_set_program_mat4(
+         "pmat",
+         batch->program,
+         &gfx_env->projection
+         );
+      if (batch->info & eir_gfx_item_flag_use_screen_coord)
+      {
+         eir_gfx_api_set_program_mat4("vmat", batch->program, &id_mat);
+      }
+      else
+      {
+         eir_gfx_api_set_program_mat4("vmat", batch->program, &gfx_env->view);
+      }
+      eir_gfx_api_draw_sprite_batch(batch);
+      eir_gfx_api_unuse_program();
+   }
 }
 
 // ---------------------------------------------------------------------------
@@ -1049,7 +1082,40 @@ static void eir_gfx_render_text(
    eir_gfx_text_t * text
    )
 {
-   // TODO
+   eir_mth_mat4_t id_mat;
+   eir_mth_set_identity_mat4(&id_mat);
+
+   if (batch)
+   {
+      if (!(batch->info & eir_gfx_item_flag_built))
+      {
+         eir_gfx_api_build_text_batch(gfx_env, batch);
+      }
+      else if (batch->info & eir_gfx_item_flag_modified)
+      {
+         eir_gfx_api_bind_vertex_array(batch->vao);
+         eir_gfx_api_bind_array_buffer(batch->vbo);
+         eir_gfx_api_set_sprite_buffer_data(batch);
+         eir_gfx_api_unbind_vertex_array();
+      }
+      eir_gfx_api_bind_texture(batch->texture->id);
+      eir_gfx_api_use_program(batch->program);
+      eir_gfx_api_set_program_mat4(
+         "pmat",
+         batch->program,
+         &gfx_env->projection
+         );
+      if (batch->info & eir_gfx_item_flag_use_screen_coord)
+      {
+         eir_gfx_api_set_program_mat4("vmat", batch->program, &id_mat);
+      }
+      else
+      {
+         eir_gfx_api_set_program_mat4("vmat", batch->program, &gfx_env->view);
+      }
+      eir_gfx_api_draw_sprite_batch(batch);
+      eir_gfx_api_unuse_program();
+   }
 }
 
 // ---------------------------------------------------------------------------
@@ -1058,7 +1124,43 @@ static void eir_gfx_render_rect_batch(
    eir_gfx_rect_batch_t * batch
    )
 {
-   // TODO
+   eir_mth_mat4_t id_mat;
+   eir_mth_set_identity_mat4(&id_mat);
+
+   if (batch)
+   {
+      if (!(batch->info & eir_gfx_item_flag_built))
+      {
+         eir_gfx_api_build_rect_batch(gfx_env, batch);
+      }
+      else if (gfx_env->rect_batch.modified)
+      {
+         eir_gfx_api_bind_vertex_array(batch->vao);
+         eir_gfx_api_bind_array_buffer(batch->vbo);
+         eir_gfx_api_set_rect_buffer_data(batch);
+         eir_gfx_api_unbind_vertex_array();
+      }
+      eir_gfx_api_use_program(batch->program);
+      eir_gfx_api_set_program_mat4(
+         "rect_pmat",
+         batch->program,
+         &gfx_env->projection
+         );
+      if (batch->info & eir_gfx_item_flag_use_screen_coord)
+      {
+         eir_gfx_api_set_program_mat4("rect_vmat", batch->program, &id_mat);
+      }
+      else
+      {
+         eir_gfx_api_set_program_mat4(
+            "rect_vmat",
+            batch->program,
+            &gfx_env->view
+            );
+      }
+      eir_gfx_api_draw_rect_batch(rect_batch);
+      eir_gfx_api_unuse_program();
+   }
 }
 
 // ---------------------------------------------------------------------------
@@ -1176,7 +1278,7 @@ static void eir_gfx_generate_group_sprite_batches(
 }
 
 // ---------------------------------------------------------------------------
-static void eir_gfx_generate_group_text(
+static void eir_gfx_generate_group_texts(
    eir_gfx_env_t * env,
    eir_gfx_group_t * group
    )
