@@ -1,5 +1,5 @@
-#include "eir_image_api_func.h"
-#include "../system/eir_memory.h"
+#include "eir_gfx_image_api_func.h"
+#include "../system/eir_sys_memory.h"
 
 eir_gfx_image_t * eir_gfx_api_create_image(const char * filename, bool invert_image)
 {

@@ -1,7 +1,7 @@
 #include "eir_gfx_api_func.h"
-#include "../system/eir_file_system.h"
-#include "../kernel/eir_log.h"
-#include "eir_image_api_func.h"
+#include "../system/eir_sys_file_system.h"
+#include "../kernel/eir_ker_log.h"
+#include "eir_gfx_image_api_func.h"
 #include "eir_gfx_defines.h"
 
 static void eir_gfx_debug_log_sprite_batch(eir_gfx_sprite_batch_t * batch)
@@ -280,8 +280,8 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batc
 	 );
       glBindVertexArray(0);
       glUseProgram(0);
-      batch->built = true;
-      batch->modified = false;
+      batch->info |= eir_gfx_item_flag_built;
+      batch->info &= ~eir_gfx_item_flag_modified;
       batch->program = gfx_env->sprite_program;
       eir_gfx_debug_log_sprite_batch(batch);
    }
@@ -338,8 +338,8 @@ void eir_gfx_api_build_text_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batch_
 	 );
       glBindVertexArray(0);
       glUseProgram(0);
-      batch->built = true;
-      batch->modified = false;
+      batch->info |= eir_gfx_item_flag_built;
+      batch->info &= ~eir_gfx_item_flag_modified;
       batch->program = gfx_env->text_program;
       eir_gfx_debug_log_sprite_batch(batch);
    }
@@ -369,8 +369,8 @@ void eir_gfx_api_build_rect_batch(eir_gfx_env_t * gfx_env, eir_gfx_rect_batch_t 
 	 );
       glBindVertexArray(0);
       glUseProgram(0);
-      batch->built = true;
-      batch->modified = false;
+      batch->info |= eir_gfx_item_flag_built;
+      batch->info &= ~eir_gfx_item_flag_modified;
       batch->program = gfx_env->rect_program;
       eir_gfx_debug_log_rect_batch(batch);
    }

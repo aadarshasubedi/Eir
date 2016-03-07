@@ -1,8 +1,8 @@
 #pragma once
 
 #include "eir_gfx_types.h"
-#include "eir_image.h"
-#include "../kernel/eir_array_macro.h"
+#include "eir_gfx_image.h"
+#include "../kernel/eir_ker_array_macro.h"
 
 typedef struct
 {

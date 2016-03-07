@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include "eir_file_system.h"
-#include "eir_memory.h"
-#include "../kernel/eir_log.h"
+#include "eir_sys_file_system.h"
+#include "eir_sys_memory.h"
+#include "../kernel/eir_ker_log.h"
 
 bool eir_sys_read_file(const char * filename, bool binary, char ** buffer)
 {

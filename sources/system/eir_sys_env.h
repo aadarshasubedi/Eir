@@ -1,6 +1,6 @@
 #pragma once
 
-#include "eir_timer.h"
+#include "eir_sys_timer.h"
 #include "eir_sys_types.h"
 
 typedef struct

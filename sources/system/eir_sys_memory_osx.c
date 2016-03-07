@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "eir_memory.h"
+#include "eir_sys_memory.h"
 
 #ifdef EIR_LOG_MEMORY
 int eir_sys_allocated_elem_count = 0;

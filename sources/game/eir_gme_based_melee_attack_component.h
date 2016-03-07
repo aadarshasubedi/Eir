@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../physics/eir_aabb.h"
-#include "../kernel/eir_array_macro.h"
+#include "../physics/eir_phy_aabb.h"
+#include "../kernel/eir_ker_array_macro.h"
 
 typedef struct
 {

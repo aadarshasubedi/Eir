@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../kernel/eir_array_macro.h"
+#include "../kernel/eir_ker_array_macro.h"
 
 typedef int eir_gme_direction_t;
 
@@ -18,7 +18,7 @@ const float EIR_GME_DIRECTION_EPSILON_VALUE = 0.001f;
 
 typedef struct
 {
-	eir_gme_direction_t value;
+	eir_gme_direction_t direction;
 } eir_gme_direction_component_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_gme_direction_component_t, eir_gme_direction_component_array_t)

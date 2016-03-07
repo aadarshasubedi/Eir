@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../kernel/eir_array_macro.h"
+#include "../kernel/eir_ker_array_macro.h"
 #include "eir_fsm_struct.h"
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_fsm_state_machine_t, eir_fsm_state_machine_array_t);

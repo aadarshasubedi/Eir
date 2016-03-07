@@ -1,6 +1,6 @@
 #include <SDL_mixer.h>
 #include "eir_snd_api_func.h"
-#include "../kernel/eir_log.h"
+#include "../kernel/eir_ker_log.h"
 
 void eir_snd_api_init()
 {

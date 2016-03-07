@@ -1,6 +1,7 @@
 #pragma once
 
 #include "eir_gme_env.h"
+#include "../graphics/eir_gfx_env.h"
 
 void eir_gme_init_env(eir_gme_env_t * env);
 void eir_gme_world_entity_update_linked_components(eir_gme_world_t * world);
@@ -14,27 +15,27 @@ eir_gme_world_t * eir_gme_create_world(
 
 eir_gme_entity_t eir_gme_create_world_entity(eir_gme_world_t * world);
 
-eir_gme_position_component_t * eir_gme_set_entity_position(
+void eir_gme_set_entity_position(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
-	int x,
-	int y
+	float x,
+	float y
 	);
 
-eir_gme_size_component_t * eir_gme_set_entity_size(
+void eir_gme_set_entity_size(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
-	int width,
-	int height
+	float width,
+	float height
 	);
 
-eir_gme_sprite_ref_component_t * eir_gme_set_entity_sprite_ref(
+void eir_gme_set_entity_sprite(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
-	eir_gfx_sprite_ref_t * sprite_ref
+	eir_gfx_sprite_proxy_t * sprite_proxy
 	);
 
-eir_gme_color_component_t * eir_gme_set_entity_color(
+void eir_gme_set_entity_color(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
 	float r,
@@ -43,7 +44,7 @@ eir_gme_color_component_t * eir_gme_set_entity_color(
 	float a
 	);
 
-eir_gme_motion_param_component_t * eir_gme_set_entity_acceleration(
+void eir_gme_set_entity_acceleration(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
 	float ax,
@@ -52,7 +53,7 @@ eir_gme_motion_param_component_t * eir_gme_set_entity_acceleration(
 	float friction
 	);
 
-eir_gme_aabb_component_t * eir_gme_set_entity_aabb(
+void eir_gme_set_entity_aabb(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
 	float x,
@@ -61,7 +62,7 @@ eir_gme_aabb_component_t * eir_gme_set_entity_aabb(
 	float height
 	);
 
-eir_gme_camera_component_t * eir_gme_set_entity_camera(
+void eir_gme_set_entity_camera(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
 	float win_scale,
@@ -69,19 +70,19 @@ eir_gme_camera_component_t * eir_gme_set_entity_camera(
 	int viewport_h
 	);
 
-eir_gme_physic_component_t * eir_gme_set_entity_physic(
+void eir_gme_set_entity_physic(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
 	float weight
 	);
 
-eir_gme_direction_component_t * eir_gme_set_entity_direction(
+void eir_gme_set_entity_direction(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
 	eir_gme_direction_t direction
 	);
 
-eir_gme_based_melee_attack_component_t * eir_gme_set_entity_based_melee_attack(
+void eir_gme_set_entity_based_melee_attack(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
 	float damage,
@@ -92,11 +93,17 @@ eir_gme_based_melee_attack_component_t * eir_gme_set_entity_based_melee_attack(
 	bool active
 	);
 
-eir_gme_state_component_t * eir_gme_set_entity_state(
+void eir_gme_set_entity_state(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
 	bool visible,
 	bool alive
+	);
+
+void eir_gme_set_entity_fsm(
+	eir_gme_world_t * world,
+	eir_gme_entity_t entity,
+	eir_fsm_state_machine_t * fsm
 	);
 
 void eir_gme_set_active_camera(

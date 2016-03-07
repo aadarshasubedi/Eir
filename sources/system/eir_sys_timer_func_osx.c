@@ -1,6 +1,6 @@
 #include <SDL2/SDL.h>
-#include "eir_timer_func.h"
-#include "eir_memory.h"
+#include "eir_sys_timer_func.h"
+#include "eir_sys_memory.h"
 
 void eir_sys_start_timer(eir_sys_timer_t * timer)
 {

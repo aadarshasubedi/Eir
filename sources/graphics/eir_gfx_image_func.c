@@ -1,6 +1,6 @@
 
-#include "eir_image_func.h"
-#include "../system/eir_memory.h"
+#include "eir_gfx_image_func.h"
+#include "../system/eir_sys_memory.h"
 
 bool eir_gfx_invert_image(int pitch, int height, void * pixels)
 {

@@ -31,7 +31,8 @@ typedef enum
    eir_gfx_item_flag_built             = 1 << 2,
    eir_gfx_item_flag_visible           = 1 << 3,
    eir_gfx_item_flag_added             = 1 << 4,
-   eir_gfx_item_flag_modified          = 1 << 5
+   eir_gfx_item_flag_modified          = 1 << 5,
+   eir_gfx_item_flag_dirty             = 1 << 6
 } eir_gfx_item_info_flag_t;
 
 typedef int eir_gfx_item_info_t;

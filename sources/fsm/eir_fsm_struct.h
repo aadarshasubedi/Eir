@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../kernel/eir_array_macro.h"
+#include "../kernel/eir_ker_array_macro.h"
 
 #define EIR_FSM_MAX_STATE_OUT 10
 

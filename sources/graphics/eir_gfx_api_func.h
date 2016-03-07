@@ -2,8 +2,8 @@
 
 #include "eir_gfx_env.h"
 #include "eir_gfx_types.h"
-#include "eir_sprite_batch.h"
-#include "eir_image.h"
+#include "eir_gfx_sprite_batch.h"
+#include "eir_gfx_image.h"
 
 void eir_gfx_api_init();
 void eir_gfx_api_release();

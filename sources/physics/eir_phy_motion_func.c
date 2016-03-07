@@ -1,4 +1,4 @@
-#include "eir_motion_func.h"
+#include "eir_phy_motion_func.h"
 #include "eir_phy_func.h"
 #include "../maths/eir_mth_func.h"
 

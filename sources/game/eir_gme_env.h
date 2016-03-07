@@ -1,6 +1,6 @@
 #pragma once
 
-#include "eir_world.h"
+#include "eir_gme_world.h"
 
 typedef struct
 {

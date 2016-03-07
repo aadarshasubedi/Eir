@@ -1,6 +1,6 @@
 #pragma once
 
-#include "eir_image.h"
+#include "eir_gfx_image.h"
 
 eir_gfx_image_t * eir_gfx_api_create_image(const char * filename, bool invert_image);
 bool eir_gfx_api_load_image(const char * filename, bool invert_image, eir_gfx_image_t * image);

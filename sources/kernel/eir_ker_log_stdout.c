@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
-#include "eir_log.h"
+#include "eir_ker_log.h"
 
 void eir_ker_log(const char * format, ...)
 {

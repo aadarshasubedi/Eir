@@ -1,7 +1,7 @@
 #pragma once
 
-#include "eir_sound.h"
-#include "../kernel/eir_array_macro.h"
+#include "eir_snd_sound.h"
+#include "../kernel/eir_ker_array_macro.h"
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_snd_sound_t, eir_snd_sound_array_t);
 

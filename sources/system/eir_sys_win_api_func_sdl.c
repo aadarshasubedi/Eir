@@ -1,4 +1,4 @@
-#include "eir_win_api_func.h"
+#include "eir_sys_win_api_func.h"
 #include "eir_sys_defines.h"
 
 #define EIR_SYS_PAD_MAX_ABS_VALUE 32767

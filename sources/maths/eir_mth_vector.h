@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../kernel/eir_array_macro.h"
+#include "../kernel/eir_ker_array_macro.h"
 
 typedef struct
 {

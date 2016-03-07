@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../maths/eir_vector.h"
-#include "../kernel/eir_array_macro.h"
+#include "../maths/eir_mth_vector.h"
+#include "../kernel/eir_ker_array_macro.h"
 
 typedef struct
 {

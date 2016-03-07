@@ -1,5 +1,5 @@
 #include <SDL2/SDL.h>
-#include "eir_joystick_func.h"
+#include "eir_sys_joystick_func.h"
 
 int eir_sys_get_pad_count()
 {
