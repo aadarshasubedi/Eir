@@ -26,6 +26,7 @@
 
 #include "game/eir_gme_env.h"
 #include "game/eir_gme_func.h"
+#include "game/eir_gme_system.h"
 
 #include "kernel/eir_ker_env.h"
 
@@ -296,8 +297,8 @@ static void eir_run(game_t * game)
 		);
 #endif
 
-	float time_per_frame = 1.0f / 60.0f;
-	float time_since_last_update = 0.0f;
+	double time_per_frame = 1.0f / 60.0f;
+	double time_since_last_update = 0.0f;
 
 	eir_sys_start_timer(&sys_env->timer);
 	eir_fsm_run_state_machine(player->fsm);
@@ -314,9 +315,14 @@ static void eir_run(game_t * game)
 			}
 
 			// UPDATE ALL SYSTEMS HERE EXCEPT RENDERING AND TIMER
-			eir_fsm_update_state_machine(player->fsm);
-			eir_phy_proceed_motion_entity_update(gme_env->curr_world, time_per_frame);
-			eir_gme_proceed_camera_system_update(gme_env->curr_world);
+			// TODO: fsm update must be made by eir_gme_update_all_components_systems
+			// eir_fsm_update_state_machine(player->fsm);
+
+			// TODO: rename this function and put it in game code section
+			// TODO: motion update must be made by eir_gme_update_all_components_systems
+			// eir_phy_proceed_motion_entity_update(gme_env->curr_world, time_per_frame);
+
+			eir_gme_update_all_components_systems(gme_env->curr_world, time_per_frame);
 
 			if (gme_env->curr_world && gme_env->curr_world->curr_camera)
 			{

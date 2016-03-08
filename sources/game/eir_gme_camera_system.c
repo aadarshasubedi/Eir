@@ -1,7 +1,7 @@
 #include "eir_gme_camera_system.h"
 #include "../maths/eir_mth_func.h"
 
-void eir_gme_proceed_camera_system_update(eir_gme_world_t * world)
+void eir_gme_update_camera_system(eir_gme_world_t * world)
 {
    eir_gme_camera_component_t * cam = 0;
 

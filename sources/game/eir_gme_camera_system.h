@@ -2,4 +2,4 @@
 
 #include "eir_gme_world.h"
 
-void eir_gme_proceed_camera_system_update(eir_gme_world_t * world);
+void eir_gme_update_camera_system(eir_gme_world_t * world);
