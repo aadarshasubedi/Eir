@@ -2,28 +2,7 @@
 #include "../fsm/eir_fsm_func.h"
 #include "../physics/eir_phy_motion_func.h"
 
-static void eir_gme_update_fsm_component_component(eir_gme_fsm_component_t * fsm_component)
-{
-	if (fsm_component && fsm_component->fsm)
-	{
-		eir_fsm_update_state_machine(fsm_component->fsm);
-	}
-}
-
-static void eir_gme_update_motion_param_component(eir_gme_motion_param_component_t * motion_param_component, double dtime)
-{
-	// TODO
-	if (motion_param_component)
-	{
-		eir_phy_proceed_euler_integration(
-			const eir_mth_vec2_t * old_position,
-			eir_mth_vec2_t * new_position,
-			&motion_param_component->motion_param,
-			double dtime
-			);
-	}
-}
-
+/*
 static void eir_gme_update_aabb_component(eir_gme_aabb_component_t * aabb, const eir_gme_position_component_t * position)
 {
 	if (aabb && position)
@@ -35,6 +14,7 @@ static void eir_gme_update_aabb_component(eir_gme_aabb_component_t * aabb, const
 		aabb->rect->position.y = position->current->y + y_offset;
 	}
 }
+*/
 
 static void eir_gme_update_direction_component(eir_gme_direction_component_t * direction_component, float x_velocity, float y_velocity)
 {
@@ -135,12 +115,47 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 			if (entity_flags & eir_gme_component_type_fsm)
 			{
 				eir_gme_fsm_component_t * fsm_component = &world->fsms.data[index];
-				eir_gme_update_fsm_component_component(fsm_component);
+				eir_fsm_update_state_machine(fsm_component->fsm);
 			}
-			if (entity_flags & eir_gme_component_type_motion_param)
+			if (
+				(entity_flags & eir_gme_component_type_motion_param)
+				&& (entity_flags & eir_gme_component_type_position)
+				)
 			{
 				eir_gme_motion_param_component_t * motion_param_component = &world->motion_params.data[index];
-				eir_gme_update_motion_param_component(motion_param_component);
+				eir_gme_position_component_t * position_component = &world->positions.data[index];
+				eir_mth_vec2_t new_position = { .x = 0.0f, .y = 0.0f };
+
+				eir_phy_proceed_euler_integration(
+					&position_component->position,
+					&new_position,
+					&motion_param_component->motion_param,
+					dtime
+					);
+				eir_gme_set_entity_position(
+					world,
+					index,
+					new_position.x,
+					new_position.y
+					);
+			}
+			if (entity_flags & eir_gme_component_type_aabb)
+			{
+				eir_gme_aabb_component_t * aabb_component = &world->aabbs.data[index];
+
+				if (entity_flags & eir_gme_component_type_position)
+				{
+					eir_gme_position_component_t * position_component = &world->positions.data[index];
+
+					if (position_component->modified)
+					{
+						aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
+						aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+						position_component->modified = false;
+					}
+				}
+
+				// TODO: MANAGE AABB INTERSECTION WITH OTHER ITEM
 			}
 			if (
 				(entity_flags & eir_gme_component_type_direction)
@@ -149,7 +164,100 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 			{
 				eir_gme_direction_component_t * direction_component = &world->directions.data[index];
 				eir_gme_motion_param_component_t * motion_param_component = &world->motion_params.data[index];
-				eir_gme_update_direction_component(direction_component, motion_param_component->motion_param.velocity.x, motion_param_component->motion_param.velocity.y);
+				eir_gme_update_direction_component(
+					direction_component,
+					motion_param_component->motion_param.velocity.x,
+					motion_param_component->motion_param.velocity.y
+					);
+			}
+			if (entity_flags & eir_gme_component_type_sprite)
+			{
+				eir_gme_sprite_component_t * sprite_component = &world->sprites.data[index];
+				eir_gfx_sprite_proxy_t * sprite_proxy = sprite_component->sprite_proxy;
+
+
+				eir_mth_vec2_t position =
+				{
+					.x = sprite_proxy->position.x,
+					.y = sprite_proxy->position.y
+				};
+				eir_mth_vec2_t size =
+				{
+					.x = sprite_proxy->size.x,
+					.y = sprite_proxy->size.y
+				};
+				eir_mth_vec2_t uv_offset =
+				{
+					.x = sprite_proxy->uv_offset.x,
+					.y = sprite_proxy->uv_offset.y
+				};
+				eir_mth_vec2_t uv_size =
+				{
+					.x = sprite_proxy->uv_size.x,
+					.y = sprite_proxy->uv_size.y
+				};
+				eir_gfx_color_t color =
+				{
+					.r = sprite_proxy->color.r,
+					.g = sprite_proxy->color.g,
+					.b = sprite_proxy->color.b,
+					.a = sprite_proxy->color.a
+				};
+
+				position.x = sprite_proxy->position.x,
+				position.x = sprite_proxy->position.y,
+
+				bool must_modify_sprite = false
+
+				if (entity_flags & eir_gme_component_type_position)
+				{
+					eir_gme_position_component_t * position_component = &world->positions.data[index];
+
+					if (position_component->modified)
+					{
+						position.x = position_component->position.x;
+						position.y = position_component->position.y;
+						position_component->modified = false;
+						must_modify_sprite = true;
+					}
+				}
+				if (entity_flags & eir_gme_component_type_size)
+				{
+					eir_gme_size_component_t * size_component = &world->sizes.data[index];
+
+					if (size_component->modified)
+					{
+						size.x = size_component->size.x;
+						size.y = size_component->size.y;
+						size_component->modified = false;
+						must_modify_sprite = true;
+					}
+				}
+				if (entity_flags & eir_gme_component_type_color)
+				{
+					eir_gme_color_component_t * color_component = &world->colors.data[index];
+
+					if (color_component->modified)
+					{
+						color.r = color_component->color.r;
+						color.g = color_component->color.g;
+						color.b = color_component->color.b;
+						color.a = color_component->color.a;
+						color_component->modified = false;
+						must_modify_sprite = true;
+					}
+				}
+				if (must_modify_sprite)
+				{
+					eir_gfx_modify_sprite(
+	   					sprite_proxy,
+	   					&position,
+	   					&size,
+	   					&uv_offset,
+	   					&uv_size,
+	   					&color
+	   					);
+				}
 			}
 		}
 

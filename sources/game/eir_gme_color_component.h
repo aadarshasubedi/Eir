@@ -6,7 +6,7 @@
 typedef struct
 {
 	eir_gfx_color_t color;
-
+	bool modified;
 } eir_gme_color_component_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(eir_gme_color_component_t, eir_gme_color_component_array_t)

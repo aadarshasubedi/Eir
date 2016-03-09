@@ -56,8 +56,8 @@ void eir_gme_set_entity_acceleration(
 void eir_gme_set_entity_aabb(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
-	float x,
-	float y,
+	float x_offset,
+	float y_offset,
 	float width,
 	float height
 	);

@@ -67,9 +67,9 @@ static void eir_gme_init_position(eir_gme_position_component_t * position)
 {
    if (position)
    {
-      position->initial.x = 0.0f;
-      position->initial.y = 0.0f;
-      position->current = 0;
+      position->position.x = 0.0f;
+      position->position.y = 0.0f;
+      position->modified = false;
    }
 }
 
@@ -82,9 +82,9 @@ static void eir_gme_init_size(eir_gme_size_component_t * size)
 {
    if (size)
    {
-      size->initial.x = 0.0f;
-      size->initial.y = 0.0f;
-      size->current = 0;
+      size->size.x = 0.0f;
+      size->size.y = 0.0f;
+      size->modified = false;
    }
 }
 
@@ -110,11 +110,11 @@ static void eir_gme_init_color(eir_gme_color_component_t * color)
 {
    if (color)
    {
-      color->initial.r = 1.0f;
-      color->initial.g = 1.0f;
-      color->initial.b = 1.0f;
-      color->initial.a = 1.0f;
-      color->current = 0;
+      color->color.r = 1.0f;
+      color->color.g = 1.0f;
+      color->color.b = 1.0f;
+      color->color.a = 1.0f;
+      color->modified = false;
    }
 }
 
@@ -149,11 +149,12 @@ static void eir_gme_init_aabb(eir_gme_aabb_component_t * aabb)
 {
    if (aabb)
    {
+      aabb->aabb.position.x = 0.0f;
+      aabb->aabb.position.x = 0.0f;
+      aabb->aabb.size.x = 0.0f;
+      aabb->aabb.size.y = 0.0f;
       aabb->x_offset = 0.0f;
       aabb->y_offset = 0.0f;
-      aabb->width = 0.0f;
-      aabb->height = 0.0f;
-      aabb->rect = 0;
    }
 }
 
@@ -523,19 +524,24 @@ void eir_gme_set_entity_position(
    )
 {
    eir_gme_entity_flags_t * entity_flags = 0;
-   eir_gme_position_component_t * pos_component = 0;
+   eir_gme_position_component_t * position_component = 0;
 
    if (world)
    {
       EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
-      EIR_KER_GET_ARRAY_ITEM(world->positions, entity, pos_component);
+      EIR_KER_GET_ARRAY_ITEM(world->positions, entity, position_component);
    }
-   if (entity_flags && pos_component)
+   if (entity_flags && position_component)
    {
       (*entity_flags) |= eir_gme_component_type_position;
-      pos_component->initial.x = x;
-      pos_component->initial.y = y;
+      position_component->position.x = x;
+      position_component->position.y = y;
+      position_component->modified = true;
 
+      // TODO: remove this code. it must be done in system part
+      // instead add a modified flag to true to let system decide if we must
+      // modify sprite
+      /*
       if ((*entity_flags) & eir_gme_component_type_sprite)
       {
          eir_gme_sprite_component_t * sprite_component = 0;
@@ -573,6 +579,15 @@ void eir_gme_set_entity_position(
             );
          }
       }
+      if ((*entity_flags) & eir_gme_component_type_aabb)
+      {
+         eir_gme_aabb_component_t * aabb_component = 0;
+         EIR_KER_GET_ARRAY_ITEM(world->aabbs, entity, aabb_component);
+
+         aabb_component->aabb.position.x += x;
+         aabb_component->aabb.position.y += y;
+      }
+      */
    }
    else
    {
@@ -598,9 +613,14 @@ void eir_gme_set_entity_size(
    if (entity_flags && size_component)
    {
       (*entity_flags) |= eir_gme_component_type_size;
-      size_component->initial.x = width;
-      size_component->initial.y = height;
+      size_component->size.x = width;
+      size_component->size.y = height;
+      size_component->modified = true;
 
+      // TODO: remove this code. it must be done in system part
+      // instead add a modified flag to true to let system decide if we must
+      // modify sprite
+      /*
       if ((*entity_flags) & eir_gme_component_type_sprite)
       {
          eir_gme_sprite_component_t * sprite_component = 0;
@@ -637,6 +657,7 @@ void eir_gme_set_entity_size(
                &color
             );
          }
+         */
       }
    }
    else
@@ -665,61 +686,6 @@ void eir_gme_set_entity_sprite(
       (*entity_flags) |= eir_gme_component_type_size;
       (*entity_flags) |= eir_gme_component_type_sprite;
       sprite_component->sprite_proxy = sprite_proxy;
-
-      eir_mth_vec2_t position;
-      eir_mth_vec2_t size;
-      eir_mth_vec2_t uv_offset;
-      eir_mth_vec2_t uv_size;
-      eir_gfx_color_t color;
-
-      position.x = sprite_proxy->position.x;
-      position.y = sprite_proxy->position.y;
-      size.x = sprite_proxy->size.x;
-      size.y = sprite_proxy->size.y;
-      uv_offset.x = sprite_proxy->uv_offset.x;
-      uv_offset.y = sprite_proxy->uv_offset.y;
-      uv_size.x = sprite_proxy->uv_size.x;
-      uv_size.y = sprite_proxy->uv_size.y;
-      color.r = sprite_proxy->color.r;
-      color.g = sprite_proxy->color.g;
-      color.b = sprite_proxy->color.b;
-      color.a = sprite_proxy->color.a;
-
-      eir_gme_position_component_t * position_component = 0;
-      eir_gme_size_component_t * size_component = 0;
-      eir_gme_color_component_t * color_component = 0;
-
-      if ((*entity_flags) & eir_gme_component_type_position)
-      {
-         EIR_KER_GET_ARRAY_ITEM(world->positions, entity, position_component);
-         position.x = position_component->position.x;
-         position.y = position_component->position.y;
-      }
-      if ((*entity_flags) & eir_gme_component_type_size)
-      {
-         EIR_KER_GET_ARRAY_ITEM(world->sizes, entity, size_component);
-         size.x = size_component->size.x;
-         size.y = size_component->size.y;
-      }
-      if ((*entity_flags) & eir_gme_component_type_color)
-      {
-         EIR_KER_GET_ARRAY_ITEM(world->colors, entity, color_component);
-         color.r = color_component->color.r;
-         color.g = color_component->color.g;
-         color.b = color_component->color.b;
-         color.a = color_component->color.a;
-      }
-      if (position_component || size_component || color_component)
-      {
-         eir_gfx_modify_sprite(
-            sprite_proxy,
-            &position,
-            &size,
-            &uv_offset,
-            &uv_size,
-            &color
-         );
-      }
    }
    else
    {
@@ -747,11 +713,16 @@ void eir_gme_set_entity_color(
    if (entity_flags && color_component)
    {
       (*entity_flags) |= eir_gme_component_type_color;
-      color_component->initial.r = r;
-      color_component->initial.g = g;
-      color_component->initial.b = b;
-      color_component->initial.a = a;
+      color_component->color.r = r;
+      color_component->color.g = g;
+      color_component->color.b = b;
+      color_component->color.a = a;
+      color_component->modified = true;
 
+      // TODO: remove this code. it must be done in system part
+      // instead add a modified flag to true to let system decide if we must
+      // modify sprite
+      /*
       if ((*entity_flags) & eir_gme_component_type_sprite)
       {
          eir_gme_sprite_component_t * sprite_component = 0;
@@ -788,6 +759,7 @@ void eir_gme_set_entity_color(
                &color
             );
          }
+         */
       }
    }
    else
@@ -835,8 +807,8 @@ void eir_gme_set_entity_acceleration(
 void eir_gme_set_entity_aabb(
    eir_gme_world_t * world,
    eir_gme_entity_t entity,
-   float x,
-   float y,
+   float x_offset,
+   float y_offset,
    float width,
    float height
    )
@@ -853,10 +825,12 @@ void eir_gme_set_entity_aabb(
    {
       (*entity_flags) |= eir_gme_component_type_position;
       (*entity_flags) |= eir_gme_component_type_aabb;
-      aabb_component->x_offset = x;
-      aabb_component->y_offset = y;
-      aabb_component->width = width;
-      aabb_component->height = height;
+      aabb_component->aabb.position.x = 0.0f;
+      aabb_component->aabb.position.y = 0.0f;
+      aabb_component->aabb.size.x = width;
+      aabb_component->aabb.size.y = height;
+      aabb_component->x_offset = x_offset;
+      aabb_component->y_offset = y_offset;
    }
    else
    {

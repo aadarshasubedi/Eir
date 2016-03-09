@@ -1,15 +1,13 @@
 #pragma once
 
 #include "../physics/eir_phy_aabb.h"
-#include "../graphics/eir_gfx_rect.h"
 #include "../kernel/eir_ker_array_macro.h"
 
 typedef struct
 {
+   eir_phy_aabb_t aabb;
    float x_offset;
    float y_offset;
-   float width;
-   float height;
 } eir_gme_aabb_component_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(

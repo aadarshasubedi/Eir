@@ -6,6 +6,7 @@
 typedef struct
 {
 	eir_mth_vec2_t position;
+	bool modified;
 } eir_gme_position_component_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(
