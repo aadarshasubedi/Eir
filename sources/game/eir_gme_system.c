@@ -2,20 +2,6 @@
 #include "../fsm/eir_fsm_func.h"
 #include "../physics/eir_phy_motion_func.h"
 
-/*
-static void eir_gme_update_aabb_component(eir_gme_aabb_component_t * aabb, const eir_gme_position_component_t * position)
-{
-	if (aabb && position)
-	{
-		float x_offset = position->initial.x - aabb->x_offset;
-		float y_offset = position->initial.y - aabb->y_offset;
-
-		aabb->rect->position.x = position->current->x + x_offset;
-		aabb->rect->position.y = position->current->y + y_offset;
-	}
-}
-*/
-
 static void eir_gme_update_direction_component(eir_gme_direction_component_t * direction_component, float x_velocity, float y_velocity)
 {
 	if (direction_component)
@@ -156,6 +142,10 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 				}
 
 				// TODO: MANAGE AABB INTERSECTION WITH OTHER ITEM
+				if (entity_flags & eir_gme_component_type_physic)
+				{
+					
+				}
 			}
 			if (
 				(entity_flags & eir_gme_component_type_direction)

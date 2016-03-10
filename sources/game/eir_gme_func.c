@@ -537,57 +537,6 @@ void eir_gme_set_entity_position(
       position_component->position.x = x;
       position_component->position.y = y;
       position_component->modified = true;
-
-      // TODO: remove this code. it must be done in system part
-      // instead add a modified flag to true to let system decide if we must
-      // modify sprite
-      /*
-      if ((*entity_flags) & eir_gme_component_type_sprite)
-      {
-         eir_gme_sprite_component_t * sprite_component = 0;
-         EIR_KER_GET_ARRAY_ITEM(world->sprites, entity, sprite_component);
-         eir_gfx_sprite_proxy_t * sprite_proxy = sprite_component->sprite_proxy;
-
-         if (sprite_proxy)
-         {
-            eir_mth_vec2_t position;
-            eir_mth_vec2_t size;
-            eir_mth_vec2_t uv_offset;
-            eir_mth_vec2_t uv_size;
-            eir_gfx_color_t color;
-
-            position.x = x;
-            position.y = y;
-            size.x = sprite_proxy->size.x;
-            size.y = sprite_proxy->size.y;
-            uv_offset.x = sprite_proxy->uv_offset.x;
-            uv_offset.y = sprite_proxy->uv_offset.y;
-            uv_size.x = sprite_proxy->uv_size.x;
-            uv_size.y = sprite_proxy->uv_size.y;
-            color.r = sprite_proxy->color.r;
-            color.g = sprite_proxy->color.g;
-            color.b = sprite_proxy->color.b;
-            color.a = sprite_proxy->color.a;
-
-            eir_gfx_modify_sprite(
-               sprite_proxy,
-               &position,
-               &size,
-               &uv_offset,
-               &uv_size,
-               &color
-            );
-         }
-      }
-      if ((*entity_flags) & eir_gme_component_type_aabb)
-      {
-         eir_gme_aabb_component_t * aabb_component = 0;
-         EIR_KER_GET_ARRAY_ITEM(world->aabbs, entity, aabb_component);
-
-         aabb_component->aabb.position.x += x;
-         aabb_component->aabb.position.y += y;
-      }
-      */
    }
    else
    {
@@ -616,48 +565,6 @@ void eir_gme_set_entity_size(
       size_component->size.x = width;
       size_component->size.y = height;
       size_component->modified = true;
-
-      // TODO: remove this code. it must be done in system part
-      // instead add a modified flag to true to let system decide if we must
-      // modify sprite
-      /*
-      if ((*entity_flags) & eir_gme_component_type_sprite)
-      {
-         eir_gme_sprite_component_t * sprite_component = 0;
-         EIR_KER_GET_ARRAY_ITEM(world->sprites, entity, sprite_component);
-         eir_gfx_sprite_proxy_t * sprite_proxy = sprite_component->sprite_proxy;
-
-         if (sprite_proxy)
-         {
-            eir_mth_vec2_t position;
-            eir_mth_vec2_t size;
-            eir_mth_vec2_t uv_offset;
-            eir_mth_vec2_t uv_size;
-            eir_gfx_color_t color;
-
-            position.x = sprite_proxy->position.x;
-            position.y = sprite_proxy->position.y;
-            size.x = width;
-            size.y = height;
-            uv_offset.x = sprite_proxy->uv_offset.x;
-            uv_offset.y = sprite_proxy->uv_offset.y;
-            uv_size.x = sprite_proxy->uv_size.x;
-            uv_size.y = sprite_proxy->uv_size.y;
-            color.r = sprite_proxy->color.r;
-            color.g = sprite_proxy->color.g;
-            color.b = sprite_proxy->color.b;
-            color.a = sprite_proxy->color.a;
-
-            eir_gfx_modify_sprite(
-               sprite_proxy,
-               &position,
-               &size,
-               &uv_offset,
-               &uv_size,
-               &color
-            );
-         }
-         */
       }
    }
    else
@@ -718,48 +625,6 @@ void eir_gme_set_entity_color(
       color_component->color.b = b;
       color_component->color.a = a;
       color_component->modified = true;
-
-      // TODO: remove this code. it must be done in system part
-      // instead add a modified flag to true to let system decide if we must
-      // modify sprite
-      /*
-      if ((*entity_flags) & eir_gme_component_type_sprite)
-      {
-         eir_gme_sprite_component_t * sprite_component = 0;
-         EIR_KER_GET_ARRAY_ITEM(world->sprites, entity, sprite_component);
-         eir_gfx_sprite_proxy_t * sprite_proxy = sprite_component->sprite_proxy;
-
-         if (sprite_proxy)
-         {
-            eir_mth_vec2_t position;
-            eir_mth_vec2_t size;
-            eir_mth_vec2_t uv_offset;
-            eir_mth_vec2_t uv_size;
-            eir_gfx_color_t color;
-
-            position.x = x;
-            position.y = y;
-            size.x = sprite_proxy->size.x;
-            size.y = sprite_proxy->size.y;
-            uv_offset.x = sprite_proxy->uv_offset.x;
-            uv_offset.y = sprite_proxy->uv_offset.y;
-            uv_size.x = sprite_proxy->uv_size.x;
-            uv_size.y = sprite_proxy->uv_size.y;
-            color.r = r;
-            color.g = g;
-            color.b = b;
-            color.a = a;
-
-            eir_gfx_modify_sprite(
-               sprite_proxy,
-               &position,
-               &size,
-               &uv_offset,
-               &uv_size,
-               &color
-            );
-         }
-         */
       }
    }
    else
@@ -825,8 +690,8 @@ void eir_gme_set_entity_aabb(
    {
       (*entity_flags) |= eir_gme_component_type_position;
       (*entity_flags) |= eir_gme_component_type_aabb;
-      aabb_component->aabb.position.x = 0.0f;
-      aabb_component->aabb.position.y = 0.0f;
+      aabb_component->aabb.position.x = x_offset;
+      aabb_component->aabb.position.y = y_offset;
       aabb_component->aabb.size.x = width;
       aabb_component->aabb.size.y = height;
       aabb_component->x_offset = x_offset;
