@@ -1,6 +1,7 @@
 #include "eir_gme_system.h"
 #include "../fsm/eir_fsm_func.h"
 #include "../physics/eir_phy_motion_func.h"
+#include "../graphics/eir_gfx_func.h"
 
 static void eir_gme_update_direction_component(eir_gme_direction_component_t * direction_component, float x_velocity, float y_velocity)
 {
@@ -45,20 +46,20 @@ static void eir_gme_update_direction_component(eir_gme_direction_component_t * d
 		{
 			direction = y_direction;
 		}
-		direction_component->value = direction != EIR_GME_DIRECTION_UNKNOWN ? direction : component->value;
+		direction_component->direction = direction != EIR_GME_DIRECTION_UNKNOWN ? direction : direction_component->direction;
 	}
 }
 
-static void eir_gme_update_camera_component(eir_gme_camera_component_t * cam)
+static void eir_gme_update_camera(eir_gme_camera_t * cam)
 {
-   if (cam && cam->target && cam->win_rect && cam->target->rect)
+   if (cam && cam->target)
    {
       // UPDATE CAM AABB
 
-      eir_mth_vec2_t * cam_pos = &cam->win_rect->position;
-      eir_mth_vec2_t * cam_size = &cam->win_rect->size;
-      eir_mth_vec2_t * target_pos = &cam->target->rect->position;
-      eir_mth_vec2_t * target_size = &cam->target->rect->size;
+      eir_mth_vec2_t * cam_pos = &cam->win_aabb.position;
+      eir_mth_vec2_t * cam_size = &cam->win_aabb.size;
+      eir_mth_vec2_t * target_pos = &cam->target->aabb.position;
+      eir_mth_vec2_t * target_size = &cam->target->aabb.size;
       float x = 0.0f;
       float y = 0.0f;
 
@@ -94,7 +95,7 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 {
 	if (world)
 	{
-		for (int index; index < world->entities_flags.used; ++index)
+		for (int index = 0; index < world->entities_flags.used; ++index)
 		{
 			eir_gme_entity_flags_t entity_flags = world->entities_flags.data[index];
 
@@ -128,23 +129,71 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 			if (entity_flags & eir_gme_component_type_aabb)
 			{
 				eir_gme_aabb_component_t * aabb_component = &world->aabbs.data[index];
+				eir_gme_position_component_t * position_component = 0;
 
 				if (entity_flags & eir_gme_component_type_position)
 				{
-					eir_gme_position_component_t * position_component = &world->positions.data[index];
-
+					position_component = &world->positions.data[index];
 					if (position_component->modified)
 					{
 						aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
 						aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
-						position_component->modified = false;
 					}
 				}
-
-				// TODO: MANAGE AABB INTERSECTION WITH OTHER ITEM
 				if (entity_flags & eir_gme_component_type_physic)
 				{
-					
+					for (int index2 = 0; index2 < world->entities_flags.used; ++index2)
+					{
+						if (
+							(index != index2)
+							&& (world->entities_flags.data[index2] & eir_gme_component_type_aabb)
+							&& (world->entities_flags.data[index2] & eir_gme_component_type_physic)
+							)
+						{
+							eir_gme_aabb_component_t * aabb_component_2 = &world->aabbs.data[index];
+							bool collision = eir_phy_check_aabb_intersection(
+								&world->aabbs.data[index].aabb,
+								&world->aabbs.data[index2].aabb
+								);
+
+							if (collision)
+							{
+								if (
+									world->physics.data[index].weight > 0.0f
+									&& world->physics.data[index2].weight > 0.0f
+									&& position_component
+									)
+								{
+									float x_depth = eir_phy_get_x_aabb_intersection_depth(
+										&world->aabbs.data[index].aabb,
+										&world->aabbs.data[index2].aabb
+										);
+									float y_depth = eir_phy_get_y_aabb_intersection_depth(
+										&world->aabbs.data[index].aabb,
+										&world->aabbs.data[index2].aabb
+										);
+
+									float x = position_component->position.x;
+									float y = position_component->position.y;
+
+									if (eir_mth_abs(x_depth) < eir_mth_abs(y_depth))
+									{
+										x += x_depth;
+									}
+									else
+									{
+										y += y_depth;
+									}
+									eir_gme_set_entity_position(
+										world,
+										index,
+										x,
+										y
+										);
+								}
+							}
+						}
+					}
 				}
 			}
 			if (
@@ -194,10 +243,10 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 					.a = sprite_proxy->color.a
 				};
 
-				position.x = sprite_proxy->position.x,
-				position.x = sprite_proxy->position.y,
+				position.x = sprite_proxy->position.x;
+				position.x = sprite_proxy->position.y;
 
-				bool must_modify_sprite = false
+				bool must_modify_sprite = false;
 
 				if (entity_flags & eir_gme_component_type_position)
 				{
@@ -219,7 +268,6 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 					{
 						size.x = size_component->size.x;
 						size.y = size_component->size.y;
-						size_component->modified = false;
 						must_modify_sprite = true;
 					}
 				}
@@ -233,7 +281,6 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 						color.g = color_component->color.g;
 						color.b = color_component->color.b;
 						color.a = color_component->color.a;
-						color_component->modified = false;
 						must_modify_sprite = true;
 					}
 				}
@@ -249,9 +296,25 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 	   					);
 				}
 			}
+
+			// CLEAM MODIFIED FLAGS
+			
+			if (entity_flags & eir_gme_component_type_position)
+			{
+				world->positions.data[index].modified = false;
+			}
+			if (entity_flags & eir_gme_component_type_size)
+			{
+				world->sizes.data[index].modified = false;
+			}
+			if (entity_flags & eir_gme_component_type_color)
+			{
+				world->colors.data[index].modified = false;
+			}
 		}
 
 		// ALWAYS FINISH WITH CAMERA UPDATE !
-		eir_gme_update_camera_component(world->curr_camera)
+
+		//eir_gme_update_camera(&world->camera);
 	}
 }

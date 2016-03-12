@@ -4,12 +4,27 @@
 #include "../system/eir_sys_joystick_func.h"
 #include "../maths/eir_mth_func.h"
 
-/*******************************************
- * LOCAL FUNCTIONS
- *****************************************/
+static void eir_gme_init_camera(eir_gme_camera_t * camera)
+{
+   if (camera)
+   {
+      camera->position.x = 0.0f;
+      camera->position.y = 0.0f;
+      camera->prev_position.x = 0.0f;
+      camera->prev_position.y = 0.0f;
+      camera->target = 0;
+      camera->win_aabb.position.x = 0.0f;
+      camera->win_aabb.position.y = 0.0f;
+      camera->win_aabb.size.x = 0.0f;
+      camera->win_aabb.size.y = 0.0f;
+      camera->win_scale = 0.0f;
+      camera->viewport_w = 0;
+      camera->viewport_h = 0;
+   }
+}
 
- static void eir_gme_init_world(eir_gme_world_t * world)
- {
+static void eir_gme_init_world(eir_gme_world_t * world)
+{
    if (world)
    {
       EIR_KER_INIT_ARRAY(world->entities_flags);
@@ -19,13 +34,11 @@
       EIR_KER_INIT_ARRAY(world->colors);
       EIR_KER_INIT_ARRAY(world->motion_params);
       EIR_KER_INIT_ARRAY(world->aabbs);
-      EIR_KER_INIT_ARRAY(world->cameras);
       EIR_KER_INIT_ARRAY(world->physics);
-      EIR_KER_INIT_ARRAY(world->directions);
       EIR_KER_INIT_ARRAY(world->based_melee_attacks);
       EIR_KER_INIT_ARRAY(world->states);
       EIR_KER_INIT_ARRAY(world->fsms);
-      world->curr_camera = 0;
+      eir_gme_init_camera(&world->camera);
    }
 }
 
@@ -40,13 +53,12 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->colors);
       EIR_KER_FREE_ARRAY(world->motion_params);
       EIR_KER_FREE_ARRAY(world->aabbs);
-      EIR_KER_FREE_ARRAY(world->cameras);
       EIR_KER_FREE_ARRAY(world->physics);
       EIR_KER_FREE_ARRAY(world->directions);
       EIR_KER_FREE_ARRAY(world->based_melee_attacks);
       EIR_KER_FREE_ARRAY(world->states);
       EIR_KER_FREE_ARRAY(world->fsms);
-      world->curr_camera = 0;
+      eir_gme_init_camera(&world->camera);
    }
 }
 
@@ -129,12 +141,12 @@ static void eir_gme_init_motion_param(
 {
    if (motion_param)
    {
-      motion_param->data.velocity.x = 0.0f;
-      motion_param->data.velocity.y = 0.0f;
-      motion_param->data.acceleration.x = 0.0f;
-      motion_param->data.acceleration.y = 0.0f;
-      motion_param->data.speed_factor = 1.0f;
-      motion_param->data.friction_factor = 0.0f;
+      motion_param->motion_param.velocity.x = 0.0f;
+      motion_param->motion_param.velocity.y = 0.0f;
+      motion_param->motion_param.acceleration.x = 0.0f;
+      motion_param->motion_param.acceleration.y = 0.0f;
+      motion_param->motion_param.speed_factor = 1.0f;
+      motion_param->motion_param.friction_factor = 0.0f;
    }
 }
 
@@ -163,6 +175,7 @@ static void eir_gme_release_aabb(eir_gme_aabb_component_t * aabb)
    eir_gme_init_aabb(aabb);
 }
 
+/*
 static void eir_gme_init_camera(eir_gme_camera_component_t * camera)
 {
    if (camera)
@@ -170,17 +183,19 @@ static void eir_gme_init_camera(eir_gme_camera_component_t * camera)
       eir_mth_set_vec2(&camera->position, 0.0f, 0.0f);
       eir_mth_set_vec2(&camera->prev_position, 0.0f, 0.0f);
       camera->target = 0;
-      camera->win_rect = 0;
       camera->win_scale = 1.0f;
       camera->viewport_w = 0;
       camera->viewport_h = 0;
    }
 }
+*/
 
+/*
 static void eir_gme_release_camera(eir_gme_camera_component_t * camera)
 {
    eir_gme_init_camera(camera);
 }
+*/
 
 static void eir_gme_init_physic(eir_gme_physic_component_t * physic)
 {
@@ -199,7 +214,7 @@ static void eir_gme_init_direction(eir_gme_direction_component_t * direction)
 {
 	if (direction)
 	{
-		direction->value = EIR_GME_DIRECTION_UNKNOWN;
+		direction->direction = EIR_GME_DIRECTION_UNKNOWN;
 	}
 }
 
@@ -316,12 +331,8 @@ static void eir_gme_init_all_input_controller_buffer(eir_gme_env_t * env)
    }
 }
 
-/*******************************************
- * GLOBAL FUNCTIONS
- *****************************************/
-
- void eir_gme_init_env(eir_gme_env_t * env)
- {
+void eir_gme_init_env(eir_gme_env_t * env)
+{
    EIR_KER_LOG_MESSAGE("init game env");
    if (env)
    {
@@ -330,49 +341,6 @@ static void eir_gme_init_all_input_controller_buffer(eir_gme_env_t * env)
       eir_gme_init_all_input_controller_buffer(env);
    }
 }
-
-/*
-void eir_gme_world_entity_update_linked_components(eir_gme_world_t * world)
-{
-   if (world)
-   {
-      for (int entity_index = 0; entity_index < world->entities_flags.used; ++entity_index)
-      {
-			eir_gme_entity_flags_t * entity_flags = &world->entities_flags.data[entity_index];
-
-			if (
-				((*entity_flags) & eir_gme_component_type_aabb)
-				&& ((*entity_flags) & eir_gme_component_type_position)
-				)
-			{
-				eir_gme_aabb_component_t * aabb = &world->aabbs.data[entity_index];
-				eir_gme_position_component_t * pos = &world->positions.data[entity_index];
-				eir_gme_size_component_t * size = 0;
-				eir_gme_camera_component_t * cam = 0;
-
-				aabb->x_offset += pos->initial.x;
-				aabb->y_offset += pos->initial.y;
-
-				if ((*entity_flags) & eir_gme_component_type_camera)
-				{
-					cam = &world->cameras.data[entity_index];
-
-					float size_x = aabb->width * cam->win_scale;
-					float size_y = aabb->height * cam->win_scale;
-					float position_x = aabb->x_offset + (aabb->width - size_x) * 0.5f;
-					float position_y = aabb->y_offset + (aabb->height - size_y) * 0.5f;
-
-					cam->position.x = -aabb->x_offset - aabb->width * 0.5f + (float)cam->viewport_w * 0.5f;
-					cam->position.y = -aabb->y_offset - aabb->height * 0.5f + (float)cam->viewport_h * 0.5f;
-					cam->prev_position.x = aabb->x_offset;
-					cam->prev_position.y = aabb->y_offset;
-					cam->target = aabb;
-				}
-			}
-      }
-   }
-}
-*/
 
 void eir_gme_release_env(eir_gme_env_t * env)
 {
@@ -453,12 +421,6 @@ eir_gme_world_t * eir_gme_create_world(
          eir_gme_init_aabb
          );
       EIR_KER_ALLOCATE_ARRAY_BIS(
-         eir_gme_camera_component_t,
-         world->cameras, 
-         max_entity_count,
-         eir_gme_init_camera
-         );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
          eir_gme_physic_component_t,
          world->physics,
          max_entity_count,
@@ -488,7 +450,6 @@ eir_gme_world_t * eir_gme_create_world(
          max_entity_count,
          eir_gme_init_fsm
          );
-      world->curr_camera = 0;
    }
    return world;
 }
@@ -506,7 +467,6 @@ eir_gme_entity_t eir_gme_create_world_entity(eir_gme_world_t * world)
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->colors, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->motion_params, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->aabbs, entity);
-      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->cameras, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->physics, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->directions, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->based_melee_attacks, entity);
@@ -565,7 +525,6 @@ void eir_gme_set_entity_size(
       size_component->size.x = width;
       size_component->size.y = height;
       size_component->modified = true;
-      }
    }
    else
    {
@@ -589,8 +548,6 @@ void eir_gme_set_entity_sprite(
    }
    if (entity_flags && sprite_component)
    {
-      (*entity_flags) |= eir_gme_component_type_position;
-      (*entity_flags) |= eir_gme_component_type_size;
       (*entity_flags) |= eir_gme_component_type_sprite;
       sprite_component->sprite_proxy = sprite_proxy;
    }
@@ -625,7 +582,6 @@ void eir_gme_set_entity_color(
       color_component->color.b = b;
       color_component->color.a = a;
       color_component->modified = true;
-      }
    }
    else
    {
@@ -658,10 +614,10 @@ void eir_gme_set_entity_acceleration(
    {
       (*entity_flags) |= eir_gme_component_type_position;
       (*entity_flags) |= eir_gme_component_type_motion_param;
-      motion_param_component->data.acceleration.x = ax;
-      motion_param_component->data.acceleration.y = ay;
-      motion_param_component->data.speed_factor = speed;
-      motion_param_component->data.friction_factor = friction;
+      motion_param_component->motion_param.acceleration.x = ax;
+      motion_param_component->motion_param.acceleration.y = ay;
+      motion_param_component->motion_param.speed_factor = speed;
+      motion_param_component->motion_param.friction_factor = friction;
    }
    else
    {
@@ -688,7 +644,6 @@ void eir_gme_set_entity_aabb(
    }
    if (entity_flags && aabb_component)
    {
-      (*entity_flags) |= eir_gme_component_type_position;
       (*entity_flags) |= eir_gme_component_type_aabb;
       aabb_component->aabb.position.x = x_offset;
       aabb_component->aabb.position.y = y_offset;
@@ -703,6 +658,7 @@ void eir_gme_set_entity_aabb(
    }
 }
 
+/*
 void eir_gme_set_entity_camera(
    eir_gme_world_t * world,
    eir_gme_entity_t entity,
@@ -721,7 +677,6 @@ void eir_gme_set_entity_camera(
    }
    if (entity_flags && camera_component)
    {
-      (*entity_flags) |= eir_gme_component_type_position;
       (*entity_flags) |= eir_gme_component_type_camera;
       camera_component->win_scale = win_scale;
       camera_component->viewport_w = viewport_w;
@@ -732,6 +687,7 @@ void eir_gme_set_entity_camera(
       EIR_KER_LOG_ERROR("cannot find entity %d or components in array", entity);
    }
 }
+*/
 
 void eir_gme_set_entity_physic(
    eir_gme_world_t * world,
@@ -776,7 +732,7 @@ void eir_gme_set_entity_direction(
 	if (entity_flags && direction_component)
 	{
 		(*entity_flags) |= eir_gme_component_type_direction;
-		direction_component->value = direction;
+		direction_component->direction = direction;
 	}
 	else
 	{
@@ -864,7 +820,7 @@ void eir_gme_set_entity_fsm(
       EIR_KER_GET_ARRAY_ITEM(world->fsms, entity, fsm_component);
       EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
    }
-   if (entities_flags && fsm_component)
+   if (entity_flags && fsm_component)
    {
       (*entity_flags) |= eir_gme_component_type_fsm;
       fsm_component->fsm = fsm;
@@ -875,21 +831,59 @@ void eir_gme_set_entity_fsm(
    }
 }
 
-void eir_gme_set_active_camera(eir_gme_world_t * world, eir_gme_entity_t entity)
+void eir_gme_set_active_camera(
+   eir_gme_world_t * world,
+   eir_gme_entity_t target,
+   float win_scale,
+   int x_viewport,
+   int y_viewport
+   )
 {
-   eir_gme_camera_component_t * camera = 0;
-
    if (world)
    {
-      EIR_KER_GET_ARRAY_ITEM(world->cameras, entity, camera);
-   }
-   if (camera)
-   {
-      world->curr_camera = camera;
-   }
-   else
-   {
-      EIR_KER_LOG_ERROR("cannot find camera from entity %d", entity);
+      eir_gme_entity_flags_t * entity_flags = 0;
+      EIR_KER_GET_ARRAY_ITEM(world->entities_flags, target, entity_flags);
+
+      if (
+         ((*entity_flags) & eir_gme_component_type_aabb)
+         && ((*entity_flags) & eir_gme_component_type_position)
+         )
+      {
+         eir_gme_aabb_component_t * aabb = &world->aabbs.data[target];
+         eir_gme_position_component_t * pos = &world->positions.data[target];
+         eir_gme_camera_t * cam = &world->camera;
+
+         //float size_x = aabb->aabb.size.x * cam->win_scale;
+         //float size_y = aabb->aabb.size.y  * cam->win_scale;
+         //float position_x = pos->position.x + aabb->x_offset + (aabb->aabb.size.x - size_x) * 0.5f;
+         //float position_y = pos->position.y + aabb->y_offset + (aabb->aabb.size.y - size_y) * 0.5f;
+         //cam->position.x = -pos->position.x -aabb->x_offset - aabb->aabb.size.x * 0.5f + (float)cam->viewport_w * 0.5f;
+         //cam->position.y = -pos->position.y -aabb->y_offset - aabb->aabb.size.y * 0.5f + (float)cam->viewport_h * 0.5f;
+         //cam->prev_position.x = pos->position.x + aabb->x_offset;
+         //cam->prev_position.y = pos->position.y + aabb->y_offset;
+         //cam->target = aabb;
+         //cam->win_aabb.position.x = position_x;
+         //cam->win_aabb.position.y = position_y;
+         //cam->win_aabb.size.x = size_x;
+         //cam->win_aabb.size.y = size_y;
+         //cam->position.x = 0.0f;
+         //cam->prev_position.x = 0.0f;
+         //cam->position.y = 0.0f;
+         //cam->prev_position.y = 0.0f;
+         cam->win_scale = win_scale;
+         cam->viewport_w = x_viewport;
+         cam->viewport_h = y_viewport;
+         cam->position.x = pos->position.x + aabb->x_offset;
+         cam->position.y = pos->position.y + aabb->y_offset;
+
+         EIR_KER_LOG_MESSAGE("camera info:");
+         EIR_KER_LOG_MESSAGE("position (%f; %f)", cam->position.x, cam->position.y);
+         EIR_KER_LOG_MESSAGE("prev position (%f; %f)", cam->prev_position.x, cam->prev_position.y);
+      }
+      else
+      {
+         EIR_KER_LOG_ERROR("TARGET ENTITY MUST HAVE AABB AND POSITION COMPONENTS");
+      }
    }
 }
 

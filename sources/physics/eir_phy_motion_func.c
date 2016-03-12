@@ -25,6 +25,7 @@ void eir_phy_proceed_euler_integration(
 }
 
 // TODO: remove this after ECS refacto and successful run
+/*
 void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, double dtime)
 {
 	if (world)
@@ -115,3 +116,4 @@ void eir_phy_proceed_motion_entity_update(eir_gme_world_t * world, double dtime)
 		}
 	}
 }
+*/

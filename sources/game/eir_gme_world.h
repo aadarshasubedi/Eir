@@ -3,7 +3,7 @@
 #include "../kernel/eir_ker_array_macro.h"
 #include "eir_gme_position_component.h"
 #include "eir_gme_aabb_component.h"
-#include "eir_gme_camera_component.h"
+#include "eir_gme_camera.h"
 #include "eir_gme_color_component.h"
 #include "eir_gme_size_component.h"
 #include "eir_gme_physic_component.h"
@@ -33,12 +33,11 @@ typedef enum
    eir_gme_component_type_color = 1 << 3,
    eir_gme_component_type_motion_param = 1 << 4,
    eir_gme_component_type_aabb = 1 << 5,
-   eir_gme_component_type_camera = 1 << 6,
-   eir_gme_component_type_physic = 1 << 7,
-	eir_gme_component_type_direction = 1 << 8,
-	eir_gme_component_type_based_melee_attack = 1 << 9,
-	eir_gme_component_type_state = 1 << 10,
-   eir_gme_component_type_fsm = 1 << 11
+   eir_gme_component_type_physic = 1 << 6,
+	eir_gme_component_type_direction = 1 << 7,
+	eir_gme_component_type_based_melee_attack = 1 << 8,
+	eir_gme_component_type_state = 1 << 9,
+   eir_gme_component_type_fsm = 1 << 10
 } eir_gme_component_type;
 
 typedef struct
@@ -50,11 +49,10 @@ typedef struct
    eir_gme_sprite_component_array_t sprites;
    eir_gme_motion_param_component_array_t motion_params;
    eir_gme_aabb_component_array_t aabbs;
-   eir_gme_camera_component_array_t cameras;
    eir_gme_physic_component_array_t physics;
 	eir_gme_direction_component_array_t directions;
 	eir_gme_based_melee_attack_component_array_t based_melee_attacks;
 	eir_gme_state_component_array_t states;
    eir_gme_fsm_component_array_t fsms;
-   eir_gme_camera_component_t * curr_camera;
+   eir_gme_camera_t camera;
 } eir_gme_world_t;

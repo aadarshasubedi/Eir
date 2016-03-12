@@ -649,6 +649,7 @@ static void eir_gfx_render_sprite_batch(
          eir_gfx_api_bind_array_buffer(batch->vbo);
          eir_gfx_api_set_sprite_buffer_data(batch);
          eir_gfx_api_unbind_vertex_array();
+         batch->info &= ~eir_gfx_item_flag_modified;
       }
       eir_gfx_api_bind_texture(batch->texture->id);
       eir_gfx_api_use_program(batch->program);
@@ -865,6 +866,7 @@ static void eir_gfx_render_rect_batch(
          eir_gfx_api_bind_array_buffer(batch->vbo);
          eir_gfx_api_set_rect_buffer_data(batch);
          eir_gfx_api_unbind_vertex_array();
+         batch->info &= ~eir_gfx_item_flag_modified;
       }
       eir_gfx_api_use_program(batch->program);
       eir_gfx_api_set_program_mat4(
@@ -1100,6 +1102,7 @@ static void eir_gfx_render_text(
          eir_gfx_api_bind_array_buffer(text->vbo);
          eir_gfx_api_set_sprite_buffer_data(text);
          eir_gfx_api_unbind_vertex_array();
+         text->info &= ~eir_gfx_item_flag_modified;
       }
       eir_gfx_api_bind_texture(text->texture->id);
       eir_gfx_api_use_program(text->program);

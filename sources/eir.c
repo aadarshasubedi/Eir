@@ -324,9 +324,9 @@ static void eir_run(game_t * game)
 
 			eir_gme_update_all_components_systems(gme_env->curr_world, time_per_frame);
 
-			if (gme_env->curr_world && gme_env->curr_world->curr_camera)
+			if (gme_env->curr_world)
 			{
-				eir_gfx_update_camera_view(gfx_env, &gme_env->curr_world->curr_camera->position);
+				eir_gfx_update_camera_view(gfx_env, &gme_env->curr_world->camera.position);
 			}
 		}
 
@@ -338,6 +338,7 @@ static void eir_run(game_t * game)
 			&frame_text_color,
 			sys_env->timer.elapsed_time
 			);
+		/*
 		eir_render_player_direction(
 			player_info_text,
 			&player_info_text_pos,
@@ -353,6 +354,7 @@ static void eir_run(game_t * game)
 			player->motion_param_component->data.velocity.x,
 			player->motion_param_component->data.velocity.y
 			);
+		*/
 #endif
 		eir_gfx_api_set_clear_color();
 		eir_gfx_api_clear_buffer();
@@ -657,103 +659,15 @@ int main()
 	eir_gme_env_t * gme_env = &env.gme_env;
 	eir_gfx_env_t * gfx_env = &env.gfx_env;
 
+	// INIT PLAYER USER DATA
+
 	game_t game;
 
-   	// INIT GFX ITEMS CAPACITY
-
-	eir_gfx_set_image_capacity(gfx_env, 1);
-	eir_gfx_set_texture_capacity(gfx_env, 1);
-	eir_gfx_set_group_capacity(gfx_env, 10);
-
-   	// LOAD SPRITE
-
-	eir_gfx_image_t * ph_atlas_image = eir_gfx_load_image(gfx_env, PLACE_HOLDER_IMAGE_PATH, false);
-	eir_gfx_texture_t * ph_texture = eir_gfx_create_texture(gfx_env, ph_atlas_image);
-
-	// CREATE SPRITE
-
-	eir_gfx_group_t * sprites_group = eir_gfx_create_group(gfx_env, 10, 1, 1);
-	eir_gfx_sprite_batch_t * sprites_batch = eir_gfx_add_sprite_batch_to_group(
-		sprites_group,
-		ph_texture,
-		3,
-		true,
-		false,
-		true
-		);
-
-	eir_mth_vec2_t position;
-	eir_mth_vec2_t size;
-	eir_mth_vec2_t uv_offset;
-	eir_mth_vec2_t uv_size;
-	eir_gfx_color_t color;
-
-	eir_gfx_sprite_proxy_t * player_sprite = eir_gfx_add_sprite_to_batch(
-		sprites_batch,
-		position,
-
-		);
-
-	eir_gfx_sprite_ref_t * ph_sprite_ref = eir_gfx_create_sprite_ref(gfx_env, ph_texture, 0, 0, 64, 64);
-
-   	// INIT WORLD ENTITIES
-
-	eir_gme_set_world_capacity(gme_env, 1);
-	eir_gme_world_t * world = eir_gme_create_world(gme_env, 10);
-	eir_gme_entity_t entity = eir_gme_create_world_entity(world);
-
-	eir_gme_position_component_t * position_cpt = eir_gme_set_entity_position(world, entity, 400, 300);
-	eir_gme_set_entity_size(world, entity, 32, 32);
-	eir_gme_set_entity_sprite_ref(world, entity, ph_sprite_ref);
-	eir_gme_set_entity_color(world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
-	eir_gme_motion_param_component_t * motion_cpt = eir_gme_set_entity_acceleration(world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
-	eir_gme_set_entity_aabb(world, entity, 0.0f, 0.0f, 32.0f, 32.0f);
-	eir_gme_set_entity_camera(world, entity, 2.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
-	eir_gme_set_entity_physic(world, entity, 1.0f);
-	eir_gme_direction_component_t * direction_cpt = eir_gme_set_entity_direction(world, entity, EIR_GME_DIRECTION_BOTTOM);
-	eir_gme_based_melee_attack_component_t * based_melee_att_cpt = eir_gme_set_entity_based_melee_attack(world, entity, 10, 0, 0, 64, 64, false);
-
-	eir_gme_entity_t entity2 = eir_gme_create_world_entity(world);
-
-	eir_gme_set_entity_position(world, entity2, 100, 100);
-	eir_gme_set_entity_size(world, entity2, 64, 64);
-	eir_gme_set_entity_sprite_ref(world, entity2, ph_sprite_ref);
-	eir_gme_set_entity_color(world, entity2, 0.0f, 1.0f, 0.0f, 0.5f);
-	eir_gme_set_entity_aabb(world, entity2, 0.0f, 0.0f, 128.0f, 128.0f);
-	eir_gme_set_entity_physic(world, entity2, 1.0f);
-
-	eir_gme_entity_t ground = eir_gme_create_world_entity(world);
-
-	eir_gme_set_entity_position(world, ground, 0, 500);
-	eir_gme_set_entity_size(world, ground, 1800, 32);
-	eir_gme_set_entity_sprite_ref(world, ground, ph_sprite_ref);
-	eir_gme_set_entity_color(world, ground, 1.0f, 1.0f, 1.0f, 0.5f);
-	eir_gme_set_entity_aabb(world, ground, 0.0f, 0.0f, 1800.0f, 32.0f);
-	eir_gme_set_entity_physic(world, ground, 1.0f);
-
-	eir_gme_entity_t trigger = eir_gme_create_world_entity(world);
-	
-	eir_gme_set_entity_position(world, trigger, 600, 200);
-	eir_gme_set_entity_size(world, trigger, 16, 16);
-	eir_gme_set_entity_sprite_ref(world, trigger, ph_sprite_ref);
-	eir_gme_set_entity_color(world, trigger, 1.0f, 1.0f, 1.0f, 0.5f);
-	eir_gme_set_entity_aabb(world, trigger, 0.0f, 0.0f, 16.0f, 16.0f);
-
-	eir_gme_set_active_world(gme_env, world);
-	eir_gme_set_active_camera(world, entity);
-
-   // INIT PLAYER USER DATA
-
 	game.player.env = &env;
-	game.player.owner = world;
-	game.player.entity = entity;
 	game.player.keyboard_buffer = eir_get_input_controller_buffer(gme_env, 0);
 	game.player.pad_buffer = eir_get_input_controller_buffer(gme_env, 1);
-	game.player.direction_component = direction_cpt;
-	game.player.motion_param_component = motion_cpt;
-	game.player.based_melee_attack_component = based_melee_att_cpt;
 
-   // INIT STATE MACHINE
+	// INIT STATE MACHINE
 
 	eir_fsm_set_state_machine_capacity(fsm_env, 1);
 
@@ -786,6 +700,145 @@ int main()
 	eir_fsm_add_state_transition(release_based_melee_attack_state, move_state);
 
 	game.player.fsm = fsm;
+
+   	// INIT GFX ITEMS CAPACITY
+
+	eir_gfx_set_image_capacity(gfx_env, 1);
+	eir_gfx_set_texture_capacity(gfx_env, 1);
+	eir_gfx_set_group_capacity(gfx_env, 10);
+
+   	// LOAD SPRITE
+
+	eir_gfx_image_t * ph_atlas_image = eir_gfx_load_image(gfx_env, PLACE_HOLDER_IMAGE_PATH, false);
+	eir_gfx_texture_t * ph_texture = eir_gfx_create_texture(gfx_env, ph_atlas_image);
+
+	// CREATE SPRITE
+
+	eir_gfx_group_t * sprites_group = eir_gfx_create_group(gfx_env, 10, 1, 1);
+	eir_gfx_sprite_batch_t * sprites_batch = eir_gfx_add_sprite_batch_to_group(
+		sprites_group,
+		ph_texture,
+		3,
+		true,
+		false,
+		true
+		);
+
+	eir_mth_vec2_t position;
+	eir_mth_vec2_t size;
+	eir_mth_vec2_t uv_offset;
+	eir_mth_vec2_t uv_size;
+	eir_gfx_color_t color;
+
+	position.x = 0.0f;
+	position.y = 0.0f;
+	size.x = 64.0f;
+	size.y = 64.0f;
+	uv_offset.x = 0.0f;
+	uv_offset.y = 0.0f;
+	uv_size.x = 64.0f;
+	uv_size.y = 64.0f;
+	color.r = 1.0f;
+	color.g = 0.0f;
+	color.b = 0.0f;
+	color.a = 0.2f;
+	eir_gfx_sprite_proxy_t * player_sprite = eir_gfx_add_sprite_to_batch(
+		sprites_batch,
+		&position,
+		&size,
+		&uv_offset,
+		&uv_size,
+		&color,
+		true
+		);
+
+	position.x = 0.0f;
+	position.y = 0.0f;
+	size.x = 64.0f;
+	size.y = 64.0f;
+	uv_offset.x = 0.0f;
+	uv_offset.y = 0.0f;
+	uv_size.x = 64.0f;
+	uv_size.y = 64.0f;
+	color.r = 1.0f;
+	color.g = 0.0f;
+	color.b = 0.0f;
+	color.a = 0.2f;
+	eir_gfx_sprite_proxy_t * obj_sprite = eir_gfx_add_sprite_to_batch(
+		sprites_batch,
+		&position,
+		&size,
+		&uv_offset,
+		&uv_size,
+		&color,
+		true
+		);
+
+	position.x = 0.0f;
+	position.y = 0.0f;
+	size.x = 64.0f;
+	size.y = 64.0f;
+	uv_offset.x = 0.0f;
+	uv_offset.y = 0.0f;
+	uv_size.x = 64.0f;
+	uv_size.y = 64.0f;
+	color.r = 1.0f;
+	color.g = 0.0f;
+	color.b = 0.0f;
+	color.a = 0.2f;
+	eir_gfx_sprite_proxy_t * wall_sprite = eir_gfx_add_sprite_to_batch(
+		sprites_batch,
+		&position,
+		&size,
+		&uv_offset,
+		&uv_size,
+		&color,
+		true
+		);
+
+	// TODO: DELETE WHEN REFACTO VALIDTED
+	//eir_gfx_sprite_ref_t * ph_sprite_ref = eir_gfx_create_sprite_ref(gfx_env, ph_texture, 0, 0, 64, 64);
+
+   	// INIT WORLD ENTITIES
+
+	eir_gme_set_world_capacity(gme_env, 1);
+	eir_gme_world_t * world = eir_gme_create_world(gme_env, 10);
+	eir_gme_entity_t entity = eir_gme_create_world_entity(world);
+
+	eir_gme_set_entity_position(world, entity, 200, 150);
+	eir_gme_set_entity_size(world, entity, 32, 32);
+	eir_gme_set_entity_sprite(world, entity, player_sprite);
+	eir_gme_set_entity_color(world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
+	eir_gme_set_entity_acceleration(world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
+	eir_gme_set_entity_aabb(world, entity, 0.0f, 0.0f, 32.0f, 32.0f);
+	eir_gme_set_entity_physic(world, entity, 1.0f);
+	eir_gme_set_entity_direction(world, entity, EIR_GME_DIRECTION_BOTTOM);
+	eir_gme_set_entity_based_melee_attack(world, entity, 10, 0, 0, 64, 64, false);
+	eir_gme_set_entity_fsm(world, entity, fsm);
+
+	game.player.owner = world;
+	game.player.entity = entity;
+
+	eir_gme_entity_t entity2 = eir_gme_create_world_entity(world);
+
+	eir_gme_set_entity_position(world, entity2, 100, 100);
+	eir_gme_set_entity_size(world, entity2, 64, 64);
+	eir_gme_set_entity_sprite(world, entity2, obj_sprite);
+	eir_gme_set_entity_color(world, entity2, 1.0f, 0.0f, 0.0f, 0.5f);
+	eir_gme_set_entity_aabb(world, entity2, 0.0f, 0.0f, 128.0f, 128.0f);
+	eir_gme_set_entity_physic(world, entity2, 1.0f);
+
+	eir_gme_entity_t wall = eir_gme_create_world_entity(world);
+
+	eir_gme_set_entity_position(world, wall, 0, 300);
+	eir_gme_set_entity_size(world, wall, 1800, 32);
+	eir_gme_set_entity_sprite(world, wall, wall_sprite);
+	eir_gme_set_entity_color(world, wall, 1.0f, 1.0f, 1.0f, 0.5f);
+	eir_gme_set_entity_aabb(world, wall, 0.0f, 0.0f, 1800.0f, 32.0f);
+	eir_gme_set_entity_physic(world, wall, 1.0f);
+
+	eir_gme_set_active_world(gme_env, world);
+	eir_gme_set_active_camera(world, entity, 2.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
    // RUN EIR ENGINE
 

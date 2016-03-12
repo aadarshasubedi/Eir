@@ -115,7 +115,7 @@ void eir_sys_debug_log_allocation()
    {
       while (elem_iter)
       {
-	 EIR_KER_LOG_MESSAGE("allocated item found: %s", elem_iter->owner_info);
+	 EIR_KER_LOG_WARNING("allocated item found: %s", elem_iter->owner_info);
 	 elem_iter = elem_iter->previous;
       }
    }

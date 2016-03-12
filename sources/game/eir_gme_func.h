@@ -62,14 +62,6 @@ void eir_gme_set_entity_aabb(
 	float height
 	);
 
-void eir_gme_set_entity_camera(
-	eir_gme_world_t * world,
-	eir_gme_entity_t entity,
-	float win_scale,
-	int viewport_w,
-	int viewport_h
-	);
-
 void eir_gme_set_entity_physic(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
@@ -108,7 +100,10 @@ void eir_gme_set_entity_fsm(
 
 void eir_gme_set_active_camera(
 	eir_gme_world_t * world,
-	eir_gme_entity_t entity
+	eir_gme_entity_t target,
+	float win_scale,
+	int x_viewport,
+	int y_viewport
 	);
 
 void eir_gme_set_active_world(
