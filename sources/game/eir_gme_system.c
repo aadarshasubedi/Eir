@@ -184,12 +184,14 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 									{
 										y += y_depth;
 									}
+									/*
 									eir_gme_set_entity_position(
 										world,
 										index,
 										x,
 										y
 										);
+										*/
 								}
 							}
 						}
@@ -315,6 +317,6 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 
 		// ALWAYS FINISH WITH CAMERA UPDATE !
 
-		//eir_gme_update_camera(&world->camera);
+		eir_gme_update_camera(&world->camera);
 	}
 }

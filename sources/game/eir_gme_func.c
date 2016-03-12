@@ -835,8 +835,8 @@ void eir_gme_set_active_camera(
    eir_gme_world_t * world,
    eir_gme_entity_t target,
    float win_scale,
-   int x_viewport,
-   int y_viewport
+   int x_viewport, // TODO: rename viewport_w
+   int y_viewport // TODO: rename viewport_h
    )
 {
    if (world)
@@ -853,28 +853,19 @@ void eir_gme_set_active_camera(
          eir_gme_position_component_t * pos = &world->positions.data[target];
          eir_gme_camera_t * cam = &world->camera;
 
-         //float size_x = aabb->aabb.size.x * cam->win_scale;
-         //float size_y = aabb->aabb.size.y  * cam->win_scale;
-         //float position_x = pos->position.x + aabb->x_offset + (aabb->aabb.size.x - size_x) * 0.5f;
-         //float position_y = pos->position.y + aabb->y_offset + (aabb->aabb.size.y - size_y) * 0.5f;
-         //cam->position.x = -pos->position.x -aabb->x_offset - aabb->aabb.size.x * 0.5f + (float)cam->viewport_w * 0.5f;
-         //cam->position.y = -pos->position.y -aabb->y_offset - aabb->aabb.size.y * 0.5f + (float)cam->viewport_h * 0.5f;
-         //cam->prev_position.x = pos->position.x + aabb->x_offset;
-         //cam->prev_position.y = pos->position.y + aabb->y_offset;
-         //cam->target = aabb;
-         //cam->win_aabb.position.x = position_x;
-         //cam->win_aabb.position.y = position_y;
-         //cam->win_aabb.size.x = size_x;
-         //cam->win_aabb.size.y = size_y;
-         //cam->position.x = 0.0f;
-         //cam->prev_position.x = 0.0f;
-         //cam->position.y = 0.0f;
-         //cam->prev_position.y = 0.0f;
+
          cam->win_scale = win_scale;
          cam->viewport_w = x_viewport;
          cam->viewport_h = y_viewport;
-         cam->position.x = pos->position.x + aabb->x_offset;
-         cam->position.y = pos->position.y + aabb->y_offset;
+         cam->position.x = (float)cam->viewport_w * 0.5f - pos->position.x - aabb->x_offset - aabb->aabb.size.x * 0.5f;
+         cam->position.y = (float)cam->viewport_h * 0.5f - pos->position.y - aabb->y_offset - aabb->aabb.size.y * 0.5f;
+         cam->prev_position.x = cam->position.x;
+         cam->prev_position.y = cam->position.y;
+         cam->win_aabb.size.x = aabb->aabb.size.x * win_scale;
+         cam->win_aabb.size.y = aabb->aabb.size.y * win_scale;
+         cam->win_aabb.position.x = pos->position.x + aabb->x_offset - (cam->win_aabb.size.x - aabb->aabb.size.x) * 0.5f;
+         cam->win_aabb.position.y = pos->position.y + aabb->y_offset - (cam->win_aabb.size.y - aabb->aabb.size.y) * 0.5f;
+         cam->target = aabb;
 
          EIR_KER_LOG_MESSAGE("camera info:");
          EIR_KER_LOG_MESSAGE("position (%f; %f)", cam->position.x, cam->position.y);

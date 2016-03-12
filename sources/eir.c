@@ -821,16 +821,16 @@ int main()
 
 	eir_gme_entity_t entity2 = eir_gme_create_world_entity(world);
 
-	eir_gme_set_entity_position(world, entity2, 100, 100);
+	eir_gme_set_entity_position(world, entity2, 0.0f, 0.0f);
 	eir_gme_set_entity_size(world, entity2, 64, 64);
 	eir_gme_set_entity_sprite(world, entity2, obj_sprite);
 	eir_gme_set_entity_color(world, entity2, 1.0f, 0.0f, 0.0f, 0.5f);
-	eir_gme_set_entity_aabb(world, entity2, 0.0f, 0.0f, 128.0f, 128.0f);
+	eir_gme_set_entity_aabb(world, entity2, 0.0f, 0.0f, 64.0f, 64.0f);
 	eir_gme_set_entity_physic(world, entity2, 1.0f);
 
 	eir_gme_entity_t wall = eir_gme_create_world_entity(world);
 
-	eir_gme_set_entity_position(world, wall, 0, 300);
+	eir_gme_set_entity_position(world, wall, 400, 300);
 	eir_gme_set_entity_size(world, wall, 1800, 32);
 	eir_gme_set_entity_sprite(world, wall, wall_sprite);
 	eir_gme_set_entity_color(world, wall, 1.0f, 1.0f, 1.0f, 0.5f);
