@@ -38,6 +38,7 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->based_melee_attacks);
       EIR_KER_INIT_ARRAY(world->states);
       EIR_KER_INIT_ARRAY(world->fsms);
+      EIR_KER_INIT_ARRAY(world->aabb_primitives);
       eir_gme_init_camera(&world->camera);
    }
 }
@@ -58,6 +59,7 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->based_melee_attacks);
       EIR_KER_FREE_ARRAY(world->states);
       EIR_KER_FREE_ARRAY(world->fsms);
+      EIR_KER_FREE_ARRAY(world->aabb_primitives);
       eir_gme_init_camera(&world->camera);
    }
 }
@@ -272,6 +274,19 @@ static void eir_gme_release_fsm(eir_gme_fsm_component_t * fsm)
    eir_gme_init_fsm(fsm);
 }
 
+static void eir_gme_init_aabb_primitive(eir_gme_aabb_primitive_component_t * aabb_primitive)
+{
+   if (aabb_primitive)
+   {
+      aabb_primitive->rect_proxy = 0;
+   }
+}
+
+static void eir_gme_release_aabb_primitive(eir_gme_aabb_primitive_component_t * aabb_primitive)
+{
+   eir_gme_init_aabb_primitive(aabb_primitive);
+}
+
 static void eir_gme_init_button_state(eir_gme_button_state_t * button_state)
 {
    if (button_state)
@@ -450,6 +465,12 @@ eir_gme_world_t * eir_gme_create_world(
          max_entity_count,
          eir_gme_init_fsm
          );
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+         eir_gme_aabb_primitive_component_t,
+         world->aabb_primitives,
+         max_entity_count,
+         eir_gme_init_aabb_primitive
+         );
    }
    return world;
 }
@@ -472,6 +493,7 @@ eir_gme_entity_t eir_gme_create_world_entity(eir_gme_world_t * world)
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->based_melee_attacks, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->states, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->fsms, entity);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->aabb_primitives, entity);
    }
    return entity;
 }
@@ -831,12 +853,37 @@ void eir_gme_set_entity_fsm(
    }
 }
 
+void eir_gme_set_entity_aabb_primitive(
+   eir_gme_world_t * world,
+   eir_gme_entity_t entity,
+   eir_gfx_rect_proxy_t * rect_proxy
+   )
+{
+   eir_gme_entity_flags_t * entity_flags = 0;
+   eir_gme_aabb_primitive_component_t * aabb_primitive_component = 0;
+
+   if (world)
+   {
+      EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
+      EIR_KER_GET_ARRAY_ITEM(world->aabb_primitives, entity, aabb_primitive_component);
+   }
+   if (entity_flags && aabb_primitive_component)
+   {
+      (*entity_flags) |= eir_gme_component_type_aabb;
+      aabb_primitive_component->rect_proxy = rect_proxy;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity);
+   }
+}
+
 void eir_gme_set_active_camera(
    eir_gme_world_t * world,
    eir_gme_entity_t target,
    float win_scale,
-   int x_viewport, // TODO: rename viewport_w
-   int y_viewport // TODO: rename viewport_h
+   int viewport_w,
+   int viewport_h
    )
 {
    if (world)
@@ -855,8 +902,8 @@ void eir_gme_set_active_camera(
 
 
          cam->win_scale = win_scale;
-         cam->viewport_w = x_viewport;
-         cam->viewport_h = y_viewport;
+         cam->viewport_w = viewport_w;
+         cam->viewport_h = viewport_h;
          cam->position.x = (float)cam->viewport_w * 0.5f - pos->position.x - aabb->x_offset - aabb->aabb.size.x * 0.5f;
          cam->position.y = (float)cam->viewport_h * 0.5f - pos->position.y - aabb->y_offset - aabb->aabb.size.y * 0.5f;
          cam->prev_position.x = cam->position.x;

@@ -98,12 +98,18 @@ void eir_gme_set_entity_fsm(
 	eir_fsm_state_machine_t * fsm
 	);
 
+void eir_gme_set_entity_aabb_primitive(
+	eir_gme_world_t * world,
+	eir_gme_entity_t entity,
+	eir_gfx_rect_proxy_t * rect_proxy
+	);
+
 void eir_gme_set_active_camera(
 	eir_gme_world_t * world,
 	eir_gme_entity_t target,
 	float win_scale,
-	int x_viewport,
-	int y_viewport
+	int viewport_w,
+	int viewport_h
 	);
 
 void eir_gme_set_active_world(
