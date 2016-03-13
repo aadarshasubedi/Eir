@@ -860,7 +860,7 @@ int main()
 	eir_gme_set_entity_acceleration(world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
 	eir_gme_set_entity_aabb(world, entity, 0.0f, 0.0f, 64.0f, 64.0f);
 	eir_gme_set_entity_aabb_primitive(world, entity, entity_aabb_rect_proxy);
-	eir_gme_set_entity_physic(world, entity, 1.0f);
+	eir_gme_set_entity_physic(world, entity, 0.5f);
 	eir_gme_set_entity_direction(world, entity, EIR_GME_DIRECTION_BOTTOM);
 	eir_gme_set_entity_based_melee_attack(world, entity, 10, 0, 0, 64, 64, false);
 	eir_gme_set_entity_fsm(world, entity, fsm);

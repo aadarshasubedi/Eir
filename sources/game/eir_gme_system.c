@@ -140,62 +140,66 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 						aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
 						aabb_component->modified = true;
 					}
-				}
-				if (entity_flags & eir_gme_component_type_physic)
-				{
-					for (int index2 = 0; index2 < world->entities_flags.used; ++index2)
+					if (entity_flags & eir_gme_component_type_physic)
 					{
-						if (
-							(index != index2)
-							&& (world->entities_flags.data[index2] & eir_gme_component_type_aabb)
-							&& (world->entities_flags.data[index2] & eir_gme_component_type_physic)
-							)
+						for (int index2 = 0; index2 < world->entities_flags.used; ++index2)
 						{
-							eir_gme_aabb_component_t * aabb_component_2 = &world->aabbs.data[index];
-							bool collision = eir_phy_check_aabb_intersection(
-								&world->aabbs.data[index].aabb,
-								&world->aabbs.data[index2].aabb
-								);
-
-							if (collision)
+							if (
+								(index != index2)
+								&& (world->entities_flags.data[index2] & eir_gme_component_type_aabb)
+								&& (world->entities_flags.data[index2] & eir_gme_component_type_physic)
+								)
 							{
-								if (
-									world->physics.data[index].weight > 0.0f
-									&& world->physics.data[index2].weight > 0.0f
-									&& position_component
-									)
+								bool collision = eir_phy_check_aabb_intersection(
+									&world->aabbs.data[index].aabb,
+									&world->aabbs.data[index2].aabb
+									);
+
+								if (collision)
 								{
-									float x_depth = eir_phy_get_x_aabb_intersection_depth(
-										&world->aabbs.data[index].aabb,
-										&world->aabbs.data[index2].aabb
-										);
-									float y_depth = eir_phy_get_y_aabb_intersection_depth(
-										&world->aabbs.data[index].aabb,
-										&world->aabbs.data[index2].aabb
-										);
-
-									float x = position_component->position.x;
-									float y = position_component->position.y;
-
-									if (eir_mth_abs(x_depth) < eir_mth_abs(y_depth))
+									if (
+										world->physics.data[index].weight > 0.0f
+										&& world->physics.data[index2].weight > 0.0f
+										&& position_component
+										)
 									{
-										x += x_depth;
+										float x_depth = eir_phy_get_x_aabb_intersection_depth(
+											&world->aabbs.data[index].aabb,
+											&world->aabbs.data[index2].aabb
+											);
+										float y_depth = eir_phy_get_y_aabb_intersection_depth(
+											&world->aabbs.data[index].aabb,
+											&world->aabbs.data[index2].aabb
+											);
+
+										float x = position_component->position.x;
+										float y = position_component->position.y;
+
+										if (eir_mth_abs(x_depth) < eir_mth_abs(y_depth))
+										{
+											x += x_depth;
+										}
+										else
+										{
+											y += y_depth;
+										}
+										eir_gme_set_entity_position(
+											world,
+											index,
+											x,
+											y
+											);
 									}
-									else
-									{
-										y += y_depth;
-									}
-									/*
-									eir_gme_set_entity_position(
-										world,
-										index,
-										x,
-										y
-										);
-										*/
 								}
 							}
 						}
+					}
+					// IF COLLISION RESPONSE
+					if (position_component->modified)
+					{
+						aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
+						aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+						aabb_component->modified = true;
 					}
 				}
 			}
