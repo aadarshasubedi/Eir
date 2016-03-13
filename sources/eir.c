@@ -315,12 +315,6 @@ static void eir_run(game_t * game)
 			}
 
 			// UPDATE ALL SYSTEMS HERE EXCEPT RENDERING AND TIMER
-			// TODO: fsm update must be made by eir_gme_update_all_components_systems
-			// eir_fsm_update_state_machine(player->fsm);
-
-			// TODO: rename this function and put it in game code section
-			// TODO: motion update must be made by eir_gme_update_all_components_systems
-			// eir_phy_proceed_motion_entity_update(gme_env->curr_world, time_per_frame);
 
 			eir_gme_update_all_components_systems(gme_env->curr_world, time_per_frame);
 
@@ -629,8 +623,6 @@ static void update_prepare_based_melee_attack_state(void * user_data)
 			PLAYER_SPEED,
 			PLAYER_FRICTION
 			);
-
-		// TODO: store current time in player for global cooldown and channel energy
 	}
 }
 
@@ -639,12 +631,6 @@ static void update_release_based_melee_attack_state(void * user_data)
 	if (user_data)
 	{
 		player_t * player = (player_t *)user_data;
-
-		// TODO: update AABB values using entity current position and orientation
-
-
-
-		// TODO: display AABB
 	}
 }
 
