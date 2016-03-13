@@ -138,6 +138,7 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 					{
 						aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
 						aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+						aabb_component->modified = true;
 					}
 				}
 				if (entity_flags & eir_gme_component_type_physic)
@@ -211,6 +212,56 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 					motion_param_component->motion_param.velocity.y
 					);
 			}
+			if (
+				(entity_flags & eir_gme_component_type_aabb_primitive)
+				&& (entity_flags & eir_gme_component_type_aabb)
+				)
+			{
+				eir_gme_aabb_primitive_component_t * aabb_primitive_component = 0;
+				eir_gme_aabb_component_t * aabb_component = 0;
+
+				aabb_primitive_component = &world->aabb_primitives.data[index];
+				aabb_component = &world->aabbs.data[index];
+
+				eir_gfx_rect_proxy_t * rect_proxy = 0;
+
+				if (aabb_component->modified)
+				{
+					rect_proxy = aabb_primitive_component->rect_proxy;
+				}
+				if (rect_proxy)
+				{
+					eir_mth_vec2_t position =
+					{
+						.x = rect_proxy->position.x,
+						.y = rect_proxy->position.y
+					};
+					eir_mth_vec2_t size =
+					{
+						.x = rect_proxy->size.x,
+						.y = rect_proxy->size.y
+					};
+					eir_gfx_color_t color =
+					{
+						.r = rect_proxy->color.r,
+						.g = rect_proxy->color.g,
+						.b = rect_proxy->color.b,
+						.a = rect_proxy->color.a
+					};
+
+					position.x = aabb_component->aabb.position.x;
+					position.y = aabb_component->aabb.position.y;
+					size.x = aabb_component->aabb.size.x;
+					size.y = aabb_component->aabb.size.y;
+
+					eir_gfx_modify_rect(
+					   rect_proxy,
+					   &position,
+					   &size,
+					   &color
+					   );
+				}
+			}
 			if (entity_flags & eir_gme_component_type_sprite)
 			{
 				eir_gme_sprite_component_t * sprite_component = &world->sprites.data[index];
@@ -244,9 +295,6 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 					.b = sprite_proxy->color.b,
 					.a = sprite_proxy->color.a
 				};
-
-				position.x = sprite_proxy->position.x;
-				position.x = sprite_proxy->position.y;
 
 				bool must_modify_sprite = false;
 
@@ -312,6 +360,10 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 			if (entity_flags & eir_gme_component_type_color)
 			{
 				world->colors.data[index].modified = false;
+			}
+			if (entity_flags & eir_gme_component_type_aabb)
+			{
+				world->aabbs.data[index].modified = false;
 			}
 		}
 

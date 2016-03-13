@@ -8,6 +8,7 @@ typedef struct
    eir_phy_aabb_t aabb;
    float x_offset;
    float y_offset;
+   bool modified;
 } eir_gme_aabb_component_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(

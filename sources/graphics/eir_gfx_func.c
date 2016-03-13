@@ -396,24 +396,33 @@ eir_gfx_group_t * eir_gfx_create_group(
    }
    if (group)
    {
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-         eir_gfx_sprite_batch_t,
-         group->sprite_batches,
-         sprite_batch_capacity,
-         eir_gfx_init_sprite_batch
-         );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-         eir_gfx_text_t,
-         group->texts,
-         text_capacity,
-         eir_gfx_init_text
-         );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-         eir_gfx_rect_batch_t,
-         group->rect_batches,
-         rect_batch_capacity,
-         eir_gfx_init_rect_batch
-         );
+      if (sprite_batch_capacity > 0)
+      {
+         EIR_KER_ALLOCATE_ARRAY_BIS(
+            eir_gfx_sprite_batch_t,
+            group->sprite_batches,
+            sprite_batch_capacity,
+            eir_gfx_init_sprite_batch
+            );
+      }
+      if (text_capacity > 0)
+      {
+         EIR_KER_ALLOCATE_ARRAY_BIS(
+            eir_gfx_text_t,
+            group->texts,
+            text_capacity,
+            eir_gfx_init_text
+            );
+      }
+      if (rect_batch_capacity)
+      {
+         EIR_KER_ALLOCATE_ARRAY_BIS(
+            eir_gfx_rect_batch_t,
+            group->rect_batches,
+            rect_batch_capacity,
+            eir_gfx_init_rect_batch
+            );
+      }
    }
    else
    {

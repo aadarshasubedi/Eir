@@ -228,7 +228,7 @@ static void eir_run(game_t * game)
 
 #ifdef EIR_DEBUG
 
-	eir_gfx_group_t * debug_info_group = eir_gfx_create_group(gfx_env, 1, 3, 1);
+	eir_gfx_group_t * debug_info_group = eir_gfx_create_group(gfx_env, 0, 3, 0);
 
 	eir_gfx_text_t * frame_text = 0;
 	eir_mth_vec2_t frame_text_pos;
@@ -714,7 +714,7 @@ int main()
 
 	// CREATE SPRITE
 
-	eir_gfx_group_t * sprites_group = eir_gfx_create_group(gfx_env, 10, 1, 1);
+	eir_gfx_group_t * sprites_group = eir_gfx_create_group(gfx_env, 10, 0, 0);
 	eir_gfx_sprite_batch_t * sprites_batch = eir_gfx_add_sprite_batch_to_group(
 		sprites_group,
 		ph_texture,
@@ -796,8 +796,56 @@ int main()
 		true
 		);
 
-	// TODO: DELETE WHEN REFACTO VALIDTED
-	//eir_gfx_sprite_ref_t * ph_sprite_ref = eir_gfx_create_sprite_ref(gfx_env, ph_texture, 0, 0, 64, 64);
+	// CREATE RECT
+
+	eir_gfx_group_t * rect_group = eir_gfx_create_group(gfx_env, 0, 0, 10);
+	eir_gfx_rect_batch_t * rect_batch = eir_gfx_add_rect_batch_to_group(
+		rect_group,
+		3,
+		true,
+		false,
+		true
+		);
+
+	position.x = 0.0f;
+	position.y = 64.0f;
+	size.x = 64.0f;
+	size.y = 64.0f;
+	uv_offset.x = 0.0f;
+	uv_offset.y = 0.0f;
+	uv_size.x = 64.0f;
+	uv_size.y = 64.0f;
+	color.r = 1.0f;
+	color.g = 1.0f;
+	color.b = 0.0f;
+	color.a = 0.2f;
+	eir_gfx_rect_proxy_t  * entity_aabb_rect_proxy = eir_gfx_add_rect_to_batch(
+   		rect_batch,
+   		&position,
+		&size,
+   		&color,
+   		true
+   		);
+
+	position.x = 0.0f;
+	position.y = 128.0f;
+	size.x = 64.0f;
+	size.y = 64.0f;
+	uv_offset.x = 0.0f;
+	uv_offset.y = 0.0f;
+	uv_size.x = 64.0f;
+	uv_size.y = 64.0f;
+	color.r = 1.0f;
+	color.g = 1.0f;
+	color.b = 0.0f;
+	color.a = 0.2f;
+	eir_gfx_rect_proxy_t  * wall_aabb_rect_proxy = eir_gfx_add_rect_to_batch(
+   		rect_batch,
+   		&position,
+		&size,
+   		&color,
+   		true
+   		);
 
    	// INIT WORLD ENTITIES
 
@@ -810,7 +858,8 @@ int main()
 	eir_gme_set_entity_sprite(world, entity, player_sprite);
 	eir_gme_set_entity_color(world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
 	eir_gme_set_entity_acceleration(world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
-	eir_gme_set_entity_aabb(world, entity, 0.0f, 0.0f, 32.0f, 32.0f);
+	eir_gme_set_entity_aabb(world, entity, 0.0f, 0.0f, 64.0f, 64.0f);
+	eir_gme_set_entity_aabb_primitive(world, entity, entity_aabb_rect_proxy);
 	eir_gme_set_entity_physic(world, entity, 1.0f);
 	eir_gme_set_entity_direction(world, entity, EIR_GME_DIRECTION_BOTTOM);
 	eir_gme_set_entity_based_melee_attack(world, entity, 10, 0, 0, 64, 64, false);
@@ -835,6 +884,7 @@ int main()
 	eir_gme_set_entity_sprite(world, wall, wall_sprite);
 	eir_gme_set_entity_color(world, wall, 1.0f, 1.0f, 1.0f, 0.5f);
 	eir_gme_set_entity_aabb(world, wall, 0.0f, 0.0f, 1800.0f, 32.0f);
+	eir_gme_set_entity_aabb_primitive(world, wall, wall_aabb_rect_proxy);
 	eir_gme_set_entity_physic(world, wall, 1.0f);
 
 	eir_gme_set_active_world(gme_env, world);

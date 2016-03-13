@@ -169,6 +169,7 @@ static void eir_gme_init_aabb(eir_gme_aabb_component_t * aabb)
       aabb->aabb.size.y = 0.0f;
       aabb->x_offset = 0.0f;
       aabb->y_offset = 0.0f;
+      aabb->modified = true;
    }
 }
 
@@ -673,6 +674,7 @@ void eir_gme_set_entity_aabb(
       aabb_component->aabb.size.y = height;
       aabb_component->x_offset = x_offset;
       aabb_component->y_offset = y_offset;
+      aabb_component->modified = true;
    }
    else
    {
@@ -869,7 +871,7 @@ void eir_gme_set_entity_aabb_primitive(
    }
    if (entity_flags && aabb_primitive_component)
    {
-      (*entity_flags) |= eir_gme_component_type_aabb;
+      (*entity_flags) |= eir_gme_component_type_aabb_primitive;
       aabb_primitive_component->rect_proxy = rect_proxy;
    }
    else
