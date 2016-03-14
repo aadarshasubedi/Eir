@@ -5,14 +5,12 @@
 #include <stddef.h>
 
 #include "maths/eir_mth_vector.h"
-
 #include "system/eir_sys_env.h"
 #include "system/eir_sys_timer_func.h"
 #include "system/eir_sys_file_system.h"
 #include "system/eir_sys_memory.h"
 #include "system/eir_sys_joystick_func.h"
 #include "system/eir_sys_win_api_func.h"
-
 #include "graphics/eir_gfx_sprite.h"
 #include "graphics/eir_gfx_types.h"
 #include "graphics/eir_gfx_defines.h"
@@ -20,18 +18,13 @@
 #include "graphics/eir_gfx_env.h"
 #include "graphics/eir_gfx_api_func.h"
 #include "graphics/eir_gfx_func.h"
-
 #include "sound/eir_snd_api_func.h"
 #include "sound/eir_snd_env.h"
-
 #include "game/eir_gme_env.h"
 #include "game/eir_gme_func.h"
 #include "game/eir_gme_system.h"
-
 #include "kernel/eir_ker_env.h"
-
 #include "fsm/eir_fsm_func.h"
-
 #include "physics/eir_phy_motion_func.h"
 
 const int WINDOW_WIDTH = 800;
@@ -40,6 +33,7 @@ const int WINDOW_HEIGHT = 600;
 const float PLAYER_FRICTION = 10.0f;
 const float PLAYER_SPEED = 1600.0f;
 
+/*
 typedef struct
 {
 	eir_ker_env_t * env;
@@ -53,6 +47,7 @@ typedef struct
 {
 	player_t player;
 } game_t;
+*/
 
 static void eir_init_all_api(eir_ker_env_t * env, int width, int height)
 {
@@ -207,10 +202,10 @@ static double eir_get_current_time(eir_sys_env_t * env)
 	return result;
 }
 
-static void eir_run(game_t * game)
+static void eir_run(eir_ker_env_t * env)
 {
-	player_t * player = &game->player;
-	eir_ker_env_t * env = player->env;
+	//player_t * player = &game->player;
+	//eir_ker_env_t * env = player->env;
 	eir_gfx_env_t * gfx_env = &env->gfx_env;
 	eir_sys_env_t * sys_env = &env->sys_env;
 	eir_snd_env_t * snd_env = &env->snd_env;
@@ -380,31 +375,35 @@ static bool validate_idle_state(void * user_data)
 
 	if (user_data)
 	{
-		player_t * player = (player_t *)user_data;
+		eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
+		eir_gme_world_t * world = entity_proxy->world;
+		eir_gme_entity_t entity = entity_proxy->entity;
+		eir_gme_input_controller_buffer_t * pad_buffer = world->pads.data[entity].input_buffer;
+		eir_gme_input_controller_buffer_t * keyboard_buffer = world->keyboards.data[entity].input_buffer;
 
-		if (!player->pad_buffer->controllers[1].is_analog)
+		if (!pad_buffer->controllers[1].is_analog)
 		{
 			if (
-				player->keyboard_buffer
-				&& player->pad_buffer
-				&& !player->pad_buffer->controllers[1].is_connected
-				&& !player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
-				&& !player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
-				&& !player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
-				&& !player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
-				&& !player->keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
+				keyboard_buffer
+				&& pad_buffer
+				&& !pad_buffer->controllers[1].is_connected
+				&& !keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
+				&& !keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
+				&& !keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
+				&& !keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
+				&& !keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
 				)
 			{
 				result = true;
 			}
 			else if (
-				player->pad_buffer
-				&& player->pad_buffer->controllers[1].is_connected
-				&& !player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
-				&& !player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
-				&& !player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
-				&& !player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
-				&& !player->pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
+				pad_buffer
+				&& pad_buffer->controllers[1].is_connected
+				&& !pad_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
+				&& !pad_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
+				&& !pad_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
+				&& !pad_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
+				&& !pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
 				)
 			{
 				result = true;
@@ -420,43 +419,47 @@ static bool validate_move_state(void * user_data)
 
 	if (user_data)
 	{
-		player_t * player = (player_t *)user_data;
+		eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
+		eir_gme_world_t * world = entity_proxy->world;
+		eir_gme_entity_t entity = entity_proxy->entity;
+		eir_gme_input_controller_buffer_t * pad_buffer = world->pads.data[entity].input_buffer;
+		eir_gme_input_controller_buffer_t * keyboard_buffer = world->keyboards.data[entity].input_buffer;
 
 		if (
-			player->keyboard_buffer
-			&& player->pad_buffer
-			&& !player->pad_buffer->controllers[1].is_connected
+			keyboard_buffer
+			&& pad_buffer
+			&& !pad_buffer->controllers[1].is_connected
 			&& (
-				player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
-				|| player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
-				|| player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
-				|| player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
+				keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
+				|| keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
+				|| keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
+				|| keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
 				)
 			)
 		{
 			result = true;
 		}
 		else if (
-			player->pad_buffer
-			&& player->pad_buffer->controllers[1].is_connected
-			&& !player->pad_buffer->controllers[1].is_analog
+			pad_buffer
+			&& pad_buffer->controllers[1].is_connected
+			&& !pad_buffer->controllers[1].is_analog
 			&& (
-				player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
-				|| player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
-				|| player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
-				|| player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
+				pad_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
+				|| pad_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
+				|| pad_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
+				|| pad_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
 				)
 			)
 		{
 			result = true;
 		}
 		else if (
-			player->pad_buffer
-			&& player->pad_buffer->controllers[1].is_connected
-			&& player->pad_buffer->controllers[1].is_analog
+			pad_buffer
+			&& pad_buffer->controllers[1].is_connected
+			&& pad_buffer->controllers[1].is_analog
 			&& (
-				player->pad_buffer->controllers[1].left_stick_value_x
-				|| player->pad_buffer->controllers[1].left_stick_value_y
+				pad_buffer->controllers[1].left_stick_value_x
+				|| pad_buffer->controllers[1].left_stick_value_y
 				)
 			)
 		{
@@ -472,21 +475,25 @@ static bool validate_prepare_based_melee_attack_state(void * user_data)
 
 	if (user_data)
 	{
-		player_t * player = (player_t *)user_data;
+		eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
+		eir_gme_world_t * world = entity_proxy->world;
+		eir_gme_entity_t entity = entity_proxy->entity;
+		eir_gme_input_controller_buffer_t * pad_buffer = world->pads.data[entity].input_buffer;
+		eir_gme_input_controller_buffer_t * keyboard_buffer = world->keyboards.data[entity].input_buffer;
 
 		if (
-			player->keyboard_buffer
-			&& player->pad_buffer
-			&& !player->pad_buffer->controllers[1].is_connected
-			&& player->keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
+			keyboard_buffer
+			&& pad_buffer
+			&& !pad_buffer->controllers[1].is_connected
+			&& keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
 			)
 		{
 			result = true;
 		}
 		else if (
-			player->pad_buffer
-			&& player->pad_buffer->controllers[1].is_connected
-			&& player->pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
+			pad_buffer
+			&& pad_buffer->controllers[1].is_connected
+			&& pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
 			)
 		{
 			result = true;
@@ -501,21 +508,25 @@ static bool validate_release_based_melee_attack_state(void * user_data)
 
 	if (user_data)
 	{
-		player_t * player = (player_t *)user_data;
+		eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
+		eir_gme_world_t * world = entity_proxy->world;
+		eir_gme_entity_t entity = entity_proxy->entity;
+		eir_gme_input_controller_buffer_t * pad_buffer = world->pads.data[entity].input_buffer;
+		eir_gme_input_controller_buffer_t * keyboard_buffer = world->keyboards.data[entity].input_buffer;
 
 		if (
-			player->keyboard_buffer
-			&& player->pad_buffer
-			&& !player->pad_buffer->controllers[1].is_connected
-			&& !player->keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
+			keyboard_buffer
+			&& pad_buffer
+			&& !pad_buffer->controllers[1].is_connected
+			&& !keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
 			)
 		{
 			result = true;
 		}
 		else if (
-			player->pad_buffer
-			&& player->pad_buffer->controllers[1].is_connected
-			&& !player->pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
+			pad_buffer
+			&& pad_buffer->controllers[1].is_connected
+			&& !pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
 			)
 		{
 			result = true;
@@ -528,11 +539,11 @@ static void update_idle_state(void * user_data)
 {
 	if (user_data)
 	{
-		player_t * player = (player_t *)user_data;
+		eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
 
 		eir_gme_set_entity_acceleration(
-			player->owner,
-			player->entity,
+			entity_proxy->world,
+			entity_proxy->entity,
 			0.0f,
 			0.0f, 
 			PLAYER_SPEED,
@@ -546,42 +557,46 @@ static void update_move_state(void * user_data)
 {
 	if (user_data)
 	{
-		player_t * player = (player_t *)user_data;
+		eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
+		eir_gme_world_t * world = entity_proxy->world;
+		eir_gme_entity_t entity = entity_proxy->entity;
+		eir_gme_input_controller_buffer_t * pad_buffer = world->pads.data[entity].input_buffer;
+		eir_gme_input_controller_buffer_t * keyboard_buffer = world->keyboards.data[entity].input_buffer;
 
 		float x_velocity = 0.0f;
 		float y_velocity = 0.0f;
 
-		if (player->pad_buffer->controllers[1].is_analog)
+		if (pad_buffer->controllers[1].is_analog)
 		{
-			x_velocity = player->pad_buffer->controllers[1].left_stick_value_x;
-			y_velocity = player->pad_buffer->controllers[1].left_stick_value_y;
+			x_velocity = pad_buffer->controllers[1].left_stick_value_x;
+			y_velocity = pad_buffer->controllers[1].left_stick_value_y;
 		}
 		else
 		{
 			if (
-				player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
-				|| player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
+				keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
+				|| pad_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed
 				)
 			{
 				x_velocity = 1.0f;
 			}
 			if (
-				player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
-				|| player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
+				keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
+				|| pad_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed
 				)
 			{
 				x_velocity = -1.0f;
 			}
 			if (
-				player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
-				|| player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
+				keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
+				|| pad_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed
 				)
 			{
 				y_velocity = 1.0f;
 			}
 			if (
-				player->keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
-				|| player->pad_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
+				keyboard_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
+				|| pad_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed
 				)
 			{
 				y_velocity = -1.0f;
@@ -595,8 +610,8 @@ static void update_move_state(void * user_data)
 		}
 
 		eir_gme_set_entity_acceleration(
-			player->owner,
-			player->entity,
+			world,
+			entity,
 			x_velocity,
 			y_velocity,
 			PLAYER_SPEED,
@@ -609,11 +624,11 @@ static void update_prepare_based_melee_attack_state(void * user_data)
 {
 	if (user_data)
 	{
-		player_t * player = (player_t *)user_data;
+		eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
 
 		eir_gme_set_entity_acceleration(
-			player->owner,
-			player->entity,
+			entity_proxy->world,
+			entity_proxy->entity,
 			0.0f,
 			0.0f, 
 			PLAYER_SPEED,
@@ -626,7 +641,7 @@ static void update_release_based_melee_attack_state(void * user_data)
 {
 	if (user_data)
 	{
-		player_t * player = (player_t *)user_data;
+		eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
 	}
 }
 
@@ -643,17 +658,19 @@ int main()
 
 	// INIT PLAYER USER DATA
 
-	game_t game;
+	//game_t game;
 
-	game.player.env = &env;
-	game.player.keyboard_buffer = eir_get_input_controller_buffer(gme_env, 0);
-	game.player.pad_buffer = eir_get_input_controller_buffer(gme_env, 1);
+	//game.player.env = &env;
+	//game.player.keyboard_buffer = eir_get_input_controller_buffer(gme_env, 0);
+	//game.player.pad_buffer = eir_get_input_controller_buffer(gme_env, 1);
+
+	eir_gme_entity_proxy_t player_entity_proxy;
 
 	// INIT STATE MACHINE
 
 	eir_fsm_set_state_machine_capacity(fsm_env, 1);
 
-	eir_fsm_state_machine_t * fsm = eir_fsm_create_state_machine(fsm_env, 10, &game.player);
+	eir_fsm_state_machine_t * fsm = eir_fsm_create_state_machine(fsm_env, 10, &player_entity_proxy);
 	eir_fsm_state_t * idle_state = eir_fsm_create_state(fsm);
 	eir_fsm_state_t * move_state = eir_fsm_create_state(fsm);
 	eir_fsm_state_t * end_state = eir_fsm_create_state(fsm);
@@ -844,9 +861,22 @@ int main()
 	eir_gme_set_entity_direction(world, entity, EIR_GME_DIRECTION_BOTTOM);
 	eir_gme_set_entity_based_melee_attack(world, entity, 10, 0, 0, 64, 64, false);
 	eir_gme_set_entity_fsm(world, entity, fsm);
+	eir_gme_set_entity_keyboard_controller(
+		world,
+		entity,
+		eir_get_input_controller_buffer(gme_env, 0)
+		);
+	eir_gme_set_entity_pad_controller(
+		world,
+		entity,
+		eir_get_input_controller_buffer(gme_env, 1)
+		);
 
-	game.player.owner = world;
-	game.player.entity = entity;
+	player_entity_proxy.entity = entity;
+	player_entity_proxy.world = world;
+
+	//game.player.owner = world;
+	//game.player.entity = entity;
 
 	eir_gme_entity_t entity2 = eir_gme_create_world_entity(world);
 
@@ -872,7 +902,7 @@ int main()
 
    // RUN EIR ENGINE
 
-	eir_run(&game);
+	eir_run(&env);
 
    // RELEASE ENV
 

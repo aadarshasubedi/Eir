@@ -39,6 +39,8 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->states);
       EIR_KER_INIT_ARRAY(world->fsms);
       EIR_KER_INIT_ARRAY(world->aabb_primitives);
+      EIR_KER_INIT_ARRAY(world->keyboards);
+      EIR_KER_INIT_ARRAY(world->pads);
       eir_gme_init_camera(&world->camera);
    }
 }
@@ -60,6 +62,8 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->states);
       EIR_KER_FREE_ARRAY(world->fsms);
       EIR_KER_FREE_ARRAY(world->aabb_primitives);
+      EIR_KER_FREE_ARRAY(world->keyboards);
+      EIR_KER_FREE_ARRAY(world->pads);
       eir_gme_init_camera(&world->camera);
    }
 }
@@ -178,28 +182,6 @@ static void eir_gme_release_aabb(eir_gme_aabb_component_t * aabb)
    eir_gme_init_aabb(aabb);
 }
 
-/*
-static void eir_gme_init_camera(eir_gme_camera_component_t * camera)
-{
-   if (camera)
-   {
-      eir_mth_set_vec2(&camera->position, 0.0f, 0.0f);
-      eir_mth_set_vec2(&camera->prev_position, 0.0f, 0.0f);
-      camera->target = 0;
-      camera->win_scale = 1.0f;
-      camera->viewport_w = 0;
-      camera->viewport_h = 0;
-   }
-}
-*/
-
-/*
-static void eir_gme_release_camera(eir_gme_camera_component_t * camera)
-{
-   eir_gme_init_camera(camera);
-}
-*/
-
 static void eir_gme_init_physic(eir_gme_physic_component_t * physic)
 {
    if (physic)
@@ -286,6 +268,32 @@ static void eir_gme_init_aabb_primitive(eir_gme_aabb_primitive_component_t * aab
 static void eir_gme_release_aabb_primitive(eir_gme_aabb_primitive_component_t * aabb_primitive)
 {
    eir_gme_init_aabb_primitive(aabb_primitive);
+}
+
+static void eir_gme_init_keyboard(eir_gme_keyboard_component_t * keyboard)
+{
+   if (keyboard)
+   {
+      keyboard->input_buffer = 0;
+   }
+}
+
+static void eir_gme_release_keyboard(eir_gme_keyboard_component_t * keyboard)
+{
+   eir_gme_init_keyboard(keyboard);
+}
+
+static void eir_gme_init_pad(eir_gme_pad_component_t * pad)
+{
+   if (pad)
+   {
+      pad->input_buffer = 0;
+   }
+}
+
+static void eir_gme_release_pad(eir_gme_pad_component_t * pad)
+{
+   eir_gme_init_pad(pad);
 }
 
 static void eir_gme_init_button_state(eir_gme_button_state_t * button_state)
@@ -472,6 +480,18 @@ eir_gme_world_t * eir_gme_create_world(
          max_entity_count,
          eir_gme_init_aabb_primitive
          );
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+         eir_gme_keyboard_component_t,
+         world->keyboards,
+         max_entity_count,
+         eir_gme_init_keyboard
+         );
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+         eir_gme_pad_component_t,
+         world->pads,
+         max_entity_count,
+         eir_gme_init_pad
+         );
    }
    return world;
 }
@@ -495,6 +515,8 @@ eir_gme_entity_t eir_gme_create_world_entity(eir_gme_world_t * world)
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->states, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->fsms, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->aabb_primitives, entity);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->keyboards, entity);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->pads, entity);
    }
    return entity;
 }
@@ -873,6 +895,56 @@ void eir_gme_set_entity_aabb_primitive(
    {
       (*entity_flags) |= eir_gme_component_type_aabb_primitive;
       aabb_primitive_component->rect_proxy = rect_proxy;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity);
+   }
+}
+
+void eir_gme_set_entity_keyboard_controller(
+   eir_gme_world_t * world,
+   eir_gme_entity_t entity,
+   eir_gme_input_controller_buffer_t * input_buffer
+   )
+{
+   eir_gme_entity_flags_t * entity_flags = 0;
+   eir_gme_keyboard_component_t * keyboard_component = 0;
+
+   if (world)
+   {
+      EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
+      EIR_KER_GET_ARRAY_ITEM(world->keyboards, entity, keyboard_component);
+   }
+   if (entity_flags && keyboard_component)
+   {
+      (*entity_flags) |= eir_gme_component_type_keyboard_controller;
+      keyboard_component->input_buffer = input_buffer;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity);
+   }
+}
+
+void eir_gme_set_entity_pad_controller(
+   eir_gme_world_t * world,
+   eir_gme_entity_t entity,
+   eir_gme_input_controller_buffer_t * input_buffer
+   )
+{
+   eir_gme_entity_flags_t * entity_flags = 0;
+   eir_gme_pad_component_t * pad_component = 0;
+
+   if (world)
+   {
+      EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
+      EIR_KER_GET_ARRAY_ITEM(world->pads, entity, pad_component);
+   }
+   if (entity_flags && pad_component)
+   {
+      (*entity_flags) |= eir_gme_component_type_pad_controller;
+      pad_component->input_buffer = input_buffer;
    }
    else
    {

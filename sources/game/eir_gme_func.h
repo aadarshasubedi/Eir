@@ -104,6 +104,18 @@ void eir_gme_set_entity_aabb_primitive(
 	eir_gfx_rect_proxy_t * rect_proxy
 	);
 
+void eir_gme_set_entity_keyboard_controller(
+	eir_gme_world_t * world,
+	eir_gme_entity_t entity,
+	eir_gme_input_controller_buffer_t * input_buffer
+	);
+
+void eir_gme_set_entity_pad_controller(
+	eir_gme_world_t * world,
+	eir_gme_entity_t entity,
+	eir_gme_input_controller_buffer_t * input_buffer
+	);
+
 void eir_gme_set_active_camera(
 	eir_gme_world_t * world,
 	eir_gme_entity_t target,

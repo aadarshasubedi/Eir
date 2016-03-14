@@ -14,6 +14,8 @@
 #include "eir_gme_state_component.h"
 #include "eir_gme_fsm_component.h"
 #include "eir_gme_aabb_primitive_component.h"
+#include "eir_gme_keyboard_component.h"
+#include "eir_gme_pad_component.h"
 
 typedef int eir_gme_entity_flags_t;
 typedef int eir_gme_entity_t;
@@ -39,7 +41,10 @@ typedef enum
 	eir_gme_component_type_based_melee_attack = 1 << 8,
 	eir_gme_component_type_state = 1 << 9,
    eir_gme_component_type_fsm = 1 << 10,
-   eir_gme_component_type_aabb_primitive = 1 << 11
+   eir_gme_component_type_aabb_primitive = 1 << 11,
+   eir_gme_component_type_keyboard_controller = 1 << 12,
+   eir_gme_component_type_pad_controller = 1 << 13
+
 } eir_gme_component_type;
 
 typedef struct
@@ -57,5 +62,15 @@ typedef struct
 	eir_gme_state_component_array_t states;
    eir_gme_fsm_component_array_t fsms;
    eir_gme_aabb_primitive_component_array_t aabb_primitives;
+   eir_gme_keyboard_component_array_t keyboards;
+   eir_gme_pad_component_array_t pads;
    eir_gme_camera_t camera;
 } eir_gme_world_t;
+
+typedef struct
+{
+   eir_gme_world_t * world;
+   eir_gme_entity_t entity;
+} eir_gme_entity_proxy_t;
+
+EIR_KER_DEFINE_ARRAY_STRUCT(eir_gme_world_t, eir_gme_world_array_t)
