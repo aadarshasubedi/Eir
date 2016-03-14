@@ -91,6 +91,23 @@ static void eir_gme_update_camera(eir_gme_camera_t * cam)
    }
 }
 
+void eir_gme_start_all_components_systems(eir_gme_world_t * world)
+{
+	if (world)
+	{
+		for (int index = 0; index < world->entities_flags.used; ++index)
+		{
+			eir_gme_entity_flags_t entity_flags = world->entities_flags.data[index];
+
+			if (entity_flags & eir_gme_component_type_fsm)
+			{
+				eir_gme_fsm_component_t * fsm_component = &world->fsms.data[index];
+				eir_fsm_run_state_machine(fsm_component->fsm);
+			}
+		}
+	}
+}
+
 void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime)
 {
 	if (world)

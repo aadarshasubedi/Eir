@@ -47,10 +47,6 @@ typedef struct
 	eir_gme_entity_t entity;
 	eir_gme_input_controller_buffer_t * keyboard_buffer;
 	eir_gme_input_controller_buffer_t * pad_buffer;
-	eir_fsm_state_machine_t * fsm;
-	eir_gme_direction_component_t * direction_component;
-	eir_gme_motion_param_component_t * motion_param_component;
-	eir_gme_based_melee_attack_component_t * based_melee_attack_component;
 } player_t;
 
 typedef struct
@@ -301,7 +297,7 @@ static void eir_run(game_t * game)
 	double time_since_last_update = 0.0f;
 
 	eir_sys_start_timer(&sys_env->timer);
-	eir_fsm_run_state_machine(player->fsm);
+	eir_gme_start_all_components_systems(gme_env->curr_world);
 	for (;;)
 	{
 		eir_sys_update_timer(&sys_env->timer);
@@ -684,8 +680,6 @@ int main()
 	eir_fsm_add_state_transition(prepare_based_melee_attack_state, release_based_melee_attack_state);
 	eir_fsm_add_state_transition(release_based_melee_attack_state, idle_state);
 	eir_fsm_add_state_transition(release_based_melee_attack_state, move_state);
-
-	game.player.fsm = fsm;
 
    	// INIT GFX ITEMS CAPACITY
 
