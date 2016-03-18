@@ -25,27 +25,39 @@ const int EIR_GME_INVALID_ENTITY = -1;
 EIR_KER_DEFINE_ARRAY_STRUCT(
    eir_gme_entity_flags_t,
    eir_gme_entity_flags_array_t
-   )
+   );
 
 typedef enum
 {
-   eir_gme_component_type_none = 0,
-   eir_gme_component_type_sprite = 1 << 0,
-   eir_gme_component_type_position = 1 << 1,
-   eir_gme_component_type_size = 1 << 2,
-   eir_gme_component_type_color = 1 << 3,
-   eir_gme_component_type_motion_param = 1 << 4,
-   eir_gme_component_type_aabb = 1 << 5,
-   eir_gme_component_type_physic = 1 << 6,
-	eir_gme_component_type_direction = 1 << 7,
-	eir_gme_component_type_based_melee_attack = 1 << 8,
-	eir_gme_component_type_state = 1 << 9,
-   eir_gme_component_type_fsm = 1 << 10,
-   eir_gme_component_type_aabb_primitive = 1 << 11,
-   eir_gme_component_type_keyboard_controller = 1 << 12,
-   eir_gme_component_type_pad_controller = 1 << 13
+   eir_gme_component_type_none = 0,                      // 0
+   eir_gme_component_type_sprite = 1 << 0,               // 2
+   eir_gme_component_type_position = 1 << 1,             // 4
+   eir_gme_component_type_size = 1 << 2,                 // 8
+   eir_gme_component_type_color = 1 << 3,                // 16
+   eir_gme_component_type_motion_param = 1 << 4,         // 32
+   eir_gme_component_type_aabb = 1 << 5,                 // 64
+   eir_gme_component_type_physic = 1 << 6,               // 128
+	eir_gme_component_type_direction = 1 << 7,            // 256
+	eir_gme_component_type_state = 1 << 8,                // 512
+   eir_gme_component_type_fsm = 1 << 9,                  // 1024
+   eir_gme_component_type_aabb_primitive = 1 << 10,      // 2048
+   eir_gme_component_type_keyboard_controller = 1 << 11, // 4096
+   eir_gme_component_type_pad_controller = 1 << 12,      // 8192
+   // MAX is 1 << 32. So only 32 components type possible with this method
 
-} eir_gme_component_type;
+} eir_gme_component_type_t;
+
+typedef enum name
+{
+   eir_gme_component_type_extended_none = 0,             // 0
+   eir_gme_component_type_based_melee_attack = 1 << 0,   // 2
+} eir_gme_extended_component_type_t;
+
+typedef struct
+{
+   eir_gme_entity_flags_t based;
+   eir_gme_entity_flags_t extended;  
+} eir_gme_component_flags_t;
 
 typedef struct
 {

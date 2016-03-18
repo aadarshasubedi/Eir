@@ -3,6 +3,7 @@
 #include "physics/eir_phy_motion_func.c"
 #include "game/eir_gme_func.c"
 #include "game/eir_gme_system.c"
+#include "game/eir_gme_bigfile_func.c"
 #include "kernel/eir_ker_log_stdout.c"
 #include "fsm/eir_fsm_func.c"
 #include "system/eir_sys_timer_func_osx.c"

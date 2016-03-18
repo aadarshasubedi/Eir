@@ -40,9 +40,12 @@
  * Init an array.
  */
 #define EIR_KER_ALLOCATE_ARRAY(item_type, array, max_capacity)		\
+   if (max_capacity > 0)                                          \
+   {                                                              \
    EIR_SYS_ALLOC(array.data, sizeof(item_type), max_capacity);		\
-   array.capacity = max_capacity;					\
-   array.used = 0;
+   array.capacity = max_capacity;					                  \
+   array.used = 0;                                                \
+   }
 
 /**
  * Init an array and all its elements

@@ -859,7 +859,7 @@ int main()
 	eir_gme_set_entity_aabb_primitive(world, entity, entity_aabb_rect_proxy);
 	eir_gme_set_entity_physic(world, entity, 0.5f);
 	eir_gme_set_entity_direction(world, entity, EIR_GME_DIRECTION_BOTTOM);
-	eir_gme_set_entity_based_melee_attack(world, entity, 10, 0, 0, 64, 64, false);
+	//eir_gme_set_entity_based_melee_attack(world, entity, 10, 0, 0, 64, 64, false);
 	eir_gme_set_entity_fsm(world, entity, fsm);
 	eir_gme_set_entity_keyboard_controller(
 		world,
@@ -901,6 +901,21 @@ int main()
 	eir_gme_set_active_camera(world, entity, 2.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
    // RUN EIR ENGINE
+
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_none: %d", eir_gme_component_type_none);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_position: %d", eir_gme_component_type_position);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_size: %d", eir_gme_component_type_size);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_color: %d", eir_gme_component_type_color);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_motion_param: %d", eir_gme_component_type_motion_param);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_aabb: %d", eir_gme_component_type_aabb);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_physic: %d", eir_gme_component_type_physic);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_direction: %d", eir_gme_component_type_direction);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_based_melee_attack: %d", eir_gme_component_type_based_melee_attack);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_state: %d", eir_gme_component_type_state);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_fsm: %d", eir_gme_component_type_fsm);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_aabb_primitive: %d", eir_gme_component_type_aabb_primitive);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_keyboard_controller: %d", eir_gme_component_type_keyboard_controller);
+	EIR_KER_LOG_MESSAGE("eir_gme_component_type_pad_controller: %d", eir_gme_component_type_pad_controller);
 
 	eir_run(&env);
 
