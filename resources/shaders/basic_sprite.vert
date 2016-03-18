@@ -5,6 +5,7 @@ in vec2 size;
 in vec2 uv_offset;
 in vec2 uv_size;
 in vec4 color;
+in vec2 atlasSize;
 
 out vec2 size_;
 out vec2 uv_offset_;

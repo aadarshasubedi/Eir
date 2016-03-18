@@ -10,3 +10,4 @@
 
 #define PLACE_HOLDER_IMAGE_PATH "../resources/images/placeholder_atlas.png"
 #define DEFAULT_FONT_IMAGE_PATH "../resources/images/ascii.png"
+#define PLACE_HOLDER_TILE_PATH "../resources/images/PH_tile.png"

@@ -272,12 +272,12 @@ void eir_gfx_api_build_sprite_batch(eir_gfx_env_t * gfx_env, eir_gfx_sprite_batc
        batch->texture->image->height
        );
       eir_gfx_api_bind_sprite_attributes(
-       glGetAttribLocation(gfx_env->sprite_program, "position"),
-       glGetAttribLocation(gfx_env->sprite_program, "size"),
-       glGetAttribLocation(gfx_env->sprite_program, "uv_offset"),
-       glGetAttribLocation(gfx_env->sprite_program, "uv_size"),
-       glGetAttribLocation(gfx_env->sprite_program, "color")
-       );
+         glGetAttribLocation(gfx_env->sprite_program, "position"),
+         glGetAttribLocation(gfx_env->sprite_program, "size"),
+         glGetAttribLocation(gfx_env->sprite_program, "uv_offset"),
+         glGetAttribLocation(gfx_env->sprite_program, "uv_size"),
+         glGetAttribLocation(gfx_env->sprite_program, "color")
+         );
       glBindVertexArray(0);
       glUseProgram(0);
       batch->info |= eir_gfx_item_flag_built;

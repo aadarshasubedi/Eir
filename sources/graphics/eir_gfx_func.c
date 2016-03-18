@@ -667,6 +667,11 @@ static void eir_gfx_render_sprite_batch(
          batch->program,
          &env->projection
          );
+      glUniform2f(
+         glGetUniformLocation(batch->program, "atlasSize"),
+         batch->texture->image->width,
+         batch->texture->image->height
+         );
       if (batch->info & eir_gfx_item_flag_use_screen_coord)
       {
          eir_gfx_api_set_program_mat4("vmat", batch->program, &id_mat);
@@ -1119,6 +1124,11 @@ static void eir_gfx_render_text(
          "pmat",
          text->program,
          &env->projection
+         );
+      glUniform2f(
+         glGetUniformLocation(text->program, "atlasSize"),
+         text->texture->image->width,
+         text->texture->image->height
          );
       if (text->info & eir_gfx_item_flag_use_screen_coord)
       {
