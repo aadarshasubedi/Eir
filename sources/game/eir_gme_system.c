@@ -112,6 +112,29 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 {
 	if (world)
 	{
+      // FIRST WE UPDATE ALL AABB IF POSITION HAS BEEN CHANGED
+      // TODO: FIND A MORE ELEGANT TO UPDATE AABB !
+		for (int index = 0; index < world->entities_flags.used; ++index)
+		{
+			eir_gme_entity_flags_t entity_flags = world->entities_flags.data[index];
+
+			if (entity_flags & eir_gme_component_type_aabb)
+			{
+				eir_gme_aabb_component_t * aabb_component = &world->aabbs.data[index];
+				eir_gme_position_component_t * position_component = 0;
+
+				if (entity_flags & eir_gme_component_type_position)
+				{
+					position_component = &world->positions.data[index];
+					if (position_component->modified)
+					{
+						aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
+						aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+						aabb_component->modified = true;
+					}
+            }
+         }
+      }
 		for (int index = 0; index < world->entities_flags.used; ++index)
 		{
 			eir_gme_entity_flags_t entity_flags = world->entities_flags.data[index];
