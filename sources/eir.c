@@ -734,8 +734,8 @@ int main()
 
    ground_template.col_count = 40;
    ground_template.row_count = 40;
-   ground_template.position.x = 0.0f;
-   ground_template.position.y = 0.0f;
+   ground_template.position.x = -WINDOW_WIDTH * 0.5f;
+   ground_template.position.y = -WINDOW_HEIGHT * 0.5f;
 
    eir_gfx_group_t * ground_group = eir_gfx_create_group(gfx_env, 1, 0, 0);
    eir_gfx_sprite_batch_t * ground_batch = eir_gfx_add_sprite_batch_to_group(
@@ -916,7 +916,7 @@ int main()
    eir_gme_set_entity_position(world, entity, 0.0f, 0.0f);
    eir_gme_set_entity_size(world, entity, 64, 64);
    eir_gme_set_entity_sprite(world, entity, player_sprite);
-   eir_gme_set_entity_color(world, entity, 0.0f, 1.0f, 0.0f, 0.5f);
+   eir_gme_set_entity_color(world, entity, 1.0f, 1.0f, 1.0f, 1.0f);
    eir_gme_set_entity_acceleration(world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
    eir_gme_set_entity_aabb(world, entity, 0.0f, 0.0f, 64.0f, 64.0f);
    eir_gme_set_entity_aabb_primitive(world, entity, entity_aabb_rect_proxy);
@@ -961,7 +961,7 @@ int main()
    eir_gme_set_entity_physic(world, wall, 1.0f);
 
    eir_gme_set_active_world(gme_env, world);
-   eir_gme_set_active_camera(world, entity, 4.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
+   eir_gme_set_active_camera(world, entity, 3.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
    // RUN EIR ENGINE
 

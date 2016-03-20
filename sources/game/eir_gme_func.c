@@ -978,12 +978,14 @@ void eir_gme_set_active_camera(
          cam->win_scale = win_scale;
          cam->viewport_w = viewport_w;
          cam->viewport_h = viewport_h;
-         //cam->position.x = (float)cam->viewport_w * 0.5f - pos->position.x - aabb->x_offset - aabb->aabb.size.x * 0.5f;
-         //cam->position.y = (float)cam->viewport_h * 0.5f - pos->position.y - aabb->y_offset - aabb->aabb.size.y * 0.5f;
-         //cam->position.x = (float)cam->viewport_w * 0.5f - pos->position.x;
-         //cam->position.y = (float)cam->viewport_h * 0.5f - pos->position.y;
-         cam->position.x = 0.0f;
-         cam->position.y = 0.0f;
+         cam->position.x =
+            (float)cam->viewport_w * 0.233f - pos->position.x - aabb->x_offset - aabb->aabb.size.x * 0.5f;
+         cam->position.y =
+            (float)cam->viewport_h * 0.233f - pos->position.y - aabb->y_offset - aabb->aabb.size.y * 0.5f;
+         //cam->position.x = -(float)viewport_w * 0.5f + pos->position.x;
+         //cam->position.y = -(float)viewport_h * 0.5f + pos->position.y;
+         //cam->position.x = 0.0f;
+         //cam->position.y = 0.0f;
          cam->prev_position.x = cam->position.x;
          cam->prev_position.y = cam->position.y;
          cam->win_aabb.size.x = aabb->aabb.size.x * win_scale;
