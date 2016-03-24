@@ -23,7 +23,6 @@
 #include "game/eir_gme_env.h"
 #include "game/eir_gme_func.h"
 #include "game/eir_gme_system.h"
-#include "game/eir_gme_ground_template.h"
 #include "kernel/eir_ker_env.h"
 #include "fsm/eir_fsm_func.h"
 #include "physics/eir_phy_motion_func.h"
@@ -603,6 +602,7 @@ int main()
    eir_gfx_image_t * ph_atlas_image = eir_gfx_load_image(gfx_env, PLACE_HOLDER_IMAGE_PATH, false);
    eir_gfx_texture_t * ph_texture = eir_gfx_create_texture(gfx_env, ph_atlas_image);
 
+   /*
    eir_gfx_image_t * ph_tile_image = eir_gfx_load_image(
       gfx_env,
       PLACE_HOLDER_TILE_PATH,
@@ -612,6 +612,7 @@ int main()
       gfx_env,
       ph_tile_image
       );
+   */
 
    // COMMON STRUCT
 
@@ -621,8 +622,35 @@ int main()
    eir_mth_vec2_t uv_size;
    eir_gfx_color_t color;
 
-   // TEMP GROUND GRID
 
+
+   
+   /*
+   position.x = 0.0f;
+   position.y = 0.0f;
+   size.x = 512.0f;
+   size.y = 480.0f;
+   uv_offset.x = 0.0f;
+   uv_offset.y = 0.0f;
+   uv_size.x = 512.0f;
+   uv_size.y = 480.0f;
+   color.r = 1.0f;
+   color.g = 1.0f;
+   color.b = 1.0f;
+   color.a = 1.0f;
+
+   eir_gfx_add_sprite_to_batch(
+      tiles_set_batch,
+      &position,
+      &size,
+      &uv_offset,
+      &uv_size,
+      &color,
+      wrue
+      );
+   */
+
+   /* TODO : DELETE AFTER TILE/LAYER/COMPONENT IMPLEMENTATION AND TEST
    eir_gme_ground_template_t ground_template;
 
    ground_template.col_count = 40;
@@ -670,7 +698,79 @@ int main()
             );
       }
    }
+   */
 
+
+   // INIT WORLD ENTITIES
+
+   eir_gme_set_world_capacity(gme_env, 1);
+   eir_gme_world_t * world = eir_gme_create_world(gme_env, 10);
+   
+   // TEMP MAP ENTITY
+   
+   int col_count = 40;
+   int row_count = 40;
+   int tile_width = 32;
+   int tile_height = 32;
+   int tiles_count = col_count * row_count;
+
+   eir_gfx_image_t * tiles_set_image = eir_gfx_load_image(
+      gfx_env,
+      "../resources/images/PH_tiles_set.png",
+      false
+      );
+   eir_gfx_texture_t * tiles_set_texture = eir_gfx_create_texture(
+      gfx_env,
+      tiles_set_image
+      );
+   eir_gfx_group_t * tiles_set_group = eir_gfx_create_group(gfx_env, 1, 0, 0);
+   eir_gfx_sprite_batch_t * tiles_set_batch = eir_gfx_add_sprite_batch_to_group(
+      tiles_set_group,
+      tiles_set_texture,
+      tiles_count,
+      true,
+      false,
+      true
+      );
+
+   uv_size.x = 32.0f;
+   uv_size.y = 32.0f;
+
+   eir_gme_entity_t map_entity = eir_gme_create_world_entity(world);
+
+   eir_gme_set_entity_map(
+      world,
+      map_entity,
+      tiles_set_batch,
+      col_count,
+      row_count,
+      tile_width,
+      tile_height,
+      tiles_count
+      );
+
+   int x_offset_divisor = RAND_MAX / 16;
+   int y_offset_divisor = RAND_MAX / 15;
+
+   for (int i = 0; i < col_count; ++i)
+   {
+      for (int j = 0; j < row_count; ++j)
+      {
+         int x_offset_index = rand() / x_offset_divisor;
+         int y_offset_index = rand() / y_offset_divisor;
+         uv_offset.x = uv_size.x * 13; //x_offset_index;
+         uv_offset.y = uv_size.y * 4; //y_offset_index;
+         eir_gme_set_entity_map_tile(
+            world,
+            map_entity,
+            i,
+            j,
+            &uv_offset,
+            &uv_size
+            );
+      }
+   }
+   
    // CREATE SPRITE
 
    eir_gfx_group_t * sprites_group = eir_gfx_create_group(gfx_env, 10, 0, 0);
@@ -758,10 +858,8 @@ int main()
          true
          );
 
-   // INIT WORLD ENTITIES
+   // PLAYER ENTITY
 
-   eir_gme_set_world_capacity(gme_env, 1);
-   eir_gme_world_t * world = eir_gme_create_world(gme_env, 10);
    eir_gme_entity_t entity = eir_gme_create_world_entity(world);
 
    eir_gme_set_entity_position(world, entity, 0.0f, 0.0f);
@@ -788,6 +886,8 @@ int main()
    player_entity_proxy.entity = entity;
    player_entity_proxy.world = world;
 
+   // OTHER ENTITY
+
    eir_gme_entity_t entity2 = eir_gme_create_world_entity(world);
 
    eir_gme_set_entity_position(world, entity2, 200.0f, 0.0f);
@@ -796,6 +896,8 @@ int main()
    eir_gme_set_entity_color(world, entity2, 1.0f, 0.0f, 0.0f, 0.5f);
    eir_gme_set_entity_aabb(world, entity2, 0.0f, 0.0f, 64.0f, 64.0f);
    eir_gme_set_entity_physic(world, entity2, 1.0f);
+   
+   // SET ACTIVE STUFF
 
    eir_gme_set_active_world(gme_env, world);
    eir_gme_set_active_camera(world, entity, 3.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
