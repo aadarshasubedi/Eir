@@ -255,6 +255,7 @@ void eir_gfx_init_env(eir_gfx_env_t * gfx_env, int width, int height)
       EIR_KER_INIT_ARRAY(gfx_env->images);
       EIR_KER_INIT_ARRAY(gfx_env->textures);
       EIR_KER_INIT_ARRAY(gfx_env->groups);
+      gfx_env->sorted_groups = 0;
    }
 }
 
@@ -269,6 +270,7 @@ void eir_gfx_release_env(eir_gfx_env_t * gfx_env)
       EIR_KER_FREE_ARRAY_BIS(gfx_env->images, eir_gfx_release_image);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->textures, eir_gfx_release_texture);
       EIR_KER_FREE_ARRAY_BIS(gfx_env->groups, eir_gfx_release_group);
+      EIR_SYS_FREE(gfx_env->sorted_groups);
    }
 }
 
@@ -313,6 +315,11 @@ void eir_gfx_set_group_capacity(eir_gfx_env_t * env, size_t max_count)
          max_count,
          eir_gfx_init_group
          );
+      EIR_SYS_ALLOC(env->sorted_groups, sizeof(eir_gfx_group_t *), max_count);
+      for (int i = 0; i < max_count; ++i)
+      {
+         env->sorted_groups[i] = 0;
+      }
    }
 }
 
@@ -389,10 +396,11 @@ eir_gfx_group_t * eir_gfx_create_group(
    )
 {
    eir_gfx_group_t * group = 0;
+   int group_index = 0;
 
    if (env)
    {
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(env->groups, group);
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT_BIS(env->groups, group, group_index);
    }
    if (group)
    {
@@ -423,6 +431,7 @@ eir_gfx_group_t * eir_gfx_create_group(
             eir_gfx_init_rect_batch
             );
       }
+      env->sorted_groups[group_index] = group;
    }
    else
    {
@@ -440,6 +449,50 @@ void eir_gfx_set_group_visibility(
    if (group)
    {
       group->visible = visible;
+   }
+}
+
+// ---------------------------------------------------------------------------
+void eir_gfx_set_group_index(
+   eir_gfx_env_t * env,
+   eir_gfx_group_t * group,
+   int new_index
+   )
+{
+   int old_index = -1;
+
+   if (env && group)
+   {
+      for (int i =0; i < env->groups.used; ++i)
+      {
+         if (env->sorted_groups[i] == group)
+         {
+            old_index = i;
+         }
+      }
+   }
+   if (
+      old_index != -1
+      && old_index != new_index
+      && new_index < env->groups.used
+      )
+   {
+      if (new_index > old_index)
+      {
+         for (int i = old_index + 1; i <= new_index; ++i)
+         {
+            env->sorted_groups[i - 1] = env->sorted_groups[i];
+         }
+         env->sorted_groups[new_index] = group;
+      }
+      else
+      {
+         for (int i = old_index - 1; i >= new_index; --i)
+         {
+            env->sorted_groups[i + 1] = env->sorted_groups[i];
+         }
+         env->sorted_groups[new_index] = group;
+      }
    }
 }
 
@@ -1266,7 +1319,7 @@ void eir_gfx_render_all_batches(eir_gfx_env_t * gfx_env)
 {
    for (int index = 0; index < gfx_env->groups.used; ++index)
    {
-      eir_gfx_render_group(gfx_env, &gfx_env->groups.data[index]);
+      eir_gfx_render_group(gfx_env, gfx_env->sorted_groups[index]);
    }
 }
 

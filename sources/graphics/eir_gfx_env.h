@@ -33,6 +33,7 @@ typedef struct
    eir_gfx_api_program_handle_t rect_program;
 
 	eir_gfx_group_array_t groups;
+   eir_gfx_group_t ** sorted_groups;
 
    eir_gfx_viewport_t viewport;
    eir_mth_mat4_t projection;

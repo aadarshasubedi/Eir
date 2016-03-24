@@ -33,6 +33,11 @@ void eir_gfx_set_group_visibility(
    eir_gfx_group_t * group,
    bool visible
    );
+void eir_gfx_set_group_index(
+   eir_gfx_env_t * env,
+   eir_gfx_group_t * group,
+   int new_index
+   );
 
 // -----------------------------------------------------------------------------
 eir_gfx_sprite_batch_t * eir_gfx_add_sprite_batch_to_group(
