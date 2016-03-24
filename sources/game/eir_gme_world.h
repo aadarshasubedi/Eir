@@ -10,7 +10,6 @@
 #include "eir_gme_sprite_component.h"
 #include "eir_gme_motion_param_component.h"
 #include "eir_gme_direction_component.h"
-#include "eir_gme_based_melee_attack_component.h"
 #include "eir_gme_state_component.h"
 #include "eir_gme_fsm_component.h"
 #include "eir_gme_aabb_primitive_component.h"
@@ -50,7 +49,6 @@ typedef enum
 typedef enum name
 {
    eir_gme_component_type_extended_none = 0,             // 0
-   eir_gme_component_type_based_melee_attack = 1 << 0,   // 2
 } eir_gme_extended_component_type_t;
 
 typedef struct
@@ -70,7 +68,6 @@ typedef struct
    eir_gme_aabb_component_array_t aabbs;
    eir_gme_physic_component_array_t physics;
 	eir_gme_direction_component_array_t directions;
-	eir_gme_based_melee_attack_component_array_t based_melee_attacks;
 	eir_gme_state_component_array_t states;
    eir_gme_fsm_component_array_t fsms;
    eir_gme_aabb_primitive_component_array_t aabb_primitives;

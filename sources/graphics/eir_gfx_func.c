@@ -414,7 +414,7 @@ eir_gfx_group_t * eir_gfx_create_group(
             eir_gfx_init_text
             );
       }
-      if (rect_batch_capacity)
+      if (rect_batch_capacity > 0)
       {
          EIR_KER_ALLOCATE_ARRAY_BIS(
             eir_gfx_rect_batch_t,

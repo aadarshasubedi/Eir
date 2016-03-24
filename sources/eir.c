@@ -34,20 +34,16 @@ const int WINDOW_HEIGHT = 728;
 const float PLAYER_FRICTION = 10.0f;
 const float PLAYER_SPEED = 1600.0f;
 
-/*
-typedef struct
-{
-   eir_ker_env_t * env;
-   eir_gme_world_t * owner;
-   eir_gme_entity_t entity;
-   eir_gme_input_controller_buffer_t * keyboard_buffer;
-   eir_gme_input_controller_buffer_t * pad_buffer;
-} player_t;
-
-typedef struct
-{
-   player_t player;
-} game_t;
+/* ============================================================================
+** WHAT WE NEED TO TEST CONCEPT
+**
+** 1. one controlled entity
+** 2. placeholder background with multiple heights
+** 3. based and melee attack for controlled entity
+** 4. hostiles NPC with special behaviour : melee and ranged attack
+** 5. friends NPC which follow controlled entity
+** 6. combine attacks when friends entities are closed
+** ============================================================================
 */
 
 static void eir_init_all_api(eir_ker_env_t * env, int width, int height)
@@ -181,11 +177,18 @@ static void eir_init_env(eir_ker_env_t * env, int width, int height)
    }
 }
 
-static eir_gme_input_controller_buffer_t * eir_get_input_controller_buffer(eir_gme_env_t * env, int controller_index)
+static eir_gme_input_controller_buffer_t * eir_get_input_controller_buffer(
+   eir_gme_env_t * env,
+   int controller_index
+   )
 {
    eir_gme_input_controller_buffer_t * input_controller_buffer = 0;
 
-   if (env && controller_index >= 0 && controller_index < EIR_GME_TOTAL_INPUT_CONTROLLER)
+   if (
+      env
+      && controller_index >= 0
+      && controller_index < EIR_GME_TOTAL_INPUT_CONTROLLER
+      )
    {
       input_controller_buffer = &env->input_controllers[controller_index];
    }
@@ -470,72 +473,6 @@ static bool validate_move_state(void * user_data)
    return result;
 }
 
-static bool validate_prepare_based_melee_attack_state(void * user_data)
-{
-   bool result = false;
-
-   if (user_data)
-   {
-      eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
-      eir_gme_world_t * world = entity_proxy->world;
-      eir_gme_entity_t entity = entity_proxy->entity;
-      eir_gme_input_controller_buffer_t * pad_buffer = world->pads.data[entity].input_buffer;
-      eir_gme_input_controller_buffer_t * keyboard_buffer = world->keyboards.data[entity].input_buffer;
-
-      if (
-         keyboard_buffer
-         && pad_buffer
-         && !pad_buffer->controllers[1].is_connected
-         && keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
-         )
-      {
-         result = true;
-      }
-      else if (
-         pad_buffer
-         && pad_buffer->controllers[1].is_connected
-         && pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
-         )
-      {
-         result = true;
-      }
-   }
-   return result;
-}
-
-static bool validate_release_based_melee_attack_state(void * user_data)
-{
-   bool result = false;
-
-   if (user_data)
-   {
-      eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
-      eir_gme_world_t * world = entity_proxy->world;
-      eir_gme_entity_t entity = entity_proxy->entity;
-      eir_gme_input_controller_buffer_t * pad_buffer = world->pads.data[entity].input_buffer;
-      eir_gme_input_controller_buffer_t * keyboard_buffer = world->keyboards.data[entity].input_buffer;
-
-      if (
-         keyboard_buffer
-         && pad_buffer
-         && !pad_buffer->controllers[1].is_connected
-         && !keyboard_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
-         )
-      {
-         result = true;
-      }
-      else if (
-         pad_buffer
-         && pad_buffer->controllers[1].is_connected
-         && !pad_buffer->controllers[1].buttons[EIR_GME_ACTION_1_BUTTON_INDEX].pressed
-         )
-      {
-         result = true;
-      }
-   }
-   return result;
-}
-
 static void update_idle_state(void * user_data)
 {
    if (user_data)
@@ -621,31 +558,6 @@ static void update_move_state(void * user_data)
    }
 }
 
-static void update_prepare_based_melee_attack_state(void * user_data)
-{
-   if (user_data)
-   {
-      eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
-
-      eir_gme_set_entity_acceleration(
-         entity_proxy->world,
-         entity_proxy->entity,
-         0.0f,
-         0.0f, 
-         PLAYER_SPEED,
-         PLAYER_FRICTION
-         );
-   }
-}
-
-static void update_release_based_melee_attack_state(void * user_data)
-{
-   if (user_data)
-   {
-      eir_gme_entity_proxy_t * entity_proxy = (eir_gme_entity_proxy_t *)user_data;
-   }
-}
-
 int main()
 {
       // INIT ENV
@@ -657,14 +569,6 @@ int main()
    eir_gme_env_t * gme_env = &env.gme_env;
    eir_gfx_env_t * gfx_env = &env.gfx_env;
 
-   // INIT PLAYER USER DATA
-
-   //game_t game;
-
-   //game.player.env = &env;
-   //game.player.keyboard_buffer = eir_get_input_controller_buffer(gme_env, 0);
-   //game.player.pad_buffer = eir_get_input_controller_buffer(gme_env, 1);
-
    eir_gme_entity_proxy_t player_entity_proxy;
 
    // INIT STATE MACHINE
@@ -675,29 +579,18 @@ int main()
    eir_fsm_state_t * idle_state = eir_fsm_create_state(fsm);
    eir_fsm_state_t * move_state = eir_fsm_create_state(fsm);
    eir_fsm_state_t * end_state = eir_fsm_create_state(fsm);
-   eir_fsm_state_t * prepare_based_melee_attack_state = eir_fsm_create_state(fsm);
-   eir_fsm_state_t * release_based_melee_attack_state = eir_fsm_create_state(fsm);
 
    eir_fsm_set_begin_state(fsm, idle_state);
    eir_fsm_set_end_state(fsm, end_state);
 
    eir_fsm_set_state_validate_func(idle_state, validate_idle_state);
    eir_fsm_set_state_validate_func(move_state, validate_move_state);
-   eir_fsm_set_state_validate_func(prepare_based_melee_attack_state, validate_prepare_based_melee_attack_state);
-   eir_fsm_set_state_validate_func(release_based_melee_attack_state, validate_release_based_melee_attack_state);
 
    eir_fsm_set_state_update_func(idle_state, update_idle_state);
    eir_fsm_set_state_update_func(move_state, update_move_state);
-   eir_fsm_set_state_update_func(prepare_based_melee_attack_state, update_prepare_based_melee_attack_state);
-   eir_fsm_set_state_update_func(release_based_melee_attack_state, update_release_based_melee_attack_state);
 
    eir_fsm_add_state_transition(idle_state, move_state);
    eir_fsm_add_state_transition(move_state, idle_state);
-   eir_fsm_add_state_transition(idle_state, prepare_based_melee_attack_state);
-   eir_fsm_add_state_transition(move_state, prepare_based_melee_attack_state);
-   eir_fsm_add_state_transition(prepare_based_melee_attack_state, release_based_melee_attack_state);
-   eir_fsm_add_state_transition(release_based_melee_attack_state, idle_state);
-   eir_fsm_add_state_transition(release_based_melee_attack_state, move_state);
 
       // INIT GFX ITEMS CAPACITY
 
@@ -750,11 +643,11 @@ int main()
    position.x = 0.0f;
    position.y = 0.0f;
    size.x = 64.0f;
-   size.y = 32.0f;
+   size.y = 64.0f;
    uv_offset.x = 0.0f;
    uv_offset.y = 0.0f;
    uv_size.x = 64.0f;
-   uv_size.y = 32.0f;
+   uv_size.y = 64.0f;
    color.r = 1.0f;
    color.g = 1.0f;
    color.b = 1.0f;
@@ -834,28 +727,6 @@ int main()
       true
       );
 
-   position.x = 0.0f;
-   position.y = 0.0f;
-   size.x = 64.0f;
-   size.y = 64.0f;
-   uv_offset.x = 0.0f;
-   uv_offset.y = 0.0f;
-   uv_size.x = 64.0f;
-   uv_size.y = 64.0f;
-   color.r = 1.0f;
-   color.g = 0.0f;
-   color.b = 0.0f;
-   color.a = 0.2f;
-   eir_gfx_sprite_proxy_t * wall_sprite = eir_gfx_add_sprite_to_batch(
-      sprites_batch,
-      &position,
-      &size,
-      &uv_offset,
-      &uv_size,
-      &color,
-      true
-      );
-
    // CREATE RECT
 
    eir_gfx_group_t * rect_group = eir_gfx_create_group(gfx_env, 0, 0, 10);
@@ -887,27 +758,7 @@ int main()
          true
          );
 
-   position.x = 0.0f;
-   position.y = 128.0f;
-   size.x = 64.0f;
-   size.y = 64.0f;
-   uv_offset.x = 0.0f;
-   uv_offset.y = 0.0f;
-   uv_size.x = 64.0f;
-   uv_size.y = 64.0f;
-   color.r = 1.0f;
-   color.g = 1.0f;
-   color.b = 0.0f;
-   color.a = 0.2f;
-   eir_gfx_rect_proxy_t  * wall_aabb_rect_proxy = eir_gfx_add_rect_to_batch(
-         rect_batch,
-         &position,
-      &size,
-         &color,
-         true
-         );
-
-      // INIT WORLD ENTITIES
+   // INIT WORLD ENTITIES
 
    eir_gme_set_world_capacity(gme_env, 1);
    eir_gme_world_t * world = eir_gme_create_world(gme_env, 10);
@@ -922,7 +773,6 @@ int main()
    eir_gme_set_entity_aabb_primitive(world, entity, entity_aabb_rect_proxy);
    eir_gme_set_entity_physic(world, entity, 0.5f);
    eir_gme_set_entity_direction(world, entity, EIR_GME_DIRECTION_BOTTOM);
-   //eir_gme_set_entity_based_melee_attack(world, entity, 10, 0, 0, 64, 64, false);
    eir_gme_set_entity_fsm(world, entity, fsm);
    eir_gme_set_entity_keyboard_controller(
       world,
@@ -938,9 +788,6 @@ int main()
    player_entity_proxy.entity = entity;
    player_entity_proxy.world = world;
 
-   //game.player.owner = world;
-   //game.player.entity = entity;
-
    eir_gme_entity_t entity2 = eir_gme_create_world_entity(world);
 
    eir_gme_set_entity_position(world, entity2, 200.0f, 0.0f);
@@ -949,16 +796,6 @@ int main()
    eir_gme_set_entity_color(world, entity2, 1.0f, 0.0f, 0.0f, 0.5f);
    eir_gme_set_entity_aabb(world, entity2, 0.0f, 0.0f, 64.0f, 64.0f);
    eir_gme_set_entity_physic(world, entity2, 1.0f);
-
-   eir_gme_entity_t wall = eir_gme_create_world_entity(world);
-
-   eir_gme_set_entity_position(world, wall, 400, 300);
-   eir_gme_set_entity_size(world, wall, 1800, 32);
-   eir_gme_set_entity_sprite(world, wall, wall_sprite);
-   eir_gme_set_entity_color(world, wall, 1.0f, 1.0f, 1.0f, 0.5f);
-   eir_gme_set_entity_aabb(world, wall, 0.0f, 0.0f, 1800.0f, 32.0f);
-   eir_gme_set_entity_aabb_primitive(world, wall, wall_aabb_rect_proxy);
-   eir_gme_set_entity_physic(world, wall, 1.0f);
 
    eir_gme_set_active_world(gme_env, world);
    eir_gme_set_active_camera(world, entity, 3.0f, WINDOW_WIDTH, WINDOW_HEIGHT);

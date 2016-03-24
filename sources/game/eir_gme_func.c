@@ -35,7 +35,6 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->motion_params);
       EIR_KER_INIT_ARRAY(world->aabbs);
       EIR_KER_INIT_ARRAY(world->physics);
-      EIR_KER_INIT_ARRAY(world->based_melee_attacks);
       EIR_KER_INIT_ARRAY(world->states);
       EIR_KER_INIT_ARRAY(world->fsms);
       EIR_KER_INIT_ARRAY(world->aabb_primitives);
@@ -58,7 +57,6 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->aabbs);
       EIR_KER_FREE_ARRAY(world->physics);
       EIR_KER_FREE_ARRAY(world->directions);
-      EIR_KER_FREE_ARRAY(world->based_melee_attacks);
       EIR_KER_FREE_ARRAY(world->states);
       EIR_KER_FREE_ARRAY(world->fsms);
       EIR_KER_FREE_ARRAY(world->aabb_primitives);
@@ -206,28 +204,6 @@ static void eir_gme_init_direction(eir_gme_direction_component_t * direction)
 static void eir_gme_release_direction(eir_gme_direction_component_t * direction)
 {
 	eir_gme_init_direction(direction);
-}
-
-static void eir_gme_init_based_melee_attack(
-   eir_gme_based_melee_attack_component_t * based_melee_attack
-   )
-{
-	if (based_melee_attack)
-	{
-		based_melee_attack->damage_zone.position.x = 0.0f;
-		based_melee_attack->damage_zone.position.y = 0.0f;
-		based_melee_attack->damage_zone.size.x = 0.0f;
-		based_melee_attack->damage_zone.size.y = 0.0f;
-		based_melee_attack->damage = 0.0f;
-		based_melee_attack->active = false;
-	}
-}
-
-static void eir_gme_release_based_melee_attack(
-   eir_gme_based_melee_attack_component_t * based_melee_attack
-   )
-{
-	eir_gme_init_based_melee_attack(based_melee_attack);
 }
 
 static void eir_gme_init_state(eir_gme_state_component_t * state)
@@ -457,12 +433,6 @@ eir_gme_world_t * eir_gme_create_world(
          eir_gme_init_direction
          );
       EIR_KER_ALLOCATE_ARRAY_BIS(
-         eir_gme_based_melee_attack_component_t,
-         world->based_melee_attacks,
-         max_entity_count,
-         eir_gme_init_based_melee_attack
-         );
-      EIR_KER_ALLOCATE_ARRAY_BIS(
          eir_gme_state_component_t,
          world->states,
          max_entity_count,
@@ -511,7 +481,6 @@ eir_gme_entity_t eir_gme_create_world_entity(eir_gme_world_t * world)
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->aabbs, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->physics, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->directions, entity);
-      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->based_melee_attacks, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->states, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->fsms, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->aabb_primitives, entity);
@@ -786,45 +755,6 @@ void eir_gme_set_entity_direction(
    }
 }
 
-void eir_gme_set_entity_based_melee_attack(
-	eir_gme_world_t * world,
-	eir_gme_entity_t entity,
-	float damage,
-	float damage_zone_x,
-	float damage_zone_y,
-	float damage_zone_width,
-	float damage_zone_height,
-	bool active
-	)
-{
-	eir_gme_entity_flags_t * entity_flags = 0;
-	eir_gme_based_melee_attack_component_t * based_melee_attack_component = 0;
-
-	if (world)
-	{
-		EIR_KER_GET_ARRAY_ITEM(
-         world->based_melee_attacks,
-         entity,
-         based_melee_attack_component
-         );
-		EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
-	}
-	if (entity_flags && based_melee_attack_component)
-	{
-		(*entity_flags) |= eir_gme_component_type_based_melee_attack;
-		based_melee_attack_component->damage_zone.position.x = damage_zone_x;
-		based_melee_attack_component->damage_zone.position.y = damage_zone_y;
-		based_melee_attack_component->damage_zone.size.x = damage_zone_width;
-		based_melee_attack_component->damage_zone.size.y = damage_zone_height;
-		based_melee_attack_component->damage = damage;
-		based_melee_attack_component->active = active;
-	}
-	else
-	{
-      EIR_KER_LOG_ERROR("cannot find entity %d or components in array", entity);
-   }
-}
-
 void eir_gme_set_entity_state(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
@@ -978,6 +908,7 @@ void eir_gme_set_active_camera(
          cam->win_scale = win_scale;
          cam->viewport_w = viewport_w;
          cam->viewport_h = viewport_h;
+         // TODO: FIX THE MAGIC VALUE...
          cam->position.x =
             (float)cam->viewport_w * 0.233f - pos->position.x - aabb->x_offset - aabb->aabb.size.x * 0.5f;
          cam->position.y =

@@ -25,23 +25,3 @@ EIR_KER_DEFINE_ARRAY_STRUCT(
 	eir_gme_direction_component_t,
 	eir_gme_direction_component_array_t
 	);
-
-typedef struct
-{
-	int entity_index;
-	int direction;
-} eir_gme_direction_info_t;
-
-EIR_KER_DEFINE_ARRAY_STRUCT(
-	eir_gme_direction_info_t,
-	eir_gme_direction_info_array_t
-	);
-
-#define EIR_GME_PARSE_direction(buffer, item, bytes_read) \
-   sscanf(                                            \
-      buffer,                                         \
-      "%d|%d|%n",                                     \
-      &item.entity_index,                             \
-      &item.direction,                                \
-      &bytes_read                                     \
-      );

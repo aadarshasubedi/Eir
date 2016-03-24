@@ -1,7 +1,11 @@
-#pragma once
+#pragma w
 
 #include "../maths/eir_mth_vector.h"
 
+typedef struct
+{
+   eir_gfx_sprite_t 
+} eir_gme_ground_tile_t;
 typedef struct
 {
    int col_count;

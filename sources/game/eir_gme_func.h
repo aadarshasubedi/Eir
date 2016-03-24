@@ -74,17 +74,6 @@ void eir_gme_set_entity_direction(
 	eir_gme_direction_t direction
 	);
 
-void eir_gme_set_entity_based_melee_attack(
-	eir_gme_world_t * world,
-	eir_gme_entity_t entity,
-	float damage,
-	float damage_zone_x,
-	float damage_zone_y,
-	float damage_zone_width,
-	float damage_zone_height,
-	bool active
-	);
-
 void eir_gme_set_entity_state(
 	eir_gme_world_t * world,
 	eir_gme_entity_t entity,
