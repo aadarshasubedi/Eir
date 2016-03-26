@@ -1,3 +1,12 @@
+/* #############################################################################
+** 
+** TODO: add const in function parameter when it is possible
+** TODO: remove memleaks
+** TODO: do :retab in all files
+**
+** #############################################################################
+*/
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -32,18 +41,6 @@ const int WINDOW_HEIGHT = 728;
 
 const float PLAYER_FRICTION = 10.0f;
 const float PLAYER_SPEED = 1600.0f;
-
-/* ============================================================================
-** WHAT WE NEED TO TEST CONCEPT
-**
-** 1. one controlled entity
-** 2. placeholder background with multiple heights
-** 3. based and melee attack for controlled entity
-** 4. hostiles NPC with special behaviour : melee and ranged attack
-** 5. friends NPC which follow controlled entity
-** 6. combine attacks when friends entities are closed
-** ============================================================================
-*/
 
 static void eir_init_all_api(eir_ker_env_t * env, int width, int height)
 {
@@ -602,18 +599,6 @@ int main()
    eir_gfx_image_t * ph_atlas_image = eir_gfx_load_image(gfx_env, PLACE_HOLDER_IMAGE_PATH, false);
    eir_gfx_texture_t * ph_texture = eir_gfx_create_texture(gfx_env, ph_atlas_image);
 
-   /*
-   eir_gfx_image_t * ph_tile_image = eir_gfx_load_image(
-      gfx_env,
-      PLACE_HOLDER_TILE_PATH,
-      false 
-      );
-   eir_gfx_texture_t * ph_tile_texture = eir_gfx_create_texture(
-      gfx_env,
-      ph_tile_image
-      );
-   */
-
    // COMMON STRUCT
 
    eir_mth_vec2_t position;
@@ -631,9 +616,13 @@ int main()
    
    int col_count = 40;
    int row_count = 40;
+   int tiles_count = col_count * row_count;
    int tile_width = 32;
    int tile_height = 32;
-   int tiles_count = col_count * row_count;
+   int layers_count = 2;
+   int col_count_2 = 10;
+   int row_count_2 = 10;
+   int tiles_count_2 = col_count_2 * row_count_2;
 
    eir_gfx_image_t * tiles_set_image = eir_gfx_load_image(
       gfx_env,
@@ -654,20 +643,53 @@ int main()
       true
       );
 
-   uv_size.x = 32.0f;
-   uv_size.y = 32.0f;
+   eir_gfx_group_t * tiles_set_group_2 = eir_gfx_create_group(gfx_env, 1, 0, 0);
+   eir_gfx_sprite_batch_t * tiles_set_batch_2 = eir_gfx_add_sprite_batch_to_group(
+      tiles_set_group_2,
+      tiles_set_texture,
+      tiles_count,
+      true,
+      false,
+      true
+      );
+
+   uv_size.x = (float)tile_width;
+   uv_size.y = (float)tile_height;
 
    eir_gme_entity_t map_entity = eir_gme_create_world_entity(world);
 
    eir_gme_set_entity_map(
       world,
       map_entity,
+      layers_count
+      );
+
+   eir_gme_set_entity_map_layer(
+      world,
+      map_entity,
+      tiles_set_group,
       tiles_set_batch,
+      0,
       col_count,
       row_count,
       tile_width,
       tile_height,
       tiles_count
+      );
+
+   position.x = 300.0f;
+   position.y = 300.0f;
+   eir_gme_set_entity_map_layer(
+      world,
+      map_entity,
+      tiles_set_group_2,
+      tiles_set_batch_2,
+      &position,
+      col_count_2,
+      row_count_2,
+      tile_width,
+      tile_height,
+      tiles_count_2
       );
 
    int x_offset_divisor = RAND_MAX / 16;
@@ -684,6 +706,27 @@ int main()
          eir_gme_set_entity_map_tile(
             world,
             map_entity,
+            0,
+            i,
+            j,
+            &uv_offset,
+            &uv_size
+            );
+      }
+   }
+   
+   for (int i = 0; i < col_count_2; ++i)
+   {
+      for (int j = 0; j < row_count_2; ++j)
+      {
+         int x_offset_index = rand() / x_offset_divisor;
+         int y_offset_index = rand() / y_offset_divisor;
+         uv_offset.x = uv_size.x * 0; //x_offset_index;
+         uv_offset.y = uv_size.y * 0; //y_offset_index;
+         eir_gme_set_entity_map_tile(
+            world,
+            map_entity,
+            1,
             i,
             j,
             &uv_offset,
@@ -783,7 +826,7 @@ int main()
 
    eir_gme_entity_t entity = eir_gme_create_world_entity(world);
 
-   eir_gme_set_entity_position(world, entity, 0.0f, 0.0f);
+   eir_gme_set_entity_position(world, entity, 10.0f, 10.0f);
    eir_gme_set_entity_size(world, entity, 64, 64);
    eir_gme_set_entity_sprite(world, entity, player_sprite);
    eir_gme_set_entity_color(world, entity, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -803,6 +846,7 @@ int main()
       entity,
       eir_get_input_controller_buffer(gme_env, 1)
       );
+   eir_gme_set_entity_map_layer_link(world, entity, map_entity, 0);
 
    player_entity_proxy.entity = entity;
    player_entity_proxy.world = world;
@@ -822,6 +866,12 @@ int main()
 
    eir_gme_set_active_world(gme_env, world);
    eir_gme_set_active_camera(world, entity, 3.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+   // ORDER GFX GROUPS
+
+   eir_gfx_set_group_index(gfx_env, tiles_set_group, 0);
+   eir_gfx_set_group_index(gfx_env, sprites_group, 1);
+   eir_gfx_set_group_index(gfx_env, tiles_set_group_2, 2);
 
    // RUN EIR ENGINE
 

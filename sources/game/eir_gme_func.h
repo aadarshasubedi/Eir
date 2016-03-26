@@ -108,7 +108,15 @@ void eir_gme_set_entity_pad_controller(
 void eir_gme_set_entity_map(
    eir_gme_world_t * world,
    eir_gme_entity_t entity,
+   size_t layers_capacity
+   );
+
+void eir_gme_set_entity_map_layer(
+   eir_gme_world_t * world,
+   eir_gme_entity_t entity,
+   eir_gfx_group_t * group,
    eir_gfx_sprite_batch_t * batch,
+   const eir_mth_vec2_t * position,
    int col_count,
    int row_count,
    int tile_width,
@@ -119,10 +127,18 @@ void eir_gme_set_entity_map(
 void eir_gme_set_entity_map_tile(
    eir_gme_world_t * world,
    eir_gme_entity_t entity,
+   int layer_index,
    int col_index,
    int row_index,
    eir_mth_vec2_t * uv_offset,
    eir_mth_vec2_t * uv_size
+   );
+
+void eir_gme_set_entity_map_layer_link(
+   eir_gme_world_t * world,
+   eir_gme_entity_t entity,
+   eir_gme_entity_t map_entity,
+   int map_layer_index
    );
 
 void eir_gme_set_active_camera(

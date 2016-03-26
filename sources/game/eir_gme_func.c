@@ -42,6 +42,7 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->keyboards);
       EIR_KER_INIT_ARRAY(world->pads);
       EIR_KER_INIT_ARRAY(world->maps);
+      EIR_KER_INIT_ARRAY(world->map_layer_links);
       eir_gme_init_camera(&world->camera);
    }
 }
@@ -65,6 +66,7 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->keyboards);
       EIR_KER_FREE_ARRAY(world->pads);
       EIR_KER_FREE_ARRAY(world->maps);
+      EIR_KER_FREE_ARRAY(world->map_layer_links);
       eir_gme_init_camera(&world->camera);
    }
 }
@@ -275,31 +277,6 @@ static void eir_gme_release_pad(eir_gme_pad_component_t * pad)
    eir_gme_init_pad(pad);
 }
 
-static void eir_gme_init_map(eir_gme_map_component_t * map)
-{
-   if (map)
-   {
-      map->col_count = 0;
-      map->row_count = 0;
-      map->tile_width = 0;
-      map->tile_height = 0;
-      map->batch = 0;
-      EIR_KER_INIT_ARRAY(map->tiles);
-   }
-}
-static void eir_gme_release_map(eir_gme_map_component_t * map)
-{
-   if (map)
-   {
-      map->col_count = 0;
-      map->row_count = 0;
-      map->tile_width = 0;
-      map->tile_height = 0;
-      map->batch = 0;
-      EIR_KER_FREE_ARRAY(map->tiles);
-   }
-}
-
 static void eir_gme_init_map_tile(eir_gme_map_tile_t * map_tile)
 {
    if (map_tile)
@@ -307,6 +284,73 @@ static void eir_gme_init_map_tile(eir_gme_map_tile_t * map_tile)
       map_tile->col_index = -1;
       map_tile->row_index = -1;
    }
+}
+
+static void eir_gme_release_map_tile(eir_gme_map_tile_t * map_tile)
+{
+   eir_gme_init_map_tile(map_tile);
+}
+
+static void eir_gme_init_map_layer(eir_gme_map_layer_t * map_layer)
+{
+   if (map_layer)
+   {
+      map_layer->position.x = 0.0f;
+      map_layer->position.y = 0.0f;
+      map_layer->col_count = 0;
+      map_layer->row_count = 0;
+      map_layer->tile_width = 0;
+      map_layer->tile_height = 0;
+      map_layer->group = 0;
+      map_layer->batch = 0;
+      EIR_KER_INIT_ARRAY(map_layer->tiles);
+   }
+}
+
+static void eir_gme_release_map_layer(eir_gme_map_layer_t * map_layer)
+{
+   if (map_layer)
+   {
+      map_layer->position.x = 0.0f;
+      map_layer->position.y = 0.0f;
+      map_layer->col_count = 0;
+      map_layer->row_count = 0;
+      map_layer->tile_width = 0;
+      map_layer->tile_height = 0;
+      map_layer->group = 0;
+      map_layer->batch = 0;
+      EIR_KER_FREE_ARRAY_BIS(map_layer->tiles, eir_gme_release_map_tile);
+   }
+}
+
+static void eir_gme_init_map(eir_gme_map_component_t * map)
+{
+   if (map)
+   {
+      EIR_KER_INIT_ARRAY(map->layers);
+   }
+}
+
+static void eir_gme_release_map(eir_gme_map_component_t * map)
+{
+   if (map)
+   {
+      EIR_KER_FREE_ARRAY_BIS(map->layers, eir_gme_release_map_layer);
+   }
+}
+
+static void eir_gme_init_map_layer_link(eir_gme_map_layer_link_component_t * map_layer_link)
+{
+   if (map_layer_link)
+   {
+      map_layer_link->map_entity = -1;
+      map_layer_link->map_layer_index = -1;
+   }
+}
+
+static void eir_gme_release_map_layer_link(eir_gme_map_layer_link_component_t * map_layer_link)
+{
+   eir_gme_init_map_layer_link(map_layer_link);
 }
 
 static void eir_gme_init_button_state(eir_gme_button_state_t * button_state)
@@ -505,6 +549,12 @@ eir_gme_world_t * eir_gme_create_world(
          max_entity_count,
          eir_gme_init_map
          );
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+         eir_gme_map_layer_link_component_t,
+         world->map_layer_links,
+         max_entity_count,
+         eir_gme_init_map_layer_link
+         );
    }
    return world;
 }
@@ -530,6 +580,7 @@ eir_gme_entity_t eir_gme_create_world_entity(eir_gme_world_t * world)
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->keyboards, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->pads, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->maps, entity);
+      EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->map_layer_links, entity);
    }
    return entity;
 }
@@ -929,7 +980,39 @@ void eir_gme_set_entity_pad_controller(
 void eir_gme_set_entity_map(
    eir_gme_world_t * world,
    eir_gme_entity_t entity,
+   size_t layers_capacity
+   )
+{
+   eir_gme_entity_flags_t * entity_flags = 0;
+   eir_gme_map_component_t * map_component = 0;
+
+   if (world)
+   {
+      EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
+      EIR_KER_GET_ARRAY_ITEM(world->maps, entity, map_component);
+   }
+   if (entity_flags && map_component)
+   {
+      (*entity_flags) |= eir_gme_component_type_map;
+      EIR_KER_ALLOCATE_ARRAY_BIS(
+         eir_gme_map_layer_t,
+         map_component->layers,
+         layers_capacity,
+         eir_gme_init_map_layer
+         );
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity);
+   }
+}
+
+void eir_gme_set_entity_map_layer(
+   eir_gme_world_t * world,
+   eir_gme_entity_t entity,
+   eir_gfx_group_t * group,
    eir_gfx_sprite_batch_t * batch,
+   const eir_mth_vec2_t * position,
    int col_count,
    int row_count,
    int tile_width,
@@ -940,25 +1023,48 @@ void eir_gme_set_entity_map(
    eir_gme_entity_flags_t * entity_flags = 0;
    eir_gme_map_component_t * map_component = 0;
 
-   if (world && batch)
+   if (world && batch && group)
    {
       EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
       EIR_KER_GET_ARRAY_ITEM(world->maps, entity, map_component);
    }
-   if (entity_flags && map_component)
+   if (
+      entity_flags
+      && (*entity_flags) & eir_gme_component_type_map
+      && map_component
+      )
    {
-      (*entity_flags) |= eir_gme_component_type_map;
-      map_component->col_count = col_count;
-      map_component->row_count = row_count;
-      map_component->tile_width = tile_width;
-      map_component->tile_height = tile_height;
-      map_component->batch = batch;
-      EIR_KER_ALLOCATE_ARRAY_BIS(
-         eir_gme_map_tile_t,
-         map_component->tiles,
-         tiles_capacity,
-         eir_gme_init_map_tile
+      eir_gme_map_layer_t * map_layer = 0;
+
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(
+         map_component->layers,
+         map_layer
          );
+
+      if (map_layer)
+      {
+         if (position)
+         {
+            map_layer->position.x = position->x;
+            map_layer->position.y = position->y;
+         }
+         map_layer->col_count = col_count;
+         map_layer->row_count = row_count;
+         map_layer->tile_width = tile_width;
+         map_layer->tile_height = tile_height;
+         map_layer->group = group;
+         map_layer->batch = batch;
+         EIR_KER_ALLOCATE_ARRAY_BIS(
+            eir_gme_map_tile_t,
+            map_layer->tiles,
+            tiles_capacity,
+            eir_gme_init_map_tile
+            );
+      }
+      else
+      {
+         EIR_KER_LOG_ERROR("NO AVAILABLE MAP LAYER");
+      }
    }
    else
    {
@@ -969,6 +1075,7 @@ void eir_gme_set_entity_map(
 void eir_gme_set_entity_map_tile(
    eir_gme_world_t * world,
    eir_gme_entity_t entity,
+   int layer_index,
    int col_index,
    int row_index,
    eir_mth_vec2_t * uv_offset,
@@ -984,7 +1091,7 @@ void eir_gme_set_entity_map_tile(
       EIR_KER_GET_ARRAY_ITEM(world->maps, entity, map_component);
    }
 
-   eir_gme_map_tile_t * map_tile = 0;
+   eir_gme_map_layer_t * map_layer = 0;
 
    if (
       entity_flags
@@ -992,12 +1099,19 @@ void eir_gme_set_entity_map_tile(
       && map_component
       )
    {
-      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(map_component->tiles, map_tile);
-      if (
-         map_tile
-         && col_index >= 0 && col_index < map_component->col_count
-         && row_index >= 0 && row_index < map_component->row_count
-         )
+      EIR_KER_GET_ARRAY_ITEM(map_component->layers, layer_index, map_layer);
+   }
+
+   eir_gme_map_tile_t * map_tile = 0;
+
+   if (
+      map_layer
+      && col_index >= 0 && col_index < map_layer->col_count
+      && row_index >= 0 && row_index < map_layer->row_count
+      )
+   {
+      EIR_KER_GET_ARRAY_NEXT_EMPTY_SLOT(map_layer->tiles, map_tile);
+      if (map_tile)
       {
          map_tile->col_index = col_index;
          map_tile->row_index = row_index;
@@ -1006,17 +1120,17 @@ void eir_gme_set_entity_map_tile(
          eir_mth_vec2_t size;
          eir_gfx_color_t color;
          
-         position.x = col_index * size.x;
-         position.y = row_index * size.y;
-         size.x = map_component->tile_width;
-         size.y = map_component->tile_height;
+         position.x = map_layer->position.x + col_index * size.x;
+         position.y = map_layer->position.y + row_index * size.y;
+         size.x = map_layer->tile_width;
+         size.y = map_layer->tile_height;
          color.r = 1.0f;
          color.g = 1.0f;
          color.b = 1.0f;
          color.a = 1.0f;
 
          eir_gfx_add_sprite_to_batch(
-            map_component->batch,
+            map_layer->batch,
             &position,
             &size,
             uv_offset,
@@ -1025,6 +1139,38 @@ void eir_gme_set_entity_map_tile(
             true
             );
       }
+      else
+      {
+         EIR_KER_LOG_ERROR("NO MAP TILE AVAILABLE");
+      }
+   }
+}
+
+void eir_gme_set_entity_map_layer_link(
+   eir_gme_world_t * world,
+   eir_gme_entity_t entity,
+   eir_gme_entity_t map_entity,
+   int map_layer_index
+   )
+{
+   // TODO
+   eir_gme_entity_flags_t * entity_flags = 0;
+   eir_gme_map_layer_link_component_t * map_layer_link_component = 0;
+
+   if (world)
+   {
+      EIR_KER_GET_ARRAY_ITEM(world->entities_flags, entity, entity_flags);
+      EIR_KER_GET_ARRAY_ITEM(world->map_layer_links, entity, map_layer_link_component);
+   }
+   if (entity_flags && map_layer_link_component)
+   {
+      (*entity_flags) |= eir_gme_component_type_map_layer_link;
+      map_layer_link_component->map_entity = map_entity;
+      map_layer_link_component->map_layer_index = map_layer_index;
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("cannot find entity %d or component in array", entity);
    }
 }
 

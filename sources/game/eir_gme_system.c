@@ -3,6 +3,59 @@
 #include "../physics/eir_phy_motion_func.h"
 #include "../graphics/eir_gfx_func.h"
 
+static bool eir_gme_is_aabb_in_map_layer(
+   const eir_gme_map_layer_t * map_layer,
+   const eir_phy_aabb_t * aabb
+   )
+{
+   bool result = false;
+
+   if (map_layer && aabb)
+   {
+      if (
+         aabb->position.x >= map_layer->position.x
+         && (aabb->position.x + aabb->size.x) <= (map_layer->position.x + (map_layer->tile_width * map_layer->col_count))
+         && aabb->position.y >= map_layer->position.y
+         && (aabb->position.y + aabb->size.y) <= (map_layer->position.y + (map_layer->tile_height * map_layer->row_count))
+         )
+      {
+         result = true;
+      }
+   }
+   return result;
+}
+
+static eir_gme_map_layer_t * eir_gme_get_map_layer(
+   eir_gme_world_t * world,
+   eir_gme_entity_t map_entity,
+   int layer_index
+   )
+{
+   eir_gme_map_layer_t * map_layer = 0;
+   eir_gme_map_component_t * map_component = 0;
+
+   if (
+      world
+      && world->maps.used > map_entity && map_entity >= 0
+      )
+   {
+      eir_gme_entity_flags_t entity_flags = world->entities_flags.data[map_entity];
+
+      if (entity_flags & eir_gme_component_type_map)
+      {
+         map_component = &world->maps.data[map_entity];
+      }
+   }
+   if (
+      map_component
+      && map_component->layers.used > layer_index && layer_index >= 0
+      )
+   {
+      map_layer = &map_component->layers.data[layer_index];
+   }
+   return map_layer;
+}
+
 static void eir_gme_update_direction_component(eir_gme_direction_component_t * direction_component, float x_velocity, float y_velocity)
 {
 	if (direction_component)
@@ -180,6 +233,35 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 						aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
 						aabb_component->modified = true;
 					}
+               if (entity_flags & eir_gme_component_type_map_layer_link)
+               {
+                  eir_gme_map_layer_link_component_t * map_layer_link = &world->map_layer_links.data[index];
+                  eir_gme_map_layer_t * map_layer = eir_gme_get_map_layer(
+                     world,
+                     map_layer_link->map_entity,
+                     map_layer_link->map_layer_index
+                     );
+                  if (map_layer && !eir_gme_is_aabb_in_map_layer(map_layer, &aabb_component->aabb))
+                  {
+                     eir_phy_aabb_t layer_aabb;
+
+                     layer_aabb.position.x = map_layer->position.x;
+                     layer_aabb.position.y = map_layer->position.y;
+                     layer_aabb.size.x = map_layer->col_count * map_layer->tile_width;
+                     layer_aabb.size.y = map_layer->row_count * map_layer->tile_height;
+							
+                     float x_depth = eir_phy_get_x_aabb_intersection_depth(
+							   &world->aabbs.data[index].aabb,
+								&layer_aabb
+							   );
+							float y_depth = eir_phy_get_y_aabb_intersection_depth(
+								&world->aabbs.data[index].aabb,
+                        &layer_aabb
+								);
+
+                     // TODO: 
+                  }
+               }
 					if (entity_flags & eir_gme_component_type_physic)
 					{
 						for (int index2 = 0; index2 < world->entities_flags.used; ++index2)
