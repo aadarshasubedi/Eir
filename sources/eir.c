@@ -1,8 +1,13 @@
 /* #############################################################################
 ** 
+** Tasks list if all dev milestones tasks are done :
+** -------------------------------------------------
+**
 ** TODO: add const in function parameter when it is possible
 ** TODO: remove memleaks
 ** TODO: do :retab in all files
+** TODO: split the big eir_gme_system.c function in multiple systems function
+**       and files.
 **
 ** #############################################################################
 */

@@ -3,6 +3,7 @@
 #include "../physics/eir_phy_motion_func.h"
 #include "../graphics/eir_gfx_func.h"
 
+/*
 static bool eir_gme_is_aabb_in_map_layer(
    const eir_gme_map_layer_t * map_layer,
    const eir_phy_aabb_t * aabb
@@ -24,6 +25,7 @@ static bool eir_gme_is_aabb_in_map_layer(
    }
    return result;
 }
+*/
 
 static eir_gme_map_layer_t * eir_gme_get_map_layer(
    eir_gme_world_t * world,
@@ -241,6 +243,45 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                      map_layer_link->map_entity,
                      map_layer_link->map_layer_index
                      );
+
+                  if (map_layer)
+                  {
+                     float layer_left_bound = map_layer->position.x;
+                     float layer_right_bound = map_layer->position.x + map_layer->col_count * map_layer->tile_width;
+                     float layer_top_bound = map_layer->position.y;
+                     float layer_bottom_bound = map_layer->position.y + map_layer->col_count * map_layer->tile_height;
+                     float entity_left_bound = aabb_component->aabb.position.x;
+                     float entity_right_bound = aabb_component->aabb.position.x + aabb_component->aabb.size.x;
+                     float entity_top_bound = aabb_component->aabb.position.y;
+                     float entity_bottom_bound = aabb_component->aabb.position.y + aabb_component->aabb.size.y;
+
+                     if (entity_top_bound < layer_top_bound)
+                     {
+                        position_component->position.y += (layer_top_bound - entity_top_bound);
+                        aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+						      aabb_component->modified = true;
+                     }
+                     if (entity_bottom_bound > layer_bottom_bound)
+                     {
+                        position_component->position.y -= (entity_bottom_bound - layer_bottom_bound);
+                        aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+						      aabb_component->modified = true;
+                     }
+                     if (entity_left_bound < layer_left_bound)
+                     {
+                        position_component->position.x += (layer_left_bound - entity_left_bound);
+                        aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
+						      aabb_component->modified = true;
+                     }
+                     if (entity_right_bound > layer_right_bound)
+                     {
+                        position_component->position.x -= (entity_right_bound - layer_right_bound);
+                        aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
+						      aabb_component->modified = true;
+                     }
+                  }
+
+                  /*
                   if (map_layer && !eir_gme_is_aabb_in_map_layer(map_layer, &aabb_component->aabb))
                   {
                      eir_phy_aabb_t layer_aabb;
@@ -259,8 +300,8 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                         &layer_aabb
 								);
 
-                     // TODO: 
                   }
+                  */
                }
 					if (entity_flags & eir_gme_component_type_physic)
 					{
