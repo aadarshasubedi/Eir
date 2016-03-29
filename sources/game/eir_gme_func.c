@@ -284,6 +284,7 @@ static void eir_gme_init_map_tile(eir_gme_map_tile_t * map_tile)
       map_tile->col_index = -1;
       map_tile->row_index = -1;
       map_tile->navigable = true;
+      map_tile->sprite_proxy = 0;
    }
 }
 
@@ -1132,7 +1133,7 @@ void eir_gme_set_entity_map_tile(
          color.b = 1.0f;
          color.a = 1.0f;
 
-         eir_gfx_add_sprite_to_batch(
+         map_tile->sprite_proxy = eir_gfx_add_sprite_to_batch(
             map_layer->batch,
             &position,
             &size,

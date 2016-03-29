@@ -10,6 +10,7 @@ typedef struct
    int col_index;
    int row_index;
    bool navigable;
+   eir_gfx_sprite_proxy_t * sprite_proxy;
 } eir_gme_map_tile_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(

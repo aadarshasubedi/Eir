@@ -45,7 +45,7 @@ const int WINDOW_WIDTH = 1024;
 const int WINDOW_HEIGHT = 728; 
 
 const float PLAYER_FRICTION = 10.0f;
-const float PLAYER_SPEED = 1600.0f;
+const float PLAYER_SPEED = 2000.0f;
 
 static void eir_init_all_api(eir_ker_env_t * env, int width, int height)
 {
@@ -344,23 +344,22 @@ static void eir_run(eir_ker_env_t * env)
          &frame_text_color,
          sys_env->timer.elapsed_time
          );
-      /*
-      eir_render_player_direction(
-         player_info_text,
-         &player_info_text_pos,
-         player_info_text_font_size,
-         &player_info_text_color,
-         player->direction_component->value
-         );
+      // TODO: replace hard coded 1 by player entity value or other stuff
       eir_render_player_velocity(
          player_velocity_text,
          &player_velocity_text_pos,
          player_velocity_text_font_size,
          &player_velocity_text_color,
-         player->motion_param_component->data.velocity.x,
-         player->motion_param_component->data.velocity.y
+         gme_env->curr_world->motion_params.data[1].motion_param.velocity.x,
+         gme_env->curr_world->motion_params.data[1].motion_param.velocity.y
          );
-      */
+      eir_render_player_direction(
+         player_info_text,
+         &player_info_text_pos,
+         player_info_text_font_size,
+         &player_info_text_color,
+         gme_env->curr_world->directions.data[1].direction
+         );
 #endif
       eir_gfx_api_set_clear_color();
       eir_gfx_api_clear_buffer();

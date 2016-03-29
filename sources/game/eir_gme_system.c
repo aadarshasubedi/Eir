@@ -122,7 +122,7 @@ static eir_gme_map_tile_t * eir_gme_get_non_navigable_nearest_map_tile(
                }
                else if (
                   direction == EIR_GME_DIRECTION_UP
-                  && top >tile_iter_top
+                  && top > tile_iter_top
                   && (map_tile == 0 || (map_tile && tile_bottom < tile_iter_bottom))
                   )
                {
@@ -366,15 +366,11 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                      float x_velocity = motion_param_component->motion_param.velocity.x;
 					      float y_velocity = motion_param_component->motion_param.velocity.y;
 
-		               if (
-                        eir_mth_abs(x_velocity) > EIR_GME_DIRECTION_EPSILON_VALUE
-                        )
+		               if (x_velocity != 0.0f)
                      {
                         x_direction = (x_velocity > 0.0f) ? EIR_GME_DIRECTION_RIGHT : EIR_GME_DIRECTION_LEFT;
                      }
-		               if (
-                        eir_mth_abs(y_velocity) > EIR_GME_DIRECTION_EPSILON_VALUE
-                        )
+		               if (y_velocity != 0.0f)
                      {
                         y_direction = (y_velocity > 0.0f) ? EIR_GME_DIRECTION_BOTTOM : EIR_GME_DIRECTION_UP;
                      }
@@ -384,9 +380,37 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                         x_direction,
                         &aabb_component->aabb
                         );
-
+                     
                      if (x_nearest_tile)
                      {
+                        eir_gfx_sprite_proxy_t * sprite_proxy = x_nearest_tile->sprite_proxy;
+				eir_mth_vec2_t position =
+				{
+					.x = sprite_proxy->position.x,
+					.y = sprite_proxy->position.y
+				};
+				eir_mth_vec2_t size =
+				{
+					.x = sprite_proxy->size.x,
+					.y = sprite_proxy->size.y
+				};
+				eir_mth_vec2_t uv_offset =
+				{
+					.x = sprite_proxy->uv_offset.x,
+					.y = sprite_proxy->uv_offset.y
+				};
+				eir_mth_vec2_t uv_size =
+				{
+					.x = sprite_proxy->uv_size.x,
+					.y = sprite_proxy->uv_size.y
+				};
+				eir_gfx_color_t color =
+				{
+					.r = 1.0f,
+					.g = 0.0f,
+					.b = 0.0f,
+					.a = 1.0f
+				};
                         float nearest_tile_left = map_layer->position.x + x_nearest_tile->col_index * map_layer->tile_width;
                         float nearest_tile_right = nearest_tile_left + map_layer->tile_width;
 
@@ -408,6 +432,14 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                            aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
 						         aabb_component->modified = true;
                         }
+					eir_gfx_modify_sprite(
+	   					sprite_proxy,
+	   					&position,
+	   					&size,
+	   					&uv_offset,
+	   					&uv_size,
+	   					&color
+	   					);
                      }
 
                      eir_gme_map_tile_t * y_nearest_tile = eir_gme_get_non_navigable_nearest_map_tile(
@@ -418,6 +450,34 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                      
                      if (y_nearest_tile)
                      {
+                        eir_gfx_sprite_proxy_t * sprite_proxy = y_nearest_tile->sprite_proxy;
+				eir_mth_vec2_t position =
+				{
+					.x = sprite_proxy->position.x,
+					.y = sprite_proxy->position.y
+				};
+				eir_mth_vec2_t size =
+				{
+					.x = sprite_proxy->size.x,
+					.y = sprite_proxy->size.y
+				};
+				eir_mth_vec2_t uv_offset =
+				{
+					.x = sprite_proxy->uv_offset.x,
+					.y = sprite_proxy->uv_offset.y
+				};
+				eir_mth_vec2_t uv_size =
+				{
+					.x = sprite_proxy->uv_size.x,
+					.y = sprite_proxy->uv_size.y
+				};
+				eir_gfx_color_t color =
+				{
+					.r = 0.0f,
+					.g = 0.0f,
+					.b = 1.0f,
+					.a = 1.0f
+				};
                         float nearest_tile_top = map_layer->position.y + y_nearest_tile->row_index * map_layer->tile_height;
                         float nearest_tile_bottom = nearest_tile_top + map_layer->tile_height;
 
@@ -439,6 +499,14 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                            aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
 						         aabb_component->modified = true;
                         }
+					eir_gfx_modify_sprite(
+	   					sprite_proxy,
+	   					&position,
+	   					&size,
+	   					&uv_offset,
+	   					&uv_size,
+	   					&color
+	   					);
                      }
                   }
                }
