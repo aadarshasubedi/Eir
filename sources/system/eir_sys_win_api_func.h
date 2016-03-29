@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../system/eir_sys_env.h"
+#include "eir_sys_env.h"
 
 bool eir_sys_win_api_init();
 void eir_sys_win_api_release();

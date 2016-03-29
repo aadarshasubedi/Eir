@@ -3,6 +3,40 @@
 #include "../physics/eir_phy_motion_func.h"
 #include "../graphics/eir_gfx_func.h"
 
+static eir_gme_direction_t eir_gme_get_x_direction_from_input(
+   eir_gme_input_controller_buffer_t * input_buffer
+   )
+{
+   eir_gme_direction_t result = EIR_GME_DIRECTION_UNKNOWN;
+
+   if (input_buffer && input_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed)
+   {
+      result = EIR_GME_DIRECTION_RIGHT;
+   }
+   else if (input_buffer && input_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed)
+   {
+      result = EIR_GME_DIRECTION_LEFT;
+   }
+   return result;
+}
+
+static eir_gme_direction_t eir_gme_get_y_direction_from_input(
+   eir_gme_input_controller_buffer_t * input_buffer
+   )
+{
+   eir_gme_direction_t result = EIR_GME_DIRECTION_UNKNOWN;
+
+   if (input_buffer && input_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed)
+   {
+      result = EIR_GME_DIRECTION_UP;
+   }
+   else if (input_buffer && input_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed)
+   {
+      result = EIR_GME_DIRECTION_BOTTOM;
+   }
+   return result;
+}
+
 static eir_gme_map_layer_t * eir_gme_get_map_layer(
    const eir_gme_world_t * world,
    eir_gme_entity_t map_entity,
@@ -363,17 +397,15 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                      
                      eir_gme_direction_t x_direction = EIR_GME_DIRECTION_UNKNOWN;
                      eir_gme_direction_t y_direction = EIR_GME_DIRECTION_UNKNOWN;
-                     float x_velocity = motion_param_component->motion_param.velocity.x;
-					      float y_velocity = motion_param_component->motion_param.velocity.y;
-
-		               if (x_velocity != 0.0f)
-                     {
-                        x_direction = (x_velocity > 0.0f) ? EIR_GME_DIRECTION_RIGHT : EIR_GME_DIRECTION_LEFT;
-                     }
-		               if (y_velocity != 0.0f)
-                     {
-                        y_direction = (y_velocity > 0.0f) ? EIR_GME_DIRECTION_BOTTOM : EIR_GME_DIRECTION_UP;
-                     }
+                     
+                     // TODO: really ugly, find properly the entity direction
+                     // (do not use velocity only commander direction)
+                     x_direction = eir_gme_get_x_direction_from_input(
+                        world->keyboards.data[index].input_buffer
+                        );
+                     y_direction = eir_gme_get_y_direction_from_input(
+                        world->keyboards.data[index].input_buffer
+                        );
 
                      eir_gme_map_tile_t * x_nearest_tile = eir_gme_get_non_navigable_nearest_map_tile(
                         map_layer,

@@ -13,6 +13,17 @@ void eir_phy_proceed_euler_integration(
 
 	if (motion_param && old_position && new_position)
 	{
+      // TODO: control ending moves with boolean flag : decrease_speed
+      // false : if acceleration = 0 then velocity = 0
+      // true : if acceleration = 0 then do not set velocity to 0
+      if (motion_param->acceleration.x == 0.0f)
+      {
+         motion_param->velocity.x = 0.0f;
+      }
+      if (motion_param->acceleration.y == 0.0f)
+      {
+         motion_param->velocity.y = 0.0f;
+      }
 		acceleration.x = motion_param->acceleration.x * motion_param->speed_factor;
 		acceleration.y = motion_param->acceleration.y * motion_param->speed_factor;
 		acceleration.x += -motion_param->friction_factor * motion_param->velocity.x;
