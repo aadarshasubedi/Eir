@@ -321,6 +321,22 @@ static void eir_run(eir_ker_env_t * env)
       }
 
 #ifdef EIR_DEBUG
+
+      if (sys_env->timer.elapsed_time > 0.033)
+      {
+         frame_text_color.r = 1.0f;
+         frame_text_color.g = 0.0f;
+         frame_text_color.b = 0.0f;
+         frame_text_color.a = 1.0f;
+      }
+      else
+      {
+         frame_text_color.r = 0.0f;
+         frame_text_color.g = 1.0f;
+         frame_text_color.b = 0.0f;
+         frame_text_color.a = 1.0f;
+      }
+
       eir_render_frame_rate(
          frame_text,
          &frame_text_pos,
@@ -706,8 +722,19 @@ int main()
       {
          int x_offset_index = rand() / x_offset_divisor;
          int y_offset_index = rand() / y_offset_divisor;
+         bool navigable = true;
+         
          uv_offset.x = uv_size.x * 13; //x_offset_index;
          uv_offset.y = uv_size.y * 4; //y_offset_index;
+         if (
+            (i > (col_count / 4) && i < (col_count / 2) + (col_count / 4))
+            && (j > (row_count / 4) && j < (row_count / 2) + (row_count / 4))
+            )
+         {
+            uv_offset.x = uv_size.x * 0; //x_offset_index;
+            uv_offset.y = uv_size.y * 4; //y_offset_index;
+            navigable = false;
+         }
          eir_gme_set_entity_map_tile(
             world,
             map_entity,
@@ -715,7 +742,8 @@ int main()
             i,
             j,
             &uv_offset,
-            &uv_size
+            &uv_size,
+            navigable
             );
       }
    }
@@ -735,7 +763,8 @@ int main()
             i,
             j,
             &uv_offset,
-            &uv_size
+            &uv_size,
+            true
             );
       }
    }
@@ -836,7 +865,7 @@ int main()
    eir_gme_set_entity_sprite(world, entity, player_sprite);
    eir_gme_set_entity_color(world, entity, 1.0f, 1.0f, 1.0f, 1.0f);
    eir_gme_set_entity_acceleration(world, entity, 0.0f, 0.0f, PLAYER_SPEED, PLAYER_FRICTION);
-   eir_gme_set_entity_aabb(world, entity, 0.0f, 0.0f, 64.0f, 64.0f);
+   eir_gme_set_entity_aabb(world, entity, 8.0f, 8.0f, 48.0f, 48.0f);
    eir_gme_set_entity_aabb_primitive(world, entity, entity_aabb_rect_proxy);
    eir_gme_set_entity_physic(world, entity, 0.5f);
    eir_gme_set_entity_direction(world, entity, EIR_GME_DIRECTION_BOTTOM);
@@ -860,7 +889,7 @@ int main()
 
    eir_gme_entity_t entity2 = eir_gme_create_world_entity(world);
 
-   eir_gme_set_entity_position(world, entity2, 200.0f, 0.0f);
+   eir_gme_set_entity_position(world, entity2, 200.0f, -10.0f);
    eir_gme_set_entity_size(world, entity2, 64, 64);
    eir_gme_set_entity_sprite(world, entity2, obj_sprite);
    eir_gme_set_entity_color(world, entity2, 1.0f, 0.0f, 0.0f, 0.5f);

@@ -3,32 +3,8 @@
 #include "../physics/eir_phy_motion_func.h"
 #include "../graphics/eir_gfx_func.h"
 
-/*
-static bool eir_gme_is_aabb_in_map_layer(
-   const eir_gme_map_layer_t * map_layer,
-   const eir_phy_aabb_t * aabb
-   )
-{
-   bool result = false;
-
-   if (map_layer && aabb)
-   {
-      if (
-         aabb->position.x >= map_layer->position.x
-         && (aabb->position.x + aabb->size.x) <= (map_layer->position.x + (map_layer->tile_width * map_layer->col_count))
-         && aabb->position.y >= map_layer->position.y
-         && (aabb->position.y + aabb->size.y) <= (map_layer->position.y + (map_layer->tile_height * map_layer->row_count))
-         )
-      {
-         result = true;
-      }
-   }
-   return result;
-}
-*/
-
 static eir_gme_map_layer_t * eir_gme_get_map_layer(
-   eir_gme_world_t * world,
+   const eir_gme_world_t * world,
    eir_gme_entity_t map_entity,
    int layer_index
    )
@@ -56,6 +32,107 @@ static eir_gme_map_layer_t * eir_gme_get_map_layer(
       map_layer = &map_component->layers.data[layer_index];
    }
    return map_layer;
+}
+
+static eir_gme_map_tile_t * eir_gme_get_non_navigable_nearest_map_tile(
+   const eir_gme_map_layer_t * map_layer,
+   eir_gme_direction_t direction,
+   const eir_phy_aabb_t * aabb
+   )
+{
+   eir_gme_map_tile_t * map_tile = 0;
+
+   if (map_layer && aabb && map_layer->tiles.used > 0)
+   {
+      float left = aabb->position.x;
+      float right = left + aabb->size.x;
+      float top = aabb->position.y;
+      float bottom = top + aabb->size.y;
+
+      for (int i = 0; i < map_layer->tiles.used; ++i)
+      {
+         eir_gme_map_tile_t * map_tile_iter = &map_layer->tiles.data[i];
+
+         if (
+            map_tile_iter
+            && map_tile_iter->col_index != -1
+            && map_tile_iter->row_index != -1
+            && !map_tile_iter->navigable
+            )
+         {
+            float tile_iter_left = map_layer->position.x + map_tile_iter->col_index * map_layer->tile_width;
+            float tile_iter_right = tile_iter_left + map_layer->tile_width;
+            float tile_iter_top = map_layer->position.y + map_tile_iter->row_index * map_layer->tile_height;
+            float tile_iter_bottom = tile_iter_top + map_layer->tile_height;
+            float tile_left = 0.0f;
+            float tile_right = 0.0f;
+            float tile_top = 0.0f;
+            float tile_bottom = 0.0f;
+
+            if (map_tile)
+            {
+               tile_left = map_layer->position.x + map_tile->col_index * map_layer->tile_width;
+               tile_right = tile_left + map_layer->tile_width;
+               tile_top = map_layer->position.y + map_tile->row_index * map_layer->tile_height;
+               tile_bottom = tile_top + map_layer->tile_height;
+            }
+
+            if (
+               direction == EIR_GME_DIRECTION_RIGHT
+               || direction == EIR_GME_DIRECTION_LEFT
+               )
+            {
+               if (top >= tile_iter_bottom || bottom <= tile_iter_top)
+               {
+                  continue;
+               }
+               if (
+                  direction == EIR_GME_DIRECTION_LEFT
+                  && right > tile_iter_right
+                  && (map_tile == 0 || (map_tile && tile_right < tile_iter_right))
+                  )
+               {
+                  map_tile = map_tile_iter;
+               }
+               else if (
+                  direction == EIR_GME_DIRECTION_RIGHT
+                  && left < tile_iter_left
+                  && (map_tile == 0 || (map_tile && tile_left > tile_iter_left))
+                  )
+               {
+                  map_tile = map_tile_iter;
+               }
+            }
+            if (
+               direction == EIR_GME_DIRECTION_UP
+               || direction == EIR_GME_DIRECTION_BOTTOM
+               )
+            {
+               if (left >= tile_iter_right || right <= tile_iter_left)
+               {
+                  continue;
+               }
+               if (
+                  direction == EIR_GME_DIRECTION_BOTTOM
+                  && bottom < tile_iter_bottom
+                  && (map_tile == 0 || (map_tile && tile_top > tile_iter_top))
+                  )
+               {
+                  map_tile = map_tile_iter;
+               }
+               else if (
+                  direction == EIR_GME_DIRECTION_UP
+                  && top >tile_iter_top
+                  && (map_tile == 0 || (map_tile && tile_bottom < tile_iter_bottom))
+                  )
+               {
+                  map_tile = map_tile_iter;
+               }
+            }
+         }
+      }
+   }
+   return map_tile;
 }
 
 static void eir_gme_update_direction_component(eir_gme_direction_component_t * direction_component, float x_velocity, float y_velocity)
@@ -235,9 +312,13 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
 						aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
 						aabb_component->modified = true;
 					}
-               if (entity_flags & eir_gme_component_type_map_layer_link)
+               if (
+                  entity_flags & eir_gme_component_type_map_layer_link
+			         && entity_flags & eir_gme_component_type_motion_param
+                  )
                {
                   eir_gme_map_layer_link_component_t * map_layer_link = &world->map_layer_links.data[index];
+				      eir_gme_motion_param_component_t * motion_param_component = &world->motion_params.data[index];
                   eir_gme_map_layer_t * map_layer = eir_gme_get_map_layer(
                      world,
                      map_layer_link->map_entity,
@@ -248,7 +329,7 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                   {
                      float layer_left_bound = map_layer->position.x;
                      float layer_right_bound = map_layer->position.x + map_layer->col_count * map_layer->tile_width;
-                     float layer_top_bound = map_layer->position.y;
+                     float layer_top_bound = map_layer->position.y - aabb_component->aabb.size.y;
                      float layer_bottom_bound = map_layer->position.y + map_layer->col_count * map_layer->tile_height;
                      float entity_left_bound = aabb_component->aabb.position.x;
                      float entity_right_bound = aabb_component->aabb.position.x + aabb_component->aabb.size.x;
@@ -279,29 +360,87 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                         aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
 						      aabb_component->modified = true;
                      }
+                     
+                     eir_gme_direction_t x_direction = EIR_GME_DIRECTION_UNKNOWN;
+                     eir_gme_direction_t y_direction = EIR_GME_DIRECTION_UNKNOWN;
+                     float x_velocity = motion_param_component->motion_param.velocity.x;
+					      float y_velocity = motion_param_component->motion_param.velocity.y;
+
+		               if (
+                        eir_mth_abs(x_velocity) > EIR_GME_DIRECTION_EPSILON_VALUE
+                        )
+                     {
+                        x_direction = (x_velocity > 0.0f) ? EIR_GME_DIRECTION_RIGHT : EIR_GME_DIRECTION_LEFT;
+                     }
+		               if (
+                        eir_mth_abs(y_velocity) > EIR_GME_DIRECTION_EPSILON_VALUE
+                        )
+                     {
+                        y_direction = (y_velocity > 0.0f) ? EIR_GME_DIRECTION_BOTTOM : EIR_GME_DIRECTION_UP;
+                     }
+
+                     eir_gme_map_tile_t * x_nearest_tile = eir_gme_get_non_navigable_nearest_map_tile(
+                        map_layer,
+                        x_direction,
+                        &aabb_component->aabb
+                        );
+
+                     if (x_nearest_tile)
+                     {
+                        float nearest_tile_left = map_layer->position.x + x_nearest_tile->col_index * map_layer->tile_width;
+                        float nearest_tile_right = nearest_tile_left + map_layer->tile_width;
+
+                        if (
+                           x_direction == EIR_GME_DIRECTION_RIGHT
+                           && entity_right_bound > nearest_tile_left
+                           )
+                        {
+                           position_component->position.x -= (entity_right_bound - nearest_tile_left);
+                           aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
+						         aabb_component->modified = true;
+                        }
+                        if (
+                           x_direction == EIR_GME_DIRECTION_LEFT
+                           && entity_left_bound < nearest_tile_right
+                           )
+                        {
+                           position_component->position.x += (nearest_tile_right - entity_left_bound);
+                           aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
+						         aabb_component->modified = true;
+                        }
+                     }
+
+                     eir_gme_map_tile_t * y_nearest_tile = eir_gme_get_non_navigable_nearest_map_tile(
+                        map_layer,
+                        y_direction,
+                        &aabb_component->aabb
+                        );
+                     
+                     if (y_nearest_tile)
+                     {
+                        float nearest_tile_top = map_layer->position.y + y_nearest_tile->row_index * map_layer->tile_height;
+                        float nearest_tile_bottom = nearest_tile_top + map_layer->tile_height;
+
+                        if (
+                           y_direction == EIR_GME_DIRECTION_BOTTOM
+                           && entity_bottom_bound > nearest_tile_top
+                           )
+                        {
+                           position_component->position.y -= (entity_bottom_bound - nearest_tile_top);
+                           aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+						         aabb_component->modified = true;
+                        }
+                        if (
+                           y_direction == EIR_GME_DIRECTION_UP
+                           && entity_top_bound < nearest_tile_bottom
+                           )
+                        {
+                           position_component->position.y += (nearest_tile_bottom - entity_top_bound);
+                           aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+						         aabb_component->modified = true;
+                        }
+                     }
                   }
-
-                  /*
-                  if (map_layer && !eir_gme_is_aabb_in_map_layer(map_layer, &aabb_component->aabb))
-                  {
-                     eir_phy_aabb_t layer_aabb;
-
-                     layer_aabb.position.x = map_layer->position.x;
-                     layer_aabb.position.y = map_layer->position.y;
-                     layer_aabb.size.x = map_layer->col_count * map_layer->tile_width;
-                     layer_aabb.size.y = map_layer->row_count * map_layer->tile_height;
-							
-                     float x_depth = eir_phy_get_x_aabb_intersection_depth(
-							   &world->aabbs.data[index].aabb,
-								&layer_aabb
-							   );
-							float y_depth = eir_phy_get_y_aabb_intersection_depth(
-								&world->aabbs.data[index].aabb,
-                        &layer_aabb
-								);
-
-                  }
-                  */
                }
 					if (entity_flags & eir_gme_component_type_physic)
 					{

@@ -131,7 +131,8 @@ void eir_gme_set_entity_map_tile(
    int col_index,
    int row_index,
    eir_mth_vec2_t * uv_offset,
-   eir_mth_vec2_t * uv_size
+   eir_mth_vec2_t * uv_size,
+   bool navigable
    );
 
 void eir_gme_set_entity_map_layer_link(

@@ -9,6 +9,7 @@ typedef struct
 {
    int col_index;
    int row_index;
+   bool navigable;
 } eir_gme_map_tile_t;
 
 EIR_KER_DEFINE_ARRAY_STRUCT(

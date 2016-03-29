@@ -283,6 +283,7 @@ static void eir_gme_init_map_tile(eir_gme_map_tile_t * map_tile)
    {
       map_tile->col_index = -1;
       map_tile->row_index = -1;
+      map_tile->navigable = true;
    }
 }
 
@@ -1079,7 +1080,8 @@ void eir_gme_set_entity_map_tile(
    int col_index,
    int row_index,
    eir_mth_vec2_t * uv_offset,
-   eir_mth_vec2_t * uv_size
+   eir_mth_vec2_t * uv_size,
+   bool navigable
    )
 {
    eir_gme_entity_flags_t * entity_flags = 0;
@@ -1115,6 +1117,7 @@ void eir_gme_set_entity_map_tile(
       {
          map_tile->col_index = col_index;
          map_tile->row_index = row_index;
+         map_tile->navigable = navigable;
          
          eir_mth_vec2_t position;
          eir_mth_vec2_t size;
