@@ -385,7 +385,64 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                         sort_colliding_map_tile_array(
                            colliding_map_tile_array
                            );
-                        // TODO: resolve collisions
+
+                        for (int j = 0; j < colliding_map_tile_array->used; ++j)
+                        {
+                           colliding_map_tile_t * colliding_map_tile = &colliding_map_tile_array->data[j];
+                           eir_gme_map_tile_t * map_tile = colliding_map_tile->map_tile_ptr;
+
+                           if (map_tile && !map_tile->navigable)
+                           {
+                              float map_tile_left = map_layer->position.x + map_tile->col_index * map_layer->tile_width;
+                              float map_tile_right = map_tile_left + map_layer->tile_width;
+                              float map_tile_top = map_layer->position.y + map_tile->row_index * map_layer->tile_height;
+                              float map_tile_bottom = map_tile_top + map_layer->tile_height;
+
+                              entity_left_bound = aabb_component->aabb.position.x;
+                              entity_right_bound = aabb_component->aabb.position.x + aabb_component->aabb.size.x;
+
+                              if (
+                                 entity_left_bound > map_tile_left
+                                 && entity_left_bound < map_tile_right
+                                 )
+                              {
+                                 position_component->position.x += (map_tile_right - entity_left_bound);
+                                 aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
+						               aabb_component->modified = true;
+                              }
+                              else if (
+                                 entity_right_bound > map_tile_left
+                                 && entity_right_bound < map_tile_right
+                                 )
+                              {
+                                 position_component->position.x -= (entity_right_bound - map_tile_left);
+                                 aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
+						               aabb_component->modified = true;
+                              }
+
+                              entity_top_bound = aabb_component->aabb.position.y;
+                              entity_bottom_bound = aabb_component->aabb.position.y + aabb_component->aabb.size.y;
+                        
+                              if (
+                                 entity_top_bound > map_tile_top
+                                 && entity_top_bound < map_tile_bottom
+                                 )
+                              {
+                                 position_component->position.y += (map_tile_bottom - entity_top_bound);
+                                 aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+						               aabb_component->modified = true;
+                              }
+                              else if (
+                                 entity_bottom_bound > map_tile_top
+                                 && entity_bottom_bound < map_tile_bottom
+                                 )
+                              {
+                                 position_component->position.y -= (entity_bottom_bound - map_tile_top);
+                                 aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+						               aabb_component->modified = true;
+                              }
+                           }
+                        }
                      }
                   }
                }

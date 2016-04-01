@@ -173,11 +173,29 @@ int push_colliding_map_tile(colliding_map_tile_array_t * array, eir_gme_map_tile
 }
 
 // ----------------------------------------------------------------------------
+static void sort_descending_colliding_map_tile_array(colliding_map_tile_array_t * array)
+{
+   if (array)
+   {
+      for (int i = 0; i < array->used; ++i)
+      {
+         for (int j = i + 1; j < array->used; ++j)
+         {
+            if (array->data[i].intersection_area < array->data[j].intersection_area)
+            {
+               swap_colliding_map_tiles(array, i, j);
+            }
+         }
+      }
+   }
+}
+
+// ----------------------------------------------------------------------------
 void sort_colliding_map_tile_array(colliding_map_tile_array_t * array)
 {
    if (array)
    {
-      // WE SET TO UMUSED MAVIGABLE TILES
+      // WE ET TO UMUSED MAVIGABLE TILES
 
       for (int i = 0; i < array->max_capacity; ++i)
       {
@@ -195,6 +213,7 @@ void sort_colliding_map_tile_array(colliding_map_tile_array_t * array)
 
       // WE SORT TILES BY INTERSECTION AREA : BIGGER TO SMALLER
 
+      sort_descending_colliding_map_tile_array(array);
    }
 }
 
