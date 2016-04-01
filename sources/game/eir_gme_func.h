@@ -142,6 +142,12 @@ void eir_gme_set_entity_map_layer_link(
    int map_layer_index
    );
 
+void eir_gme_set_entity_colliding_map_tiles(
+   eir_gme_world_t * world,
+   eir_gme_entity_t entity,
+   size_t max_tiles_capacity
+   );
+
 void eir_gme_set_active_camera(
 	eir_gme_world_t * world,
 	eir_gme_entity_t target,

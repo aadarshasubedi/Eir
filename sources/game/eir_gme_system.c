@@ -3,40 +3,6 @@
 #include "../physics/eir_phy_motion_func.h"
 #include "../graphics/eir_gfx_func.h"
 
-static eir_gme_direction_t eir_gme_get_x_direction_from_input(
-   eir_gme_input_controller_buffer_t * input_buffer
-   )
-{
-   eir_gme_direction_t result = EIR_GME_DIRECTION_UNKNOWN;
-
-   if (input_buffer && input_buffer->controllers[1].buttons[EIR_GME_MOVE_RIGHT_BUTTON_INDEX].pressed)
-   {
-      result = EIR_GME_DIRECTION_RIGHT;
-   }
-   else if (input_buffer && input_buffer->controllers[1].buttons[EIR_GME_MOVE_LEFT_BUTTON_INDEX].pressed)
-   {
-      result = EIR_GME_DIRECTION_LEFT;
-   }
-   return result;
-}
-
-static eir_gme_direction_t eir_gme_get_y_direction_from_input(
-   eir_gme_input_controller_buffer_t * input_buffer
-   )
-{
-   eir_gme_direction_t result = EIR_GME_DIRECTION_UNKNOWN;
-
-   if (input_buffer && input_buffer->controllers[1].buttons[EIR_GME_MOVE_UP_BUTTON_INDEX].pressed)
-   {
-      result = EIR_GME_DIRECTION_UP;
-   }
-   else if (input_buffer && input_buffer->controllers[1].buttons[EIR_GME_MOVE_DOWN_BUTTON_INDEX].pressed)
-   {
-      result = EIR_GME_DIRECTION_BOTTOM;
-   }
-   return result;
-}
-
 static eir_gme_map_layer_t * eir_gme_get_map_layer(
    const eir_gme_world_t * world,
    eir_gme_entity_t map_entity,
@@ -66,107 +32,6 @@ static eir_gme_map_layer_t * eir_gme_get_map_layer(
       map_layer = &map_component->layers.data[layer_index];
    }
    return map_layer;
-}
-
-static eir_gme_map_tile_t * eir_gme_get_non_navigable_nearest_map_tile(
-   const eir_gme_map_layer_t * map_layer,
-   eir_gme_direction_t direction,
-   const eir_phy_aabb_t * aabb
-   )
-{
-   eir_gme_map_tile_t * map_tile = 0;
-
-   if (map_layer && aabb && map_layer->tiles.used > 0)
-   {
-      float left = aabb->position.x;
-      float right = left + aabb->size.x;
-      float top = aabb->position.y;
-      float bottom = top + aabb->size.y;
-
-      for (int i = 0; i < map_layer->tiles.used; ++i)
-      {
-         eir_gme_map_tile_t * map_tile_iter = &map_layer->tiles.data[i];
-
-         if (
-            map_tile_iter
-            && map_tile_iter->col_index != -1
-            && map_tile_iter->row_index != -1
-            && !map_tile_iter->navigable
-            )
-         {
-            float tile_iter_left = map_layer->position.x + map_tile_iter->col_index * map_layer->tile_width;
-            float tile_iter_right = tile_iter_left + map_layer->tile_width;
-            float tile_iter_top = map_layer->position.y + map_tile_iter->row_index * map_layer->tile_height;
-            float tile_iter_bottom = tile_iter_top + map_layer->tile_height;
-            float tile_left = 0.0f;
-            float tile_right = 0.0f;
-            float tile_top = 0.0f;
-            float tile_bottom = 0.0f;
-
-            if (map_tile)
-            {
-               tile_left = map_layer->position.x + map_tile->col_index * map_layer->tile_width;
-               tile_right = tile_left + map_layer->tile_width;
-               tile_top = map_layer->position.y + map_tile->row_index * map_layer->tile_height;
-               tile_bottom = tile_top + map_layer->tile_height;
-            }
-
-            if (
-               direction == EIR_GME_DIRECTION_RIGHT
-               || direction == EIR_GME_DIRECTION_LEFT
-               )
-            {
-               if (top >= tile_iter_bottom || bottom <= tile_iter_top)
-               {
-                  continue;
-               }
-               if (
-                  direction == EIR_GME_DIRECTION_LEFT
-                  && right > tile_iter_right
-                  && (map_tile == 0 || (map_tile && tile_right < tile_iter_right))
-                  )
-               {
-                  map_tile = map_tile_iter;
-               }
-               else if (
-                  direction == EIR_GME_DIRECTION_RIGHT
-                  && left < tile_iter_left
-                  && (map_tile == 0 || (map_tile && tile_left > tile_iter_left))
-                  )
-               {
-                  map_tile = map_tile_iter;
-               }
-            }
-            if (
-               direction == EIR_GME_DIRECTION_UP
-               || direction == EIR_GME_DIRECTION_BOTTOM
-               )
-            {
-               if (left >= tile_iter_right || right <= tile_iter_left)
-               {
-                  continue;
-               }
-               if (
-                  direction == EIR_GME_DIRECTION_BOTTOM
-                  && bottom < tile_iter_bottom
-                  && (map_tile == 0 || (map_tile && tile_top > tile_iter_top))
-                  )
-               {
-                  map_tile = map_tile_iter;
-               }
-               else if (
-                  direction == EIR_GME_DIRECTION_UP
-                  && top > tile_iter_top
-                  && (map_tile == 0 || (map_tile && tile_bottom < tile_iter_bottom))
-                  )
-               {
-                  map_tile = map_tile_iter;
-               }
-            }
-         }
-      }
-   }
-   return map_tile;
 }
 
 static void eir_gme_update_direction_component(eir_gme_direction_component_t * direction_component, float x_velocity, float y_velocity)
@@ -257,50 +122,162 @@ static void eir_gme_update_camera(eir_gme_camera_t * cam)
    }
 }
 
-void eir_gme_start_all_components_systems(eir_gme_world_t * world)
+// ----------------------------------------------------------------------------
+static void start_aabb_system(eir_gme_world_t * world)
+{
+   if (world)
+   {
+      for (int i = 0; i < world->entities_flags.used; ++i)
+	   {
+		   eir_gme_entity_flags_t entity_flags = world->entities_flags.data[i];
+
+		   if (
+            entity_flags & eir_gme_component_type_aabb
+            && entity_flags & eir_gme_component_type_position
+            )
+		   {
+			   eir_gme_aabb_component_t * aabb_component = &world->aabbs.data[i];
+			   eir_gme_position_component_t * position_component = 0;
+
+			   if (entity_flags & eir_gme_component_type_position)
+			   {
+				   position_component = &world->positions.data[i];
+				   if (position_component->modified)
+				   {
+					   aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
+					   aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
+					   aabb_component->modified = true;
+				   }
+            }
+         }
+      }
+   }
+}
+
+// ----------------------------------------------------------------------------
+static void update_colliding_map_tile_array(
+   eir_gme_world_t * world,
+   colliding_map_tile_array_t * colliding_map_tile_array,
+   eir_gme_map_layer_link_component_t * map_layer_link,
+   eir_gme_aabb_component_t * aabb_component
+   )
+{
+   if (
+      colliding_map_tile_array
+      && map_layer_link
+      && aabb_component
+      )
+   {
+      eir_gme_map_layer_t * map_layer = eir_gme_get_map_layer(
+         world,
+         map_layer_link->map_entity,
+         map_layer_link->map_layer_index
+         );
+
+      empty_colliding_map_tile_array(colliding_map_tile_array);
+      if (map_layer)
+      {
+         float entity_left = aabb_component->aabb.position.x;
+         float entity_right = entity_left + aabb_component->aabb.size.x;
+         float entity_top = aabb_component->aabb.position.y;
+         float entity_bottom = entity_top + aabb_component->aabb.size.y;
+
+         for (int j = 0; j < map_layer->tiles.used; ++j)
+         {
+            eir_gme_map_tile_t * map_tile = &map_layer->tiles.data[j];
+            float map_tile_left = map_layer->position.x + map_layer->tile_width * map_tile->col_index;
+            float map_tile_right = map_tile_left + map_layer->tile_width;
+            float map_tile_top = map_layer->position.y + map_layer->tile_height * map_tile->row_index;
+            float map_tile_bottom = map_tile_top + map_layer->tile_height;
+
+            if (entity_right < map_tile_left || entity_left > map_tile_right)
+            {
+               continue;
+            }
+            if (entity_bottom < map_tile_top || entity_top > map_tile_bottom)
+            {
+               continue;
+            }
+
+            float intersection_area = 0.0f;
+
+            if (!map_tile->navigable)
+            {
+               float dx = eir_mth_min(entity_right, map_tile_right) - eir_mth_max(entity_left, map_tile_left);
+               float dy = eir_mth_min(entity_bottom, map_tile_bottom) - eir_mth_max(entity_top, map_tile_top);
+
+               if (dx >= 0 && dy >= 0)
+               {
+                  intersection_area = dx * dy;
+               }
+            }
+            push_colliding_map_tile(colliding_map_tile_array, map_tile, intersection_area);
+         }
+      }
+   }
+}
+
+// ----------------------------------------------------------------------------
+static void start_colliding_map_tile_array_system(eir_gme_world_t * world)
+{
+   if (world)
+   {
+      for (int i = 0; i < world->entities_flags.used; ++i)
+      {
+         eir_gme_entity_flags_t entity_flags = world->entities_flags.data[i];
+
+         if (
+            entity_flags & eir_gme_component_type_colliding_map_tile_array
+            && entity_flags & eir_gme_component_type_map_layer_link
+            && entity_flags & eir_gme_component_type_aabb
+            )
+         {
+            colliding_map_tile_array_t * colliding_map_tile_array = &world->colliding_map_tile_array_array.data[i];
+            eir_gme_map_layer_link_component_t * map_layer_link = &world->map_layer_links.data[i];
+            eir_gme_aabb_component_t * aabb_component = &world->aabbs.data[i];
+            
+            update_colliding_map_tile_array(
+               world,
+               colliding_map_tile_array,
+               map_layer_link,
+               aabb_component
+               );
+         }
+      }
+   }
+}
+
+// ----------------------------------------------------------------------------
+static void start_fsm_system(eir_gme_world_t * world)
 {
 	if (world)
 	{
-		for (int index = 0; index < world->entities_flags.used; ++index)
+		for (int i = 0; i < world->entities_flags.used; ++i)
 		{
-			eir_gme_entity_flags_t entity_flags = world->entities_flags.data[index];
+			eir_gme_entity_flags_t entity_flags = world->entities_flags.data[i];
 
 			if (entity_flags & eir_gme_component_type_fsm)
 			{
-				eir_gme_fsm_component_t * fsm_component = &world->fsms.data[index];
+				eir_gme_fsm_component_t * fsm_component = &world->fsms.data[i];
 				eir_fsm_run_state_machine(fsm_component->fsm);
 			}
 		}
 	}
 }
 
+// ----------------------------------------------------------------------------
+void eir_gme_start_all_components_systems(eir_gme_world_t * world)
+{
+   start_aabb_system(world);
+   start_colliding_map_tile_array_system(world);
+   start_fsm_system(world);
+}
+
+// ----------------------------------------------------------------------------
 void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime)
 {
 	if (world)
 	{
-      // FIRST WE UPDATE ALL AABB IF POSITION HAS BEEN CHANGED
-      // TODO: FIND A MORE ELEGANT TO UPDATE AABB !
-		for (int index = 0; index < world->entities_flags.used; ++index)
-		{
-			eir_gme_entity_flags_t entity_flags = world->entities_flags.data[index];
-
-			if (entity_flags & eir_gme_component_type_aabb)
-			{
-				eir_gme_aabb_component_t * aabb_component = &world->aabbs.data[index];
-				eir_gme_position_component_t * position_component = 0;
-
-				if (entity_flags & eir_gme_component_type_position)
-				{
-					position_component = &world->positions.data[index];
-					if (position_component->modified)
-					{
-						aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
-						aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
-						aabb_component->modified = true;
-					}
-            }
-         }
-      }
 		for (int index = 0; index < world->entities_flags.used; ++index)
 		{
 			eir_gme_entity_flags_t entity_flags = world->entities_flags.data[index];
@@ -394,151 +371,21 @@ void eir_gme_update_all_components_systems(eir_gme_world_t * world, double dtime
                         aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
 						      aabb_component->modified = true;
                      }
-                     
-                     eir_gme_direction_t x_direction = EIR_GME_DIRECTION_UNKNOWN;
-                     eir_gme_direction_t y_direction = EIR_GME_DIRECTION_UNKNOWN;
-                     
-                     // TODO: really ugly, find properly the entity direction
-                     // (do not use velocity only commander direction)
-                     x_direction = eir_gme_get_x_direction_from_input(
-                        world->keyboards.data[index].input_buffer
-                        );
-                     y_direction = eir_gme_get_y_direction_from_input(
-                        world->keyboards.data[index].input_buffer
-                        );
 
-                     eir_gme_map_tile_t * x_nearest_tile = eir_gme_get_non_navigable_nearest_map_tile(
-                        map_layer,
-                        x_direction,
-                        &aabb_component->aabb
-                        );
-                     
-                     if (x_nearest_tile)
+                     if (entity_flags & eir_gme_component_type_colliding_map_tile_array)
                      {
-                        eir_gfx_sprite_proxy_t * sprite_proxy = x_nearest_tile->sprite_proxy;
-				eir_mth_vec2_t position =
-				{
-					.x = sprite_proxy->position.x,
-					.y = sprite_proxy->position.y
-				};
-				eir_mth_vec2_t size =
-				{
-					.x = sprite_proxy->size.x,
-					.y = sprite_proxy->size.y
-				};
-				eir_mth_vec2_t uv_offset =
-				{
-					.x = sprite_proxy->uv_offset.x,
-					.y = sprite_proxy->uv_offset.y
-				};
-				eir_mth_vec2_t uv_size =
-				{
-					.x = sprite_proxy->uv_size.x,
-					.y = sprite_proxy->uv_size.y
-				};
-				eir_gfx_color_t color =
-				{
-					.r = 1.0f,
-					.g = 0.0f,
-					.b = 0.0f,
-					.a = 1.0f
-				};
-                        float nearest_tile_left = map_layer->position.x + x_nearest_tile->col_index * map_layer->tile_width;
-                        float nearest_tile_right = nearest_tile_left + map_layer->tile_width;
+                        colliding_map_tile_array_t * colliding_map_tile_array = &world->colliding_map_tile_array_array.data[index];
 
-                        if (
-                           x_direction == EIR_GME_DIRECTION_RIGHT
-                           && entity_right_bound > nearest_tile_left
-                           )
-                        {
-                           position_component->position.x -= (entity_right_bound - nearest_tile_left);
-                           aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
-						         aabb_component->modified = true;
-                        }
-                        if (
-                           x_direction == EIR_GME_DIRECTION_LEFT
-                           && entity_left_bound < nearest_tile_right
-                           )
-                        {
-                           position_component->position.x += (nearest_tile_right - entity_left_bound);
-                           aabb_component->aabb.position.x = position_component->position.x + aabb_component->x_offset;
-						         aabb_component->modified = true;
-                        }
-					eir_gfx_modify_sprite(
-	   					sprite_proxy,
-	   					&position,
-	   					&size,
-	   					&uv_offset,
-	   					&uv_size,
-	   					&color
-	   					);
-                     }
-
-                     eir_gme_map_tile_t * y_nearest_tile = eir_gme_get_non_navigable_nearest_map_tile(
-                        map_layer,
-                        y_direction,
-                        &aabb_component->aabb
-                        );
-                     
-                     if (y_nearest_tile)
-                     {
-                        eir_gfx_sprite_proxy_t * sprite_proxy = y_nearest_tile->sprite_proxy;
-				eir_mth_vec2_t position =
-				{
-					.x = sprite_proxy->position.x,
-					.y = sprite_proxy->position.y
-				};
-				eir_mth_vec2_t size =
-				{
-					.x = sprite_proxy->size.x,
-					.y = sprite_proxy->size.y
-				};
-				eir_mth_vec2_t uv_offset =
-				{
-					.x = sprite_proxy->uv_offset.x,
-					.y = sprite_proxy->uv_offset.y
-				};
-				eir_mth_vec2_t uv_size =
-				{
-					.x = sprite_proxy->uv_size.x,
-					.y = sprite_proxy->uv_size.y
-				};
-				eir_gfx_color_t color =
-				{
-					.r = 0.0f,
-					.g = 0.0f,
-					.b = 1.0f,
-					.a = 1.0f
-				};
-                        float nearest_tile_top = map_layer->position.y + y_nearest_tile->row_index * map_layer->tile_height;
-                        float nearest_tile_bottom = nearest_tile_top + map_layer->tile_height;
-
-                        if (
-                           y_direction == EIR_GME_DIRECTION_BOTTOM
-                           && entity_bottom_bound > nearest_tile_top
-                           )
-                        {
-                           position_component->position.y -= (entity_bottom_bound - nearest_tile_top);
-                           aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
-						         aabb_component->modified = true;
-                        }
-                        if (
-                           y_direction == EIR_GME_DIRECTION_UP
-                           && entity_top_bound < nearest_tile_bottom
-                           )
-                        {
-                           position_component->position.y += (nearest_tile_bottom - entity_top_bound);
-                           aabb_component->aabb.position.y = position_component->position.y + aabb_component->y_offset;
-						         aabb_component->modified = true;
-                        }
-					eir_gfx_modify_sprite(
-	   					sprite_proxy,
-	   					&position,
-	   					&size,
-	   					&uv_offset,
-	   					&uv_size,
-	   					&color
-	   					);
+                        update_colliding_map_tile_array(
+                           world,
+                           colliding_map_tile_array,
+                           map_layer_link,
+                           aabb_component
+                           );
+                        sort_colliding_map_tile_array(
+                           colliding_map_tile_array
+                           );
+                        // TODO: resolve collisions
                      }
                   }
                }

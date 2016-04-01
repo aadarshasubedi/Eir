@@ -1,4 +1,5 @@
 #include "eir_gme_func.h"
+#include "colliding_map_tile_func.h"
 #include "../kernel/eir_ker_env.h"
 #include "../kernel/eir_ker_log.h"
 #include "../system/eir_sys_joystick_func.h"
@@ -43,6 +44,7 @@ static void eir_gme_init_world(eir_gme_world_t * world)
       EIR_KER_INIT_ARRAY(world->pads);
       EIR_KER_INIT_ARRAY(world->maps);
       EIR_KER_INIT_ARRAY(world->map_layer_links);
+      init_colliding_map_tile_array_array(&world->colliding_map_tile_array_array);
       eir_gme_init_camera(&world->camera);
    }
 }
@@ -67,6 +69,7 @@ static void eir_gme_release_world(eir_gme_world_t * world)
       EIR_KER_FREE_ARRAY(world->pads);
       EIR_KER_FREE_ARRAY(world->maps);
       EIR_KER_FREE_ARRAY(world->map_layer_links);
+      free_colliding_map_tile_array_array(&world->colliding_map_tile_array_array);
       eir_gme_init_camera(&world->camera);
    }
 }
@@ -557,6 +560,10 @@ eir_gme_world_t * eir_gme_create_world(
          max_entity_count,
          eir_gme_init_map_layer_link
          );
+      alloc_colliding_map_tile_array_array(
+         &world->colliding_map_tile_array_array,
+         max_entity_count
+         );
    }
    return world;
 }
@@ -583,6 +590,7 @@ eir_gme_entity_t eir_gme_create_world_entity(eir_gme_world_t * world)
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->pads, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->maps, entity);
       EIR_KER_RESERVE_ARRAY_NEXT_EMPTY_SLOT(world->map_layer_links, entity);
+      get_unused_colliding_map_tile_array(&world->colliding_map_tile_array_array);
    }
    return entity;
 }
@@ -1150,6 +1158,7 @@ void eir_gme_set_entity_map_tile(
    }
 }
 
+// ----------------------------------------------------------------------------
 void eir_gme_set_entity_map_layer_link(
    eir_gme_world_t * world,
    eir_gme_entity_t entity,
@@ -1178,6 +1187,32 @@ void eir_gme_set_entity_map_layer_link(
    }
 }
 
+// ----------------------------------------------------------------------------
+void eir_gme_set_entity_colliding_map_tiles(
+   eir_gme_world_t * world,
+   eir_gme_entity_t entity,
+   size_t max_tiles_capacity
+   )
+{
+   if (
+      world
+      && entity >= 0 
+      && entity < world->colliding_map_tile_array_array.used
+      && entity < world->entities_flags.used
+      && max_tiles_capacity > 0
+      )
+   {
+      world->entities_flags.data[entity] |= eir_gme_component_type_colliding_map_tile_array;;
+      colliding_map_tile_array_t * colliding_map_tile_array = &world->colliding_map_tile_array_array.data[entity];
+      alloc_colliding_map_tile_array(colliding_map_tile_array, max_tiles_capacity);
+   }
+   else
+   {
+      EIR_KER_LOG_ERROR("CANNOT SET ENTITY %d COLLIDING MAP TILES with capacity %d", entity, max_tiles_capacity);
+   }
+}
+
+// ----------------------------------------------------------------------------
 void eir_gme_set_active_camera(
    eir_gme_world_t * world,
    eir_gme_entity_t target,

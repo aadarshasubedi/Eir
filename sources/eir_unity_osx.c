@@ -1,6 +1,7 @@
 #include "maths/eir_mth_func.c"
 #include "physics/eir_phy_func.c"
 #include "physics/eir_phy_motion_func.c"
+#include "game/colliding_map_tile_func.c"
 #include "game/eir_gme_func.c"
 #include "game/eir_gme_system.c"
 #include "kernel/eir_ker_log_stdout.c"

@@ -3,6 +3,11 @@
 ** Tasks list if all dev milestones tasks are done :
 ** -------------------------------------------------
 **
+** TODO: add max text length in rendering text creation function
+** TODO: redo rendering text batch using new array with swap to avoid frame time alloc
+** TODO: remove macro for array definition and manipulation. write all code !
+** TODO: remove *_component suffix in struct, func and files !
+** TODO: remove all prefix eir_*_ in struct, func and files to avoid long code
 ** TODO: add const in function parameter when it is possible
 ** TODO: remove memleaks
 ** TODO: do :retab in all files
@@ -880,6 +885,7 @@ int main()
       eir_get_input_controller_buffer(gme_env, 1)
       );
    eir_gme_set_entity_map_layer_link(world, entity, map_entity, 0);
+   eir_gme_set_entity_colliding_map_tiles(world, entity, 9);
 
    player_entity_proxy.entity = entity;
    player_entity_proxy.world = world;
